@@ -1,0 +1,11 @@
+{
+    "version": "3",
+
+    "language": "german",
+
+    "paths": {
+        "base": "/Users/screeny/src/opengtajs/fixtures/game",
+        "gxt": "TEXT",
+        "fontstxd": "models/fonts.txd"
+    }
+}
