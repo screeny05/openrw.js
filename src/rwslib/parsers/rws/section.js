@@ -84,7 +84,10 @@ Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback){
             } else if(type === sectionTypes.RW_SKY_MIPMAP){
                 // TODO: ignore?
                 this.skip(header.size);
-                this.vars.data = `ignored section: ${sectionTypes.getNameByType(header.type)}`;
+                this.vars.data = {
+                    __name__: 'rwsIgnored',
+                    type: sectionTypes.getNameByType(header.type)
+                };
 
             } else {
                 console.warn('encountered unknown section-type.', sectionTypes.getNameByType(header.type), header, ' using buffer');

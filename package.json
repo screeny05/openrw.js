@@ -1,5 +1,5 @@
 {
-  "name": "opengtajs",
+  "name": "openrwjs",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,5 +7,16 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "MIT",
+  "dependencies": {
+    "corrode": "^1.0.2",
+    "node-glfw": "^0.4.6",
+    "node-webgl": "^0.5.5",
+    "throttle-debounce": "^1.0.1",
+    "wpe-webgl": "0.0.2"
+  },
+  "devDependencies": {
+    "@types/gl-matrix": "^2.2.34",
+    "@types/node": "^7.0.12"
+  }
 }
