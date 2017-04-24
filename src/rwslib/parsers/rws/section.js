@@ -61,7 +61,7 @@ Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback){
 
             // PLUGINS
             } else if(type === sectionTypes.RW_H_ANIM_PLG){
-                this.ext.rwsHanimPlg('data', header);
+                this.ext.rwsHAnimPlg('data', header);
 
             } else if(type === sectionTypes.RW_BIN_MESH_PLG){
                 this.ext.rwsBinMeshPlg('data', header);

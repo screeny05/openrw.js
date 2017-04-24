@@ -14,8 +14,8 @@ const boneFlags = {
     UNKNOWN: 0x08
 };
 
-Corrode.addExtension('rwsHanimPlg', function(){
-    this.vars.__name__ = 'rwsHanimPlg';
+Corrode.addExtension('rwsHAnimPlg', function(){
+    this.vars.__name__ = 'rwsHAnimPlg';
 
     this
         .uint32('version')
@@ -39,6 +39,6 @@ Corrode.addExtension('rwsHanimPlg', function(){
                     .map.bitmask('flags', boneFlags);
             });
 
-            throw new TypeError(`not completely implemented https://www.gtamodding.com/wiki/HAnim_PLG_(RW_Section)`);
+            console.warn(`not completely implemented https://www.gtamodding.com/wiki/HAnim_PLG_(RW_Section)`);
         })
 });

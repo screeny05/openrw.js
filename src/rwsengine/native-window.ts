@@ -1,4 +1,7 @@
 import * as webgl from 'node-webgl';
+import * as GLFW from 'node-glfw';
+
+import Input from './input';
 
 interface Options {
     width: number;
@@ -14,39 +17,47 @@ export default class NativeWindow {
     };
 
     gl: WebGLRenderingContext;
-    document: Document;
-    documentAny: any;
-    canvas: HTMLCanvasElement;
+    document: any;
+    handle: number;
     Image: HTMLImageElement;
     requestAnimationFrame: Function;
 
     options: Options;
 
+    input: Input;
+
     constructor(options){
         this.options = { ...NativeWindow.defaults, ...options };
 
-        this.documentAny = webgl.document();
-        this.document = this.documentAny;
+        this.document = webgl.document();
 
-        this.requestAnimationFrame = this.documentAny.requestAnimationFrame;
+        this.requestAnimationFrame = this.document.requestAnimationFrame;
 
-        this.canvas = this.documentAny.createElement('canvas', this.options.width, this.options.height);
+        this.handle = this.document.createWindow(this.options.width, this.options.height);
 
-        this.documentAny.setTitle(this.options.title);
+        this.document.setTitle(this.options.title);
 
-        this.gl = this.canvas.getContext("webgl");
+        this.gl = this.document.getContext("webgl");
         this.Image = webgl.Image;
     }
 
+    getSize() {
+        return GLFW.GetWindowSize(this.handle);
+    }
+
     get ratio(): number {
-        return this.documentAny.ratio;
+        return this.document.ratio;
     }
 
     get width(): number {
-        return this.documentAny.width;
+        return this.document.width;
     }
 
     get height(): number {
-        return this.documentAny.height;
+        return this.document.height;
+    }
+
+    get on(): Function {
+        return this.document.addEventListener;
     }
 }

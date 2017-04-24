@@ -1,27 +1,34 @@
 import NativeWindow from './native-window';
-import Controls from './controls';
+import Input from './input';
+import Camera from './camera';
+import CameraControlsOrbit from './camera-controls-orbital';
 
-import { mat4, vec3 } from 'gl-matrix';
-import * as Corrode from 'corrode';
+import Geometry from './geometry';
+import DffGeometry from './dff-geometry';
+
+import Game from './engine/game';
+
+import { quat, mat4, vec3 } from 'gl-matrix';
 
 import * as fs from 'fs';
 import * as path from 'path';
 
-const config = require('../../config.json');
 require('../rwslib/parsers');
 
 const window = new NativeWindow({
     title: 'openrwjs 0.0.1'
 });
 
-const controls = new Controls(window);
+const degToRad = deg => deg * Math.PI / 180;
+const input = new Input(window);
+const camera = new Camera(degToRad(60), window);
+const cameraControlsOrbit = new CameraControlsOrbit(input, camera);
 
 const gl = window.gl;
 
+const game = new Game(require('../../config.json'));
 
-const modelMatrix = mat4.create();
-const viewMatrix = mat4.create();
-const projectionMatrix = mat4.create();
+
 
 const compileShader = (source, type, additionalErrorInfo = '') => {
     const shader = gl.createShader(type);
@@ -68,116 +75,120 @@ const buildShaderProgram = (vertexShaderSource: string, fragmentShaderSource: st
     return { shaderProgram, shaderLocations };
 };
 
-const createBuffer = data => {
-    const buffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    return buffer;
-};
+let geometries: Array<Geometry> = [];
+DffGeometry.loadFromDff(gl, process.argv[3], dffGeometries => geometries = geometries.concat(dffGeometries));
+//DffGeometry.loadFromDff(gl, 'dff/player.dff', dffGeometries => geometries = geometries.concat(dffGeometries));
 
-const drawFace3Buffer = (buffer, vertexPositionAttribute) => {
+const drawFace3Buffer = (buffer, vertexPositionAttribute, drawingMode = gl.TRIANGLES) => {
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.drawArrays(drawingMode, 0, 3);
 };
 
-const degToRad = deg => deg * Math.PI / 180;
+
 
 const { shaderProgram, shaderLocations } = buildShaderProgram(`
 
+#define M_PI 3.1415926535897932384626433832795
+
 attribute vec3 vPosition;
+
+uniform vec3 faceNormal;
+uniform vec3 aColor;
+uniform vec3 bColor;
+uniform vec3 cColor;
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;
 uniform mat4 projectionMatrix;
 
-varying vec3 pos;
+varying vec3 varVPosition;
+varying float varLightIntensity;
+
+vec3 lightDirectionVector = vec3(0.0, 1.0, -0.2);
+
+float map(float value, float inMin, float inMax, float outMin, float outMax) {
+    return outMin + (outMax - outMin) * (value - inMin) / (inMax - inMin);
+}
 
 void main(){
-    pos = vPosition;
-    gl_Position = projectionMatrix * modelMatrix * viewMatrix * vec4(vPosition, 1.0);
+    float lightAngle = clamp(dot(lightDirectionVector, faceNormal), 0.0, M_PI / 2.0);
+
+    varVPosition = vPosition;
+    varLightIntensity = map(lightAngle, 0.0, M_PI / 2.0, 0.5, 1.0);
+
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPosition, 1.0);
 }
 
 `, `
 
 #ifdef GL_ES
-precision highp float;
+    precision highp float;
 #endif
 
-varying vec3 pos;
+varying vec3 varVPosition;
+varying float varLightIntensity;
 
 void main(){
-    gl_FragColor = vec4(pos, 1.0);
+    gl_FragColor = vec4(varLightIntensity, varLightIntensity, varLightIntensity, 1.0);
 }
 
 `, {
     vPosition: 'attribute',
+    faceNormal: 'uniform',
+    aColor: 'uniform',
+    bColor: 'uniform',
+    cColor: 'uniform',
     projectionMatrix: 'uniform',
     modelMatrix: 'uniform',
     viewMatrix: 'uniform',
 });
 
 gl.enableVertexAttribArray(shaderLocations.vPosition);
-
 gl.useProgram(shaderProgram);
+gl.clearColor(0, 0, 0, 0);
 
-const createModel = polygons => polygons.map(vertices => createBuffer(new Float32Array(vertices)));
+let lastFpsTime = 0;
+let framesSinceLastFpsTime = 0;
+let lastTime = 0;
+const render = (currentTime = 0) => {
+    const deltaTime = (currentTime - lastTime) / 1000;
+    lastTime = currentTime;
+    framesSinceLastFpsTime++;
+    lastFpsTime += deltaTime;
 
+    if(lastFpsTime > 1){
+        //console.log(framesSinceLastFpsTime);
+        lastFpsTime = 0;
+        framesSinceLastFpsTime = 1;
+    }
 
-const models = [];
+    input.update(deltaTime);
+    cameraControlsOrbit.update(deltaTime);
 
-const parser = new Corrode();
-parser.ext.rws('rws').map.push('rws');
-const filePath = path.join(config.paths.base, 'newramp2.dff');
-const fstream = fs.createReadStream(filePath);
-fstream.pipe(parser);
-parser.on('finish', function(){
-    const geometry = parser.vars[0].geometryList.geometries[0];
-    const triangles = geometry.triangles;
-    const vertices = geometry.morphTargets[0].vertices;
-
-    models.push(createModel(triangles.map(triangle => {
-        const vert1 = vertices[triangle.vertex1];
-        const vert2 = vertices[triangle.vertex2];
-        const vert3 = vertices[triangle.vertex3];
-        return [
-            vert1.x, vert1.y, vert1.z,
-            vert2.x, vert2.y, vert2.z,
-            vert3.x, vert3.y, vert3.z
-        ]
-    })));
-});
-
-gl.clearColor(0, 1, 0, 0);
-
-const controlToVec = (statePos: number, stateNeg: number): number => (statePos ? statePos : stateNeg * -1) * 0.1;
-
-let currentTime = 0;
-const render = () => {
     gl.viewport(0, 0, window.width, window.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
 
-    const moveVector = vec3.fromValues(controlToVec(controls.states.left, controls.states.right), 0, controlToVec(controls.states.forward, controls.states.backward));
-    mat4.rotateY(viewMatrix, viewMatrix, controls.states.rotationX * 0.1);
-    mat4.translate(viewMatrix, viewMatrix, moveVector);
+    gl.uniformMatrix4fv(shaderLocations.viewMatrix, false, camera.getViewMatrix());
+    gl.uniformMatrix4fv(shaderLocations.projectionMatrix, false, camera.projection);
 
-    mat4.perspective(projectionMatrix, degToRad(60), window.width / window.height, 0.1, 1000);
-    gl.uniformMatrix4fv(shaderLocations.viewMatrix, false, viewMatrix);
-    gl.uniformMatrix4fv(shaderLocations.projectionMatrix, false, projectionMatrix);
+    geometries.forEach(geometry => {
+        if(!geometry.doRender){
+            return;
+        }
 
-    models.forEach(model => {
-        mat4.identity(modelMatrix);
-        mat4.translate(modelMatrix, modelMatrix, [0.5, 0, -2]);
-        //mat4.rotateY(modelMatrix, modelMatrix, currentTime);
-        gl.uniformMatrix4fv(shaderLocations.modelMatrix, false, modelMatrix);
 
-        model.forEach(vertexBuffer => {
+        gl.uniformMatrix4fv(shaderLocations.modelMatrix, false, geometry.worldTransform);
+
+        geometry.buffers.forEach((vertexBuffer, i) => {
+            gl.uniform3fv(shaderLocations.faceNormal, geometry.faces[i].normal);
+
             drawFace3Buffer(vertexBuffer, shaderLocations.vPosition);
         });
     });
 
-    currentTime = (currentTime + 0.01);
     window.requestAnimationFrame(render);
 };
 
