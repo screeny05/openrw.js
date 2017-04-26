@@ -7,7 +7,12 @@
         "typeRoots": ["node_modules/@types"],
         "rootDir": "src",
         "outDir": "dist",
-        "allowJs": true
+        "allowJs": true,
+        "alwaysStrict": true,
+        "forceConsistentCasingInFileNames": true,
+        "noFallthroughCasesInSwitch": true,
+        "strictNullChecks": true,
+        "sourceMap": true
     },
     "exclude": [
         "node_modules",

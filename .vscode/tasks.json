@@ -1,0 +1,14 @@
+{
+    "version": "0.1.0",
+    "tasks": [
+        {
+            "taskName": "compile",
+            "command": "/Users/screeny/.nvm/versions/node/v7.0.0/bin/tsc",
+            "isShellCommand": true,
+            "args": ["-p", "."],
+            "showOutput": "silent",
+            "problemMatcher": "$tsc",
+            "isBuildCommand": true
+        }
+    ]
+}

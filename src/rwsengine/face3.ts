@@ -1,4 +1,4 @@
-import { vec3 } from 'gl-matrix';
+import { vec3, vec2 } from 'gl-matrix';
 
 export default class Face3 {
     a: number;
@@ -15,6 +15,8 @@ export default class Face3 {
     aColor: any;
     bColor: any;
     cColor: any;
+
+    textureCoordinates: Array<[vec2, vec2, vec2]> = [];
 
     constructor(a: number, b: number, c: number, normal: vec3){
         this.a = a;

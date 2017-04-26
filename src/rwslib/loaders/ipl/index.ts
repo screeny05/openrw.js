@@ -29,9 +29,56 @@ interface IplEntryInst {
 interface IplEntryZone {
     name: string;
     type: number;
-    cornerA: vec3;
-    cornerB: vec3;
+    positionCornerA: vec3;
+    positionCornerB: vec3;
     level: number;
+}
+
+interface IplEntryCull {
+    positionCenter: vec3;
+    positionCornerA: vec3;
+    positionCornerB: vec3;
+    flags: IplEntryCullFlags;
+    wantedLevelDrop: number;
+}
+
+interface IplEntryPick {
+    id: number;
+    position: vec3;
+}
+
+interface IplEntryCullFlags {
+    all: boolean;
+    camCloseInForPlayer: boolean;
+    camStairsForPlayer: boolean;
+    cam1stPersonForPlayer: boolean;
+    noRain: boolean;
+    noPolice: boolean;
+    doINeedToLoadCollision: boolean;
+    unknown: boolean;
+    policeAbandonCars: boolean;
+    inRoomForAudio: boolean;
+    waterFudge: boolean;
+    militaryZone: boolean;
+    extraAirResistance: boolean;
+    fewerCars: boolean;
+};
+
+const IplEntryCullFlagsValues = {
+    all: 0xffff,
+    camCloseInForPlayer: 0x01,
+    camStairsForPlayer: 0x02,
+    cam1stPersonForPlayer: 0x04,
+    noRain: 0x08,
+    noPolice: 0x10,
+    doINeedToLoadCollision: 0x40,
+    unknown: 0x80,
+    policeAbandonCars: 0x100,
+    inRoomForAudio: 0x200,
+    waterFudge: 0x400,
+    militaryZone: 0x1000,
+    extraAirResistance: 0x4000,
+    fewerCars: 0x8000,
 }
 
 export default class IplLoader {
@@ -40,6 +87,9 @@ export default class IplLoader {
 
     entriesInst: Array<IplEntryInst> = [];
     entriesZone: Array<IplEntryZone> = [];
+    entriesCull: Array<IplEntryCull> = [];
+    entriesPick: Array<IplEntryPick> = [];
+    foo: any;
 
     constructor(path: string){
         this.path = path;
@@ -65,6 +115,9 @@ export default class IplLoader {
 
 
             if(section === IplSections.inst){
+                if(iplEntry.length !== 12){
+                    throw new TypeError('IPL Section INST entry must have 12 arguments');
+                }
                 return this.entriesInst.push({
                     id: Number.parseInt(iplEntry[0]),
                     modelName: iplEntry[1],
@@ -73,6 +126,7 @@ export default class IplLoader {
                     rotation: this.quatFromString(iplEntry[8], iplEntry[9], iplEntry[10], iplEntry[11])
                 });
 
+
             } else if(section === IplSections.zone){
                 if(iplEntry.length !== 9){
                     throw new TypeError('IPL Section ZONE entry must have 12 arguments');
@@ -80,9 +134,26 @@ export default class IplLoader {
                 return this.entriesZone.push({
                     name: iplEntry[0],
                     type: Number.parseInt(iplEntry[1]),
-                    cornerA: this.vec3FromString(iplEntry[2], iplEntry[3], iplEntry[4]),
-                    cornerB: this.vec3FromString(iplEntry[5], iplEntry[6], iplEntry[7]),
+                    positionCornerA: this.vec3FromString(iplEntry[2], iplEntry[3], iplEntry[4]),
+                    positionCornerB: this.vec3FromString(iplEntry[5], iplEntry[6], iplEntry[7]),
                     level: Number.parseInt(iplEntry[8])
+                });
+
+
+            } else if(section === IplSections.cull){
+                return this.entriesCull.push({
+                    positionCenter: this.vec3FromString(iplEntry[0], iplEntry[1], iplEntry[2]),
+                    positionCornerA: this.vec3FromString(iplEntry[3], iplEntry[4], iplEntry[5]),
+                    positionCornerB: this.vec3FromString(iplEntry[6], iplEntry[7], iplEntry[8]),
+                    flags: this.bitmaskFromString<IplEntryCullFlags>(iplEntry[9], IplEntryCullFlagsValues),
+                    wantedLevelDrop: Number.parseInt(iplEntry[10])
+                });
+
+
+            } else if(section === IplSections.pick){
+                return this.entriesPick.push({
+                    id: Number.parseInt(iplEntry[0]),
+                    position: this.vec3FromString(iplEntry[1], iplEntry[2], iplEntry[3])
                 });
             }
         });
@@ -94,5 +165,13 @@ export default class IplLoader {
 
     quatFromString(x: string, y: string, z: string, w: string): quat {
         return quat.fromValues(Number.parseFloat(x), Number.parseFloat(y), Number.parseFloat(z), Number.parseFloat(w));
+    }
+
+    bitmaskFromString<T>(numberAsString: string, bitmask: object): T {
+        const number = Number.parseInt(numberAsString);
+        const targetObject = {};
+        Object.keys(bitmask).forEach(key => targetObject[key] = (number & bitmask[key]) === bitmask[key]);
+
+        return targetObject as T;
     }
 }

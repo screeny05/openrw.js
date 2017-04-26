@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "start with simd",
+            "program": "${workspaceRoot}/src/rwsengine/index.ts",
+            "outFiles": [ "${workspaceRoot}/dist/**/*.js" ],
+            "args": [
+                "--harmony_simd",
+                "asuka.dff"
+            ],
+            "cwd": "${workspaceRoot}",
+            "preLaunchTask": "compile",
+            "sourceMaps": true
+        }
+    ]
+}

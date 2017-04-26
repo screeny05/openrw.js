@@ -63,7 +63,7 @@ export default class DffGeometry extends Geometry {
         })
     }
 
-    static loadFromImg(gl: WebGLRenderingContext, imgPath: string, dffName: string){}
+    static loadFromImg(gl: WebGLRenderingContext, imgPath: string, dffName: string){ }
 
     static loadFromRwsFrame(gl: WebGLRenderingContext, rwsClump, rwsFrame: RWSFrame, frameIndex): DffGeometry {
         const geometry = new DffGeometry(gl);

@@ -21,7 +21,7 @@ export default class Object3D {
     updateHierarchyTransform(): void {
         this.worldTransform = mat4.clone(this.localTransform);
         if(this.parent){
-            mat4.multiply(this.worldTransform, this.worldTransform, this.parent.worldTransform);
+            mat4.multiply(this.worldTransform, this.parent.worldTransform, this.worldTransform);
         }
         this.children.forEach(child => child.updateHierarchyTransform());
     }
@@ -60,8 +60,11 @@ export default class Object3D {
     }
 
     debug(indentation: number = 0){
-        console.log(' '.repeat(indentation) + 'Object3D ' + this.name);
-
+        console.log(' '.repeat(indentation) + this.toString().replace(/\[object (.*?)\]/, '$1'));
         this.children.forEach(child => child.debug(indentation + 4));
+    }
+
+    get [Symbol.toStringTag](){
+        return `Object3D ${this.name}`;
     }
 }

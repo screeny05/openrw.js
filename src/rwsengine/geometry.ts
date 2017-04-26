@@ -37,4 +37,8 @@ export default class Geometry extends Object3D {
             return buffer;
         });
     }
+
+    get [Symbol.toStringTag](){
+        return `Geometry ${this.name} (${this.faces.length} faces)`;
+    }
 }
