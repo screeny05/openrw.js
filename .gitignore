@@ -1,6 +1,9 @@
 fixtures
 dist
 
+.vscode
+openrw
+
 # Logs
 logs
 *.log

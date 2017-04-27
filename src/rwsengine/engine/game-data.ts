@@ -1,7 +1,8 @@
 import FileIndex from './file-index';
 
-import loadTextDat from '../../rwslib/loaders/text-dat';
+import streamTextDat, { DatCommand } from '../../rwslib/loaders/text-dat';
 import IplLoader from '../../rwslib/loaders/ipl';
+import IdeLoader from '../../rwslib/loaders/ide';
 
 interface PreDefinedTextures {
     particle;
@@ -29,29 +30,48 @@ export default class GameData {
         tasks.push(this.loadLevelFile('data/default.dat'));
         tasks.push(this.loadLevelFile('data/gta3.dat'));
 
-        await Promise.all(tasks);
+        console.log((await Promise.all(tasks))[0][0].entriesPeds);
     }
 
     async loadIMG(path: string){}
 
     async loadLevelFile(path: string){
         path = this.fileIndex.getFSPath(path);
-        const commands = await loadTextDat(path);
+        const commandStream = streamTextDat(path, { lowercase: true });
 
-        Promise.all(commands.map(commandLine => {
-            const [command, ...args] = commandLine;
+        const tasks: Array<Promise<any>> = [];
 
-            if(command === 'IPL'){
-                return this.loadIPL(args[0]);
+        commandStream.on('data', (entry: DatCommand) => {
+            const [command, ...args] = entry;
+            if(command === 'ipl'){
+                tasks.push(this.loadIPL(args[0]));
+            } else if(command === 'ide'){
+                tasks.push(this.loadIDE(args[0]));
             }
-        }))
+        });
+
+        return new Promise((resolve, reject) => {
+            commandStream.on('finish', () => {
+                Promise.all(tasks)
+                    .then(resolve)
+                    .catch(reject);
+            });
+
+            commandStream.on('error', reject);
+        });
     }
 
-    async loadIDE(path: string){}
+    async loadIDE(path: string){
+        path = this.fileIndex.getFSPath(path);
+        const loader = new IdeLoader(path);
+        await loader.load();
+        return loader;
+    }
 
     async loadIPL(path: string){
         path = this.fileIndex.getFSPath(path);
         const loader = new IplLoader(path);
         await loader.load();
+        return loader;
     }
 }

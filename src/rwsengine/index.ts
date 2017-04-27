@@ -193,3 +193,7 @@ const render = (currentTime = 0) => {
 };
 
 render();
+
+(async () => {
+    await game.init();
+})();

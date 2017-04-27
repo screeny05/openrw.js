@@ -9,12 +9,14 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@types/split2": "^2.1.5",
     "corrode": "^1.0.2",
     "gl-matrix": "^2.3.2",
     "glslify": "^6.0.2",
     "lodash": "^4.17.4",
     "node-glfw": "^0.4.6",
     "node-webgl": "^0.5.5",
+    "split2": "^2.1.1",
     "throttle-debounce": "^1.0.1"
   },
   "devDependencies": {

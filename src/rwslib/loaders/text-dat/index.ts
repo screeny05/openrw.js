@@ -1,41 +1,38 @@
 import * as fs from 'fs';
 
+import * as split2 from 'split2';
+
 const defaults = {
     lowercase: false,
-    delimiter: ' '
+    splitBy: /,| /,
+    commentIndicator: /#|;/
 };
 
-type DatCommand = Array<string>;
+export type DatCommand = Array<string>;
 
-export default async function loadTextDat(path: string, options: any = {}){
+export function parseLineIntoCommand(line: string, options: any): DatCommand|undefined {
+    line = line.split(options.commentIndicator)[0];
+
+    // remove excess whitespace
+    line = line.trim();
+    line = line.replace(/\s+/g, ' ');
+
+
+    if(options.lowercase){
+        line = line.toLowerCase();
+    }
+
+    if(line){
+        return line.split(options.splitBy).filter(arg => arg);
+    }
+}
+
+export default function streamTextDat(path: string, options: any = {}){
     options = { ...defaults, ...options };
 
-    return new Promise<Array<DatCommand>>((resolve, reject) => {
-        fs.readFile(path, 'utf8', (err, data) => {
-            if(err){
-                return reject(err);
-            }
-
-            const commands: Array<DatCommand> = [];
-
-            data.split('\n').forEach(line => {
-                // remove comments
-                line = line.split('#')[0];
-
-                // remove excess whitespace
-                line = line.trim();
-                line = line.replace(/\s+/g, ' ');
-
-                if(options.lowercase){
-                    line = line.toLowerCase();
-                }
-
-                if(line){
-                    commands.push(line.split(options.delimiter));
-                }
-            });
-
-            resolve(commands);
-        });
-    });
+    return fs
+        .createReadStream(path, 'utf8')
+        .pipe(split2(line =>
+            parseLineIntoCommand(line, options))
+        );
 }

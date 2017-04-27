@@ -6,7 +6,10 @@ export default class Game {
 
     constructor(config){
         this.gameData = new GameData(config.paths.base);
+    }
 
-        this.gameData.init();
+    async init(){
+        await this.gameData.init();
+        console.log(this.gameData);
     }
 }
