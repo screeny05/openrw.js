@@ -4,7 +4,7 @@ import * as split2 from 'split2';
 
 const defaults = {
     lowercase: false,
-    splitBy: /,| /,
+    splitBy: /, |,| /,
     commentIndicator: /#|;/
 };
 
@@ -23,7 +23,7 @@ export function parseLineIntoCommand(line: string, options: any): DatCommand|und
     }
 
     if(line){
-        return line.split(options.splitBy).filter(arg => arg);
+        return line.split(options.splitBy);
     }
 }
 

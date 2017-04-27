@@ -78,6 +78,10 @@ interface IdeEntryPathNode {
     rightLanes: number;
 }
 
+interface IdeEntry2dfx {
+
+}
+
 interface IdeEntryObjsFlags {
     all: boolean;
     wet: boolean;
@@ -160,6 +164,7 @@ export default class IdeLoader {
     entriesCars: Array<IdeEntryCars> = [];
     entriesPeds: Array<IdeEntryPeds> = [];
     entriesPath: Array<IdeEntryPath> = [];
+    entries2dfx: Array<IdeEntry2dfx> = [];
 
     constructor(path: string){
         this.path = path;
