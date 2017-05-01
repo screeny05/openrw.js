@@ -19,12 +19,12 @@ Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback){
 
             if(expectedSectionType && type !== expectedSectionType){
                 console.log(this.varStack.stack);
-                throw new TypeError(`Expected RWS-Section of type ${expectedSectionType}, found ${type} instead. At position: ${this.streamOffset - 12}\nHeader:\n${JSON.stringify(header)}`);
+                this.throw(new TypeError(`Expected RWS-Section of type ${expectedSectionType}, found ${type} instead. At position: ${this.streamOffset - 12}\nHeader:\n${JSON.stringify(header)}`));
             }
 
             if(type === sectionTypes.RW_DATA){
                 if(!dataCallback){
-                    throw new Error(`Encountered data section, while no callback was provided.\nHeader:\n${JSON.stringify(header)}`);
+                    this.throw(new Error(`Encountered data section, while no callback was provided.\nHeader:\n${JSON.stringify(header)}`));
                 }
                 this.tap('data', () => dataCallback.call(this, header));
 

@@ -40,8 +40,6 @@ export default class Game {
 
     async init(){
         await this.gameData.init();
-
-        //this.renderer.geometries.push()
     }
 
     start(){

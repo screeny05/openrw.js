@@ -8,6 +8,7 @@ import IplLoader from '../rwslib/loaders/ipl';
 import IdeLoader from '../rwslib/loaders/ide';
 
 import * as Corrode from 'corrode';
+import * as fs from 'fs';
 
 interface PreDefinedTextures {
     particle;
@@ -22,6 +23,7 @@ export default class GameData {
     fileIndex: FileIndex;
 
     gxtIndex: GxtIndex;
+    rwsIndex: Map<string, any> = new Map();
     imgIndices: Map<string, ImgIndex> = new Map();
     ideLoaders: Map<string, IdeLoader> = new Map();
     iplLoaders: Map<string, IplLoader> = new Map();
@@ -58,6 +60,8 @@ export default class GameData {
                 tasks.push(this.loadIPL(args[0]));
             } else if(command === 'ide'){
                 tasks.push(this.loadIDE(args[0]));
+            } else if(command === 'modelfile'){
+                //tasks.push(this.loadRWSFromFile(args[0]));
             }
         });
 
@@ -100,5 +104,42 @@ export default class GameData {
         await gxtIndex.load();
 
         this.gxtIndex = gxtIndex;
+    }
+
+    async loadRWSFromFile(path: string){
+        const rwsStream = this.fileIndex.getFileStream(path);
+        const rws = await this.loadRWSFromStream(rwsStream);
+
+        this.rwsIndex.set(path, rws);
+        return rws;
+    }
+
+    async loadRWSFromImg(img: ImgIndex|string, name: string){
+        img = this.getImg(img);
+        const rws = await this.loadRWSFromStream(img.getImgStreamByName(name));
+
+        this.rwsIndex.set(name, rws);
+        return rws;
+    }
+
+    async loadRWSFromStream(rwsStream: fs.ReadStream){
+        const rwsParser = new Corrode();
+        rwsParser.ext.rws('rws').map.push('rws');
+
+        rwsStream.pipe(rwsParser);
+        return await rwsParser.asPromised();
+    }
+
+    getImg(img: ImgIndex|string): ImgIndex {
+        if(typeof img !== 'string'){
+            return img;
+        }
+
+        const foundImg = this.imgIndices.get(img);
+        if(!foundImg){
+            throw new ReferenceError(`GameData: No IMG with name ${img} fround.`);
+        }
+
+        return foundImg;
     }
 }

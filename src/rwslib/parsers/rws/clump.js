@@ -5,6 +5,8 @@ const sectionTypes = require('./section-types');
 const LIGHTS_AND_CAMERAS_VERSION = 0x33000;
 const LIGHTS_AND_CAMERAS_SIZE = 12;
 
+const GEOMETRY_AS_ATOMIC_CHILD_VERSION = 0x30400;
+
 Corrode.addExtension('rwsClump', function(){
     this.ext.rwsSection('section', sectionTypes.RW_DATA, function(header){
         this.vars.__name__ = 'rwsClump';
@@ -20,14 +22,20 @@ Corrode.addExtension('rwsClump', function(){
                 .int32('countCameras');
         }
 
+        this.ext.rwsSection('frameList', sectionTypes.RW_FRAME_LIST);
+
+        if(header.version.version >= GEOMETRY_AS_ATOMIC_CHILD_VERSION){
+            this.ext.rwsSection('geometryList', sectionTypes.RW_GEOMETRY_LIST);
+        }
+
+
         this
-            .ext.rwsSection('frameList', sectionTypes.RW_FRAME_LIST)
-            .ext.rwsSection('geometryList', sectionTypes.RW_GEOMETRY_LIST)
             .repeat('atomics', 'countAtomics', function(){
                 this
                     .ext.rwsSection('atomic', sectionTypes.RW_ATOMIC)
                     .map.push('atomic');
             })
             .ext.rwsSection('extension', sectionTypes.RW_EXTENSION);
+
     }).map.push('section');
 });

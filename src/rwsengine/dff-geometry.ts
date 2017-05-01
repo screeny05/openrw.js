@@ -75,8 +75,7 @@ export default class DffGeometry extends Geometry {
         const rwsFrameExtension = rwsClump.frameList.extensions[frameIndex];
 
         if(rwsAtomic){
-            const rwsGeometry = rwsClump.geometryList.geometries[rwsAtomic.geometryIndex];
-
+            const rwsGeometry = rwsAtomic.geometry;
 
             const morphTarget = rwsGeometry.morphTargets[0];
             const { vertices, normals } = morphTarget;

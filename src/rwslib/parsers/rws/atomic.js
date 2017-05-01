@@ -4,6 +4,8 @@ const sectionTypes = require('./section-types');
 
 const CLUMP_PEEK_COUNT = 5;
 
+const GEOMETRY_AS_ATOMIC_CHILD_VERSION = 0x30400;
+
 const atomicFlags = {
     atomicCollisionTest: 0x01,
     atomicRender: 0x04
@@ -13,10 +15,13 @@ Corrode.addExtension('rwsAtomic', function(){
     this.ext.rwsSection('section', sectionTypes.RW_DATA, function(header){
         this.vars.__name__ = 'rwsAtomic';
 
-        this
-            .int32('frameIndex')
-            .int32('geometryIndex')
-            .uint32('flags')
+        this.int32('frameIndex');
+
+        if(header.version.version >= GEOMETRY_AS_ATOMIC_CHILD_VERSION){
+            this.int32('geometryIndex');
+        }
+
+        this.uint32('flags')
             .map.bitmask('flags', atomicFlags)
             .uint32('unknown')
 
@@ -31,10 +36,16 @@ Corrode.addExtension('rwsAtomic', function(){
                 get: () => clump.frameList.frames[this.vars.frameIndex]
             });
 
-            Object.defineProperty(this.vars, 'geometry', {
-                get: () => clump.geometryList.geometries[this.vars.geometryIndex]
-            });
+            if(header.version.version >= GEOMETRY_AS_ATOMIC_CHILD_VERSION){
+                Object.defineProperty(this.vars, 'geometry', {
+                    get: () => clump.geometryList.geometries[this.vars.geometryIndex]
+                });
+            }
         });
+
+        if(header.version.version < GEOMETRY_AS_ATOMIC_CHILD_VERSION){
+            this.ext.rwsSection('geometry', sectionTypes.RW_GEOMETRY);
+        }
 
         this.ext.rwsSection('extension', sectionTypes.RW_EXTENSION);
     }).map.push('section');

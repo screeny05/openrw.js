@@ -10,6 +10,8 @@ interface RWSAtomic {
     flags: RWSAtomicFlags;
     unknown: any;
     extensions: any;
+    geometry: any;
+    frame: any;
 }
 
 export default RWSAtomic;

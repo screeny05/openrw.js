@@ -1,5 +1,7 @@
 require('./_utils/array-to-map');
+require('./_utils/as-promised');
 require('./_utils/trim-null');
+require('./_utils/throw');
 
 require('./widechar-string');
 require('./tmatrix');

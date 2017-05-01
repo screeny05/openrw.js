@@ -8,27 +8,27 @@ var parser = new Corrode();
 /*parser
     .ext.gxt('gxt')
     .map.push('gxt');
-const filePath = path.join(config.paths.base, config.paths.gxt, config.language + '.gxt');*/
+const filePath = path.join(config.root, config.paths.gxt, config.language + '.gxt');*/
 // test rws read
 parser
     .ext.rws('rws')
     .map.push('rws');
-//const filePath = path.join(config.paths.base, 'asuka.dff');
-const filePath = path.join(config.paths.base, 'newramp2.dff');
+//const filePath = path.join(config.root, 'asuka.dff');
+const filePath = path.join(config.rootPath, 'models/generic/loplyguy.dff');
 // test dir read
 /*parser
     .ext.dir('dir')
     .map.push('dir');
-const filePath = path.join(config.paths.base, 'models/gta3.dir');
+const filePath = path.join(config.root, 'models/gta3.dir');
 
 const fstream = fs.createReadStream(filePath);
 fstream.pipe(parser);
 parser.on('finish', () => {
     const parser2 = new Corrode();
     parser2.ext.img('img', parser.vars, 'asuka.dff').debug();
-    const fstream2 = fs.createReadStream(path.join(config.paths.base, 'models/gta3.img'));
+    const fstream2 = fs.createReadStream(path.join(config.root, 'models/gta3.img'));
     fstream2.pipe(parser2);
-    parser2.on('finish', () => { fs.writeFileSync(path.join(config.paths.base,'asuka.dff'),parser2.vars.img)});
+    parser2.on('finish', () => { fs.writeFileSync(path.join(config.root,'asuka.dff'),parser2.vars.img)});
 });*/
 parser.debug();
 var fstream = fs.createReadStream(filePath);
