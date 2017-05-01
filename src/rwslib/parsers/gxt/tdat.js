@@ -29,6 +29,10 @@ Corrode.addExtension('gxtTdat', function(tkeyEntries){
             this.vars.key = tkey;
 
             this.ext.widecharString('value');
+
+            this.tap(function(){
+                this.emit('entry', this.vars);
+            });
         })
         .map.arrayToMap('entries', 'key', 'value')
         .map.push('entries');

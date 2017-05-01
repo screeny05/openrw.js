@@ -1,6 +1,6 @@
 import NativeWindow from './native-window';
-import { mat4, vec3, quat } from 'gl-matrix';
 
+import { mat4, vec3, quat } from 'gl-matrix';
 
 export default class Camera {
     near: number = 0.1;

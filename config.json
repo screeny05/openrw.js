@@ -1,11 +1,5 @@
 {
-    "version": "3",
-
+    "version": "GTAIII",
     "language": "german",
-
-    "paths": {
-        "base": "/Users/screeny/src/openrwjs/fixtures/game",
-        "gxt": "TEXT",
-        "fontstxd": "models/fonts.txd"
-    }
+    "rootPath": "/Users/screeny/src/openrwjs/fixtures/game"
 }

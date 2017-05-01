@@ -14,6 +14,7 @@ Corrode.addExtension('dir', function(){
                 .tap(function(){
                     this.vars.offset *= SECTOR_SIZE;
                     this.vars.size *= SECTOR_SIZE;
+                    this.emit('entry', this.vars);
                 });
         })
 
@@ -24,6 +25,5 @@ Corrode.addExtension('dir', function(){
             }
         })
 
-        .map.arrayToMap('entries', 'name')
         .map.push('entries');
 });

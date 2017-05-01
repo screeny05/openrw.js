@@ -1,4 +1,5 @@
 const Corrode = require('corrode');
+const deepEqual = require('deep-eql');
 
 /**
  * map an array to an object (map)
@@ -11,11 +12,12 @@ const Corrode = require('corrode');
 Corrode.MAPPERS.arrayToMap = function(name, keyName = 'key', valueName, src = name){
     const map = {};
     this.vars[src].forEach(entry => {
-        if(typeof map[entry[keyName]] !== 'undefined'){
-            throw new Error(`Error mapping array to map. Duplicate entry for key '${entry[keyName]}'`)
+        const mappedValue = valueName ? entry[valueName] : entry;
+
+        if(typeof map[entry[keyName]] !== 'undefined' && !deepEqual(mappedValue, map[entry[keyName]])){
+            throw new Error(`Error mapping array to map. Duplicate entry for key '${entry[keyName]}'\n${JSON.stringify(map[entry[keyName]])}\n${JSON.stringify(mappedValue)}`);
         }
 
-        let mappedValue = valueName ? entry[valueName] : entry;
         return map[entry[keyName]] = mappedValue;
     });
     this.vars[name] = map;

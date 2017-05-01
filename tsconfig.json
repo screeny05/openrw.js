@@ -8,11 +8,13 @@
         "rootDir": "src",
         "outDir": "dist",
         "allowJs": true,
+        "checkJs": true,
         "alwaysStrict": true,
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
         "strictNullChecks": true,
-        "sourceMap": true
+        "sourceMap": true,
+        "experimentalDecorators": true
     },
     "exclude": [
         "node_modules",

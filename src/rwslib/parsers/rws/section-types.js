@@ -17,8 +17,8 @@ const sectionTypes = {
     RW_H_ANIM_PLG: 0x011e,
     RW_MATERIAL_EFFECTS_PLG: 0x0120,
     RW_BIN_MESH_PLG: 0x050e,
+
+    getNameByType: type => Object.keys(sectionTypes).find(key => sectionTypes[key] === type) || `0x${type.toString(16)}`
 };
 
 module.exports = sectionTypes;
-
-module.exports.getNameByType = type => Object.keys(sectionTypes).find(key => sectionTypes[key] === type) || `0x${type.toString(16)}`;

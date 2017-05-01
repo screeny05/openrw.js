@@ -1,0 +1,79 @@
+import Shader from './shader';
+import Camera from './camera';
+import NativeWindow from './native-window';
+
+import Geometry from './geometry';
+
+import { Bind } from 'lodash-decorators';
+
+export default class Renderer {
+    gl: WebGLRenderingContext;
+    window: NativeWindow;
+    camera: Camera;
+
+    worldShader: Shader;
+
+    geometries: Array<Geometry> = [];
+
+    constructor(window: NativeWindow, camera: Camera){
+        this.window = window;
+        this.gl = this.window.gl;
+        this.camera = camera;
+
+        this.worldShader = new Shader(this.gl, '../../shaders/simple-light.vert', '../../shaders/simple-light.frag', {
+            vPosition: 'attribute',
+            faceNormal: 'uniform',
+            aColor: 'uniform',
+            bColor: 'uniform',
+            cColor: 'uniform',
+            projectionMatrix: 'uniform',
+            modelMatrix: 'uniform',
+            viewMatrix: 'uniform',
+        });
+
+        this.init();
+    }
+
+    init(){
+        this.gl.enableVertexAttribArray(this.worldShader.pointers.vPosition);
+        this.gl.useProgram(this.worldShader.program);
+        this.gl.clearColor(0, 0, 0, 0);
+    }
+
+    preRender(){
+        this.gl.viewport(0, 0, this.window.width, this.window.height);
+        this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+        this.gl.enable(this.gl.DEPTH_TEST);
+        this.gl.enable(this.gl.CULL_FACE);
+
+        this.gl.uniformMatrix4fv(this.worldShader.pointers.viewMatrix, false, this.camera.getViewMatrix());
+        this.gl.uniformMatrix4fv(this.worldShader.pointers.projectionMatrix, false, this.camera.projection);
+    }
+
+    render(){
+        this.preRender();
+
+        this.geometries.forEach(this.renderGeometry);
+    }
+
+    @Bind()
+    renderGeometry(geometry: Geometry|null = null){
+        if(!geometry || !geometry.doRender){
+            return;
+        }
+
+        this.gl.uniformMatrix4fv(this.worldShader.pointers.modelMatrix, false, geometry.worldTransform);
+
+        geometry.buffers.forEach((vertexBuffer, i) => {
+            this.gl.uniform3fv(this.worldShader.pointers.faceNormal, geometry.faces[i].normal);
+
+            this.renderFace3Buffer(vertexBuffer, this.worldShader.pointers.vPosition);
+        });
+    }
+
+    renderFace3Buffer(buffer, vertexPositionAttribute, drawingMode = this.gl.TRIANGLES){
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+        this.gl.vertexAttribPointer(vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
+        this.gl.drawArrays(drawingMode, 0, 3);
+    }
+}

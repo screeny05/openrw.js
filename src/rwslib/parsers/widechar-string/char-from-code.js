@@ -4,5 +4,4 @@ const maps = {
     GTA3_HEADING: require('./maps/gta3-heading'),
 };
 
-module.exports.maps = maps;
 module.exports = (code, map = maps.GTA3_BANK) => map[code - 0x20];

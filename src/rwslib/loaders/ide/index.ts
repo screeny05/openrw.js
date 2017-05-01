@@ -2,7 +2,7 @@ import { vec3 } from 'gl-matrix';
 
 import streamTextDat, { DatCommand } from '../text-dat';
 
-import { vec3FromString, quatFromString, bitmaskFromString } from '../text-dat/utils';
+import { vec3FromString, quatFromString, bitmaskFromString, rgbFromString } from '../text-dat/utils';
 
 enum IdeSections {
     objs,
@@ -63,9 +63,9 @@ interface IdeEntryPeds {
 }
 
 interface IdeEntryPath {
-    groupType: string;
     id: number;
     modelName: string;
+    groupType: string;
     nodes: Array<IdeEntryPathNode>;
 }
 
@@ -79,7 +79,69 @@ interface IdeEntryPathNode {
 }
 
 interface IdeEntry2dfx {
+    id: number;
+    position: vec3;
+    color: vec3;
+    fxType: IdeEntry2dfxType;
+}
 
+enum IdeEntry2dfxType {
+    lights = 0,
+    particles = 1,
+    poi = 2
+}
+
+interface IdeEntry2dfxLight extends IdeEntry2dfx {
+    coronaTexture: string;
+    shadowTexture: string;
+    viewDistances: number;
+    outerRange: number;
+    innerRange: number;
+    coronaSize: number;
+    shadowIntensity: number;
+    flash: IdeEntry2dfxLightFlash;
+    isWetReflective: boolean;
+    flare: IdeEntry2dfxLightFlare;
+    flags: number;
+}
+
+enum IdeEntry2dfxLightFlash {
+    lit = 0,
+    litAtNight = 1,
+    flicker = 2,
+    flickerAtNight = 3,
+    flash102s = 4,
+    flash102sNight = 5,
+    flash204s = 6,
+    flash204sNight = 7,
+    flash408s = 8,
+    flash408sNight = 9,
+    flickerRandom = 10,
+    flickerRandomNight = 11,
+    trafficLight = 12,
+    flash102sLiftBridge = 13
+}
+
+enum IdeEntry2dfxLightFlare {
+    none = 0,
+    yellow = 1,
+    white = 2
+}
+
+interface IdeEntry2dfxParticle extends IdeEntry2dfx {
+    particleType: IdeEntry2dfxParticleType;
+    strength: vec3;
+    scale: number;
+}
+
+enum IdeEntry2dfxParticleType {
+    pavementSteam = 0,
+    wallSteam = 1,
+    dryIce = 2,
+    smallFire = 3,
+    darkSmoke = 4,
+    waterFountainVert = 5,
+    waterFountainHoriz = 6
 }
 
 interface IdeEntryObjsFlags {
@@ -361,6 +423,45 @@ export default class IdeLoader {
                     });
                 } else if(section === IdeSections.path){
                     throw new TypeError(`IDE Section PATH entry must have 3 or 9 arguments, has ${ideEntry.length}`);
+
+
+                } else if(section === IdeSections['2dfx'] && ideEntry.length === 20){
+                    return this.entries2dfx.push(<IdeEntry2dfxLight>{
+                        id: Number.parseInt(ideEntry[0]),
+                        position: vec3FromString(ideEntry[1], ideEntry[2], ideEntry[3]),
+                        color: rgbFromString(ideEntry[4], ideEntry[5], ideEntry[6]),
+                        fxType: Number.parseInt(ideEntry[8]),
+                        coronaTexture: ideEntry[9],
+                        shadowTexture: ideEntry[10],
+                        viewDistances: Number.parseFloat(ideEntry[11]),
+                        outerRange: Number.parseFloat(ideEntry[12]),
+                        coronaSize: Number.parseFloat(ideEntry[13]),
+                        innerRange: Number.parseFloat(ideEntry[14]),
+                        shadowIntensity: Number.parseInt(ideEntry[15]),
+                        flash: Number.parseInt(ideEntry[16]),
+                        isWetReflective: !!Number.parseInt(ideEntry[17]),
+                        flare: Number.parseInt(ideEntry[18]),
+                        flags: Number.parseInt(ideEntry[19])
+                    });
+                } else if(section === IdeSections['2dfx'] && ideEntry.length === 14){
+                    return this.entries2dfx.push(<IdeEntry2dfxParticle>{
+                        id: Number.parseInt(ideEntry[0]),
+                        position: vec3FromString(ideEntry[1], ideEntry[2], ideEntry[3]),
+                        color: rgbFromString(ideEntry[4], ideEntry[5], ideEntry[6]),
+                        fxType: Number.parseInt(ideEntry[8]),
+                        particleType: Number.parseInt(ideEntry[9]),
+                        strength: vec3FromString(ideEntry[10], ideEntry[11], ideEntry[12]),
+                        scale: Number.parseFloat(ideEntry[13])
+                    });
+                } else if(section === IdeSections['2dfx'] && ideEntry.length === 13){
+                    return this.entries2dfx.push(<IdeEntry2dfx>{
+                        id: Number.parseInt(ideEntry[0]),
+                        position: vec3FromString(ideEntry[1], ideEntry[2], ideEntry[3]),
+                        color: rgbFromString(ideEntry[4], ideEntry[5], ideEntry[6]),
+                        fxType: Number.parseInt(ideEntry[8]),
+                    });
+                } else if(section === IdeSections['2dfx']){
+                    throw new TypeError(`IDE Section 2DFX entry must have 20/14/13 arguments, has ${ideEntry.length}`);
                 }
             });
 
