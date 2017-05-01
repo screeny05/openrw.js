@@ -4,7 +4,7 @@ import streamTextDat, { DatCommand } from '../text-dat';
 
 import { vec3FromString, quatFromString, bitmaskFromString, rgbFromString } from '../text-dat/utils';
 
-enum IdeSections {
+export enum IdeSections {
     objs,
     tobj,
     hier,
@@ -17,7 +17,7 @@ enum IdeSections {
     txdp
 }
 
-interface IdeEntryObjs {
+export interface IdeEntryObjs {
     id: number;
     modelName: string;
     txdName: string;
@@ -26,18 +26,18 @@ interface IdeEntryObjs {
     flags?: IdeEntryObjsFlags;
 }
 
-interface IdeEntryTobj extends IdeEntryObjs {
+export interface IdeEntryTobj extends IdeEntryObjs {
     timeOn?: number;
     timeOff?: number;
 }
 
-interface IdeEntryHier {
+export interface IdeEntryHier {
     id: number;
     modelName: string;
     txdName: string;
 }
 
-interface IdeEntryCars {
+export interface IdeEntryCars {
     id: number;
     modelName: string;
     txdName: string;
@@ -52,7 +52,7 @@ interface IdeEntryCars {
     wheelScale?: number;
 }
 
-interface IdeEntryPeds {
+export interface IdeEntryPeds {
     id: number;
     modelName: string;
     txdName: string;
@@ -62,14 +62,14 @@ interface IdeEntryPeds {
     carsCanDrive: IdeEntryPedsCars;
 }
 
-interface IdeEntryPath {
+export interface IdeEntryPath {
     id: number;
     modelName: string;
     groupType: string;
     nodes: Array<IdeEntryPathNode>;
 }
 
-interface IdeEntryPathNode {
+export interface IdeEntryPathNode {
     nodeType: number;
     nextNode: number;
     isCrossRoad: boolean;
@@ -78,20 +78,20 @@ interface IdeEntryPathNode {
     rightLanes: number;
 }
 
-interface IdeEntry2dfx {
+export interface IdeEntry2dfx {
     id: number;
     position: vec3;
     color: vec3;
     fxType: IdeEntry2dfxType;
 }
 
-enum IdeEntry2dfxType {
+export enum IdeEntry2dfxType {
     lights = 0,
     particles = 1,
     poi = 2
 }
 
-interface IdeEntry2dfxLight extends IdeEntry2dfx {
+export interface IdeEntry2dfxLight extends IdeEntry2dfx {
     coronaTexture: string;
     shadowTexture: string;
     viewDistances: number;
@@ -105,7 +105,7 @@ interface IdeEntry2dfxLight extends IdeEntry2dfx {
     flags: number;
 }
 
-enum IdeEntry2dfxLightFlash {
+export enum IdeEntry2dfxLightFlash {
     lit = 0,
     litAtNight = 1,
     flicker = 2,
@@ -122,19 +122,19 @@ enum IdeEntry2dfxLightFlash {
     flash102sLiftBridge = 13
 }
 
-enum IdeEntry2dfxLightFlare {
+export enum IdeEntry2dfxLightFlare {
     none = 0,
     yellow = 1,
     white = 2
 }
 
-interface IdeEntry2dfxParticle extends IdeEntry2dfx {
+export interface IdeEntry2dfxParticle extends IdeEntry2dfx {
     particleType: IdeEntry2dfxParticleType;
     strength: vec3;
     scale: number;
 }
 
-enum IdeEntry2dfxParticleType {
+export enum IdeEntry2dfxParticleType {
     pavementSteam = 0,
     wallSteam = 1,
     dryIce = 2,
@@ -144,7 +144,7 @@ enum IdeEntry2dfxParticleType {
     waterFountainHoriz = 6
 }
 
-interface IdeEntryObjsFlags {
+export interface IdeEntryObjsFlags {
     all: boolean;
     wet: boolean;
     disableFadeOnLoad: boolean;
@@ -194,7 +194,7 @@ const IdeEntryObjsFlagsValues = {
     unknown3: 4194304
 };
 
-interface IdeEntryPedsCars {
+export interface IdeEntryPedsCars {
     none: boolean;
     poorfamily: boolean;
     richfamily: boolean;

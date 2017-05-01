@@ -33,12 +33,14 @@ Corrode.addExtension('rwsAtomic', function(){
             }
 
             Object.defineProperty(this.vars, 'frame', {
-                get: () => clump.frameList.frames[this.vars.frameIndex]
+                value: clump.frameList.frames[this.vars.frameIndex],
+                enumerable: false
             });
 
             if(header.version.version >= GEOMETRY_AS_ATOMIC_CHILD_VERSION){
                 Object.defineProperty(this.vars, 'geometry', {
-                    get: () => clump.geometryList.geometries[this.vars.geometryIndex]
+                    value: clump.geometryList.geometries[this.vars.geometryIndex],
+                    enumerable: false
                 });
             }
         });

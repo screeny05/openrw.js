@@ -4,6 +4,8 @@ import NativeWindow from './native-window';
 
 import Geometry from './geometry';
 
+import GameWorld from '../rwsgame/game-world';
+
 import { Bind } from 'lodash-decorators';
 
 export default class Renderer {
@@ -11,14 +13,15 @@ export default class Renderer {
     window: NativeWindow;
     camera: Camera;
 
+    world: GameWorld;
+
     worldShader: Shader;
 
-    geometries: Array<Geometry> = [];
-
-    constructor(window: NativeWindow, camera: Camera){
+    constructor(window: NativeWindow, camera: Camera, world: GameWorld){
         this.window = window;
         this.gl = this.window.gl;
         this.camera = camera;
+        this.world = world;
 
         this.worldShader = new Shader(this.gl, '../../shaders/simple-light.vert', '../../shaders/simple-light.frag', {
             vPosition: 'attribute',
@@ -53,7 +56,7 @@ export default class Renderer {
     render(){
         this.preRender();
 
-        this.geometries.forEach(this.renderGeometry);
+        this.world.geometries.forEach(this.renderGeometry);
     }
 
     @Bind()
@@ -69,6 +72,8 @@ export default class Renderer {
 
             this.renderFace3Buffer(vertexBuffer, this.worldShader.pointers.vPosition);
         });
+
+        geometry.children.forEach(this.renderGeometry);
     }
 
     renderFace3Buffer(buffer, vertexPositionAttribute, drawingMode = this.gl.TRIANGLES){

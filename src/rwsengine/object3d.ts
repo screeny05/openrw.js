@@ -38,6 +38,10 @@ export default class Object3D {
         child.updateHierarchyTransform();
     }
 
+    addChildren(children: Array<Object3D>): void {
+        children.forEach(child => this.addChild(child));
+    }
+
     removeChild(child: Object3D): void {
         const index = this.children.indexOf(child);
         if(index === -1){

@@ -4,6 +4,9 @@ import Face3 from './face3';
 import RWSFrame from '../rwslib/types/rws/frame';
 import RWSAtomic from '../rwslib/types/rws/atomic';
 
+import { IdeEntryObjs } from '../rwslib/loaders/ide';
+import { IplEntryInst } from '../rwslib/loaders/ipl';
+
 import * as Corrode from 'corrode';
 
 import { flatten } from 'lodash';
@@ -22,6 +25,28 @@ export default class DffGeometry extends Geometry {
 
     constructor(gl: WebGLRenderingContext){
         super(gl);
+    }
+
+    static loadFromIpl(gl: WebGLRenderingContext, inst: IplEntryInst, rwsClump: any, name: string){
+        const geometry = new DffGeometry(gl);
+
+        const frames: Array<DffGeometry> = [];
+
+        rwsClump.frameList.frames.forEach((rwsFrame, i) => frames.push(DffGeometry.loadFromRwsFrame(gl, rwsClump, rwsFrame, i)));
+        DffGeometry.setChildRelations(rwsClump, frames);
+        const rootGeometries = DffGeometry.getRootGeometries(frames);
+
+        geometry.addChildren(rootGeometries);
+
+        geometry.position = inst.position;
+        geometry.rotation = inst.rotation;
+        geometry.scaling = inst.scale;
+        geometry.name = name;
+        geometry.updateTransform();
+
+        geometry.debug();
+
+        return geometry;
     }
 
     static loadFromDff(gl: WebGLRenderingContext, dffPath: string, callback: Function){
@@ -54,16 +79,11 @@ export default class DffGeometry extends Geometry {
                 dffGeometries[i].addToParent(dffGeometries[frame.parentFrameId]);
             }
         });
-
-        frames.forEach((frame, i) => {
-            if(frame.parentFrameId !== -1){
-                return;
-            }
-            dffGeometries[i].debug();
-        })
     }
 
-    static loadFromImg(gl: WebGLRenderingContext, imgPath: string, dffName: string){ }
+    static getRootGeometries(dffGeometries: Array<DffGeometry>): Array<DffGeometry> {
+        return dffGeometries.filter(geometry => geometry.parentFrameIndex < 0);
+    }
 
     static loadFromRwsFrame(gl: WebGLRenderingContext, rwsClump, rwsFrame: RWSFrame, frameIndex): DffGeometry {
         const geometry = new DffGeometry(gl);

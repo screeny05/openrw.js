@@ -61,7 +61,7 @@ export default class GameData {
             } else if(command === 'ide'){
                 tasks.push(this.loadIDE(args[0]));
             } else if(command === 'modelfile'){
-                //tasks.push(this.loadRWSFromFile(args[0]));
+                tasks.push(this.loadRWSFromFile(args[0]));
             }
         });
 
@@ -80,7 +80,7 @@ export default class GameData {
         const imgIndex = new ImgIndex(this.fileIndex, path);
         await imgIndex.indexImgWithDir();
 
-        this.imgIndices.set(path, imgIndex);
+        this.imgIndices.set(this.fileIndex.normalizePath(path), imgIndex);
     }
 
     async loadIDE(path: string){
@@ -88,7 +88,7 @@ export default class GameData {
         const loader = new IdeLoader(realPath);
         await loader.load();
 
-        this.ideLoaders.set(path, loader);
+        this.ideLoaders.set(this.fileIndex.normalizePath(path), loader);
     }
 
     async loadIPL(path: string){
@@ -96,7 +96,7 @@ export default class GameData {
         const loader = new IplLoader(realPath);
         await loader.load();
 
-        this.iplLoaders.set(path, loader);
+        this.iplLoaders.set(this.fileIndex.normalizePath(path), loader);
     }
 
     async loadGXT(path: string){

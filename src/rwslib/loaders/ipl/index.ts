@@ -4,7 +4,7 @@ import streamTextDat, { DatCommand } from '../text-dat';
 
 import { vec3FromString, quatFromString, bitmaskFromString } from '../text-dat/utils';
 
-enum IplSections {
+export enum IplSections {
     inst,
     zone,
     cull,
@@ -20,7 +20,7 @@ enum IplSections {
     auzo
 }
 
-interface IplEntryInst {
+export interface IplEntryInst {
     id: number;
     modelName: string;
     position: vec3;
@@ -28,7 +28,7 @@ interface IplEntryInst {
     rotation: quat;
 }
 
-interface IplEntryZone {
+export interface IplEntryZone {
     name: string;
     type: number;
     positionCornerA: vec3;
@@ -36,7 +36,7 @@ interface IplEntryZone {
     level: number;
 }
 
-interface IplEntryCull {
+export interface IplEntryCull {
     positionCenter: vec3;
     positionCornerA: vec3;
     positionCornerB: vec3;
@@ -44,12 +44,12 @@ interface IplEntryCull {
     wantedLevelDrop: number;
 }
 
-interface IplEntryPick {
+export interface IplEntryPick {
     id: number;
     position: vec3;
 }
 
-interface IplEntryCullFlags {
+export interface IplEntryCullFlags {
     all: boolean;
     camCloseInForPlayer: boolean;
     camStairsForPlayer: boolean;

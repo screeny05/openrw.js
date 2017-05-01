@@ -1,5 +1,6 @@
 import Config from './config';
 import GameData from './game-data';
+import GameWorld from './game-world';
 
 
 import NativeWindow from '../rwsengine/native-window';
@@ -12,7 +13,8 @@ import { Bind } from 'lodash-decorators';
 
 export default class Game {
     config: Config;
-    gameData: GameData;
+    data: GameData;
+    world: GameWorld;
 
     window: NativeWindow;
     renderer: Renderer;
@@ -26,20 +28,23 @@ export default class Game {
 
     constructor(config: Config){
         this.config = config;
-        this.gameData = new GameData(this.config);
 
         this.window = new NativeWindow({
             title: `${this.config.packageName} ${this.config.packageVersion} (${this.config.packageRevShort})`
         });
 
+        this.data = new GameData(this.config);
+        this.world = new GameWorld(this.data, this.window.gl);
+
         this.input = new Input(this.window);
         this.camera = new Camera(Math.PI / 180 * 60, this.window);
         this.cameraControls = new CameraControlsOrbit(this.input, this.camera);
-        this.renderer = new Renderer(this.window, this.camera);
+        this.renderer = new Renderer(this.window, this.camera, this.world);
     }
 
     async init(){
-        await this.gameData.init();
+        await this.data.init();
+        await this.world.init();
     }
 
     start(){

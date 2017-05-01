@@ -7,6 +7,9 @@ export default class Geometry extends Object3D {
     faces: Array<Face3> = [];
     vertices: Array<vec3> = [];
     buffers: Array<any> = [];
+
+    children: Array<Geometry> = [];
+
     gl: WebGLRenderingContext;
 
     doRender: boolean = true;
