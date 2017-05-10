@@ -31,6 +31,7 @@ export default class DffGeometry extends Geometry {
         const geometry = new DffGeometry(gl);
 
         const frames: Array<DffGeometry> = [];
+        console.log(require('util').inspect(rwsClump, { depth: null, color: true }));
 
         rwsClump.frameList.frames.forEach((rwsFrame, i) => frames.push(DffGeometry.loadFromRwsFrame(gl, rwsClump, rwsFrame, i)));
         DffGeometry.setChildRelations(rwsClump, frames);

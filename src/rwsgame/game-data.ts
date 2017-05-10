@@ -37,15 +37,23 @@ export default class GameData {
     }
 
     async init(){
+        console.time('fileindex');
         await this.fileIndex.indexDirectory();
+        console.timeEnd('fileindex');
 
+        console.time('gxt');
         await this.loadGXT(`text/${this.config.language}.gxt`);
+        console.timeEnd('gxt');
 
+        console.time('img');
         await this.loadIMG('models/gta3.img');
         await this.loadIMG('anim/cuts.img');
+        console.timeEnd('img');
 
+        console.time('dat');
         await this.loadLevelFile('data/default.dat');
         await this.loadLevelFile('data/gta3.dat');
+        console.timeEnd('dat');
     }
 
     async loadLevelFile(path: string){

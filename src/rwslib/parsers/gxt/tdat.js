@@ -34,6 +34,5 @@ Corrode.addExtension('gxtTdat', function(tkeyEntries){
                 this.emit('entry', this.vars);
             });
         })
-        .map.arrayToMap('entries', 'key', 'value')
         .map.push('entries');
 });

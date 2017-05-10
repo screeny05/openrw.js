@@ -1,15 +1,19 @@
 import GameData from './game-data';
 
 import DffGeometry from '../rwsengine/dff-geometry';
+import Geometry from '../rwsengine/geometry';
+import Face3 from '../rwsengine/face3';
 
 import { IdeEntryObjs } from '../rwslib/loaders/ide';
 import { IplEntryInst } from '../rwslib/loaders/ipl';
+
+import { vec3 } from 'gl-matrix';
 
 export default class GameWorld {
     data: GameData;
     gl: WebGLRenderingContext;
 
-    geometries: Array<DffGeometry> = [];
+    geometries: Array<Geometry> = [];
 
     constructor(data: GameData, gl: WebGLRenderingContext){
         this.data = data;
@@ -17,8 +21,17 @@ export default class GameWorld {
     }
 
     async init(){
+        //this.addPlane();
         //await this.createInstance('data/maps/industne/industne', 530);
-        await this.loadMap('data/maps/industne/industne');
+        await this.loadMap('data/maps/comse/comse');
+        await this.loadMap('data/maps/comsw/comsw');
+    }
+
+    addPlane(){
+        const plane = new Geometry(this.gl);
+        plane.addFaceFromVertices(vec3.fromValues(10, 0, 10), vec3.fromValues(10, 0, 0), vec3.fromValues(0, 0, 0));
+        plane.addFaceFromVertices(vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, 10), vec3.fromValues(10, 0, 10));
+        this.geometries.push(plane);
     }
 
     async loadMap(definition: string){
@@ -70,7 +83,10 @@ export default class GameWorld {
         }
 
         const geometry = await this.createInstInstance(inst, obj);
-        console.log(geometry);
+        geometry.position[0]=0;
+        geometry.position[1]=0;
+        geometry.position[2]=0;
+        geometry.updateTransform();
 
         this.geometries.push(geometry);
     }

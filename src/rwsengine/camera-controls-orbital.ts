@@ -39,6 +39,6 @@ export default class CameraControlsOrbital {
             this.camera.verticalRotation += this.input.states.rotationY;
         }
 
-        this.camera.horizontalRotation += this.input.states.rotationX;
+        this.camera.horizontalRotation -= this.input.states.rotationX;
     }
 }
