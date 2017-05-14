@@ -61,6 +61,9 @@ Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback){
             } else if(type === sectionTypes.RW_TEXTURE_DICTIONARY){
                 this.ext.rwsTextureDictionary('data', header);
 
+            } else if(type === sectionTypes.RW_TEXTURE_NATIVE){
+                this.ext.rwsTextureNative('data', header);
+
 
             // PLUGINS
             } else if(type === sectionTypes.RW_H_ANIM_PLG){

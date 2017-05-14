@@ -14,6 +14,7 @@ require('./material');
 require('./texture');
 require('./atomic');
 require('./texture-dictionary');
+require('./texture-native');
 require('./h-anim-plg');
 require('./bin-mesh-plg');
 require('./morph-plg');

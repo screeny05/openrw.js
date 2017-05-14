@@ -14,7 +14,7 @@ parser
     .ext.rws('rws')
     .map.push('rws');
 //const filePath = path.join(config.root, 'asuka.dff');
-const filePath = path.join(config.rootPath, 'models/fonts.txd');
+const filePath = path.join(config.rootPath, 'models/frontend.txd');
 // test dir read
 /*parser
     .ext.dir('dir')
