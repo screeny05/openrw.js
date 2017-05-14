@@ -22,9 +22,9 @@ export default class GameWorld {
 
     async init(){
         //this.addPlane();
-        //await this.createInstance('data/maps/industne/industne', 530);
-        await this.loadMap('data/maps/comse/comse');
-        await this.loadMap('data/maps/comsw/comsw');
+        await this.createInstance('data/maps/industne/industne', 530);
+        //await this.loadMap('data/maps/comse/comse');
+        //await this.loadMap('data/maps/comsw/comsw');
     }
 
     addPlane(){

@@ -25,10 +25,8 @@ export default class Renderer {
 
         this.worldShader = new Shader(this.gl, '../../shaders/simple-light.vert', '../../shaders/simple-light.frag', {
             vPosition: 'attribute',
+            vColor: 'attribute',
             faceNormal: 'uniform',
-            aColor: 'uniform',
-            bColor: 'uniform',
-            cColor: 'uniform',
             projectionMatrix: 'uniform',
             modelMatrix: 'uniform',
             viewMatrix: 'uniform',
@@ -38,7 +36,6 @@ export default class Renderer {
     }
 
     init(){
-        this.gl.enableVertexAttribArray(this.worldShader.pointers.vPosition);
         this.gl.useProgram(this.worldShader.program);
         this.gl.clearColor(0, 0, 0, 0);
     }
@@ -66,12 +63,7 @@ export default class Renderer {
         }
 
         this.gl.uniformMatrix4fv(this.worldShader.pointers.modelMatrix, false, geometry.worldTransform);
-
-        geometry.buffers.forEach((vertexBuffer, i) => {
-            this.gl.uniform3fv(this.worldShader.pointers.faceNormal, geometry.faces[i].normal);
-
-            this.renderFace3Buffer(vertexBuffer, this.worldShader.pointers.vPosition);
-        });
+        this.renderElementBuffer(geometry, this.worldShader.pointers.vPosition, this.worldShader.pointers.vColor);
 
         geometry.children.forEach(this.renderGeometry);
     }
@@ -80,5 +72,20 @@ export default class Renderer {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
         this.gl.vertexAttribPointer(vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
         this.gl.drawArrays(drawingMode, 0, 3);
+    }
+
+    renderElementBuffer(geometry: Geometry, vertexPositionAttribute, vertexColorAttribute, drawingMode = this.gl.TRIANGLES){
+        if(!geometry.vertexBuffer || !geometry.indexBuffer){
+            return;
+        }
+
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.vertexBuffer);
+        this.gl.vertexAttribPointer(vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
+
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.colorBuffer);
+        this.gl.vertexAttribPointer(vertexColorAttribute, 4, this.gl.FLOAT, false, 0, 0);
+
+        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, geometry.indexBuffer);
+        this.gl.drawElements(drawingMode, geometry.faces.length, this.gl.UNSIGNED_SHORT, 0);
     }
 }

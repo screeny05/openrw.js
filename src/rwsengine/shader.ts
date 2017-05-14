@@ -29,7 +29,8 @@ export default class Shader {
         this.gl.compileShader(shader);
 
         if(!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS) || !shader){
-            throw new Error(`Error compiling ${type === this.gl.VERTEX_SHADER ? 'vertex' : 'fragment'} shader source.\n${this.gl.getShaderInfoLog(shader)}`);
+            console.error(`Error compiling ${type === this.gl.VERTEX_SHADER ? 'vertex' : 'fragment'} shader source.\n${this.gl.getShaderInfoLog(shader)}`);
+            throw new Error();
         }
 
         return shader;
@@ -42,6 +43,7 @@ export default class Shader {
 
             if(locationType === 'attribute'){
                 location = this.gl.getAttribLocation(this.program, key);
+                this.gl.enableVertexAttribArray(location);
             } else if(locationType === 'uniform'){
                 location = this.gl.getUniformLocation(this.program, key);
             } else {

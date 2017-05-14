@@ -31,7 +31,6 @@ export default class DffGeometry extends Geometry {
         const geometry = new DffGeometry(gl);
 
         const frames: Array<DffGeometry> = [];
-        console.log(require('util').inspect(rwsClump, { depth: null, color: true }));
 
         rwsClump.frameList.frames.forEach((rwsFrame, i) => frames.push(DffGeometry.loadFromRwsFrame(gl, rwsClump, rwsFrame, i)));
         DffGeometry.setChildRelations(rwsClump, frames);
@@ -121,13 +120,13 @@ export default class DffGeometry extends Geometry {
 
                 const face = new Face3(triangle.vertex1, triangle.vertex2, triangle.vertex3, faceNormal);
 
-                if(rwsGeometry.prelit){
+                if(rwsGeometry.flags.prelit){
                     face.aColor = rwsGeometry.colors[triangle.vertex1];
                     face.bColor = rwsGeometry.colors[triangle.vertex2];
                     face.cColor = rwsGeometry.colors[triangle.vertex3];
                 }
 
-                if(rwsGeometry.hasNormals){
+                if(rwsGeometry.flags.hasNormals){
                     face.aNormal = normals[triangle.vertex1];
                     face.bNormal = normals[triangle.vertex2];
                     face.cNormal = normals[triangle.vertex3];

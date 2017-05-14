@@ -14,7 +14,7 @@ parser
     .ext.rws('rws')
     .map.push('rws');
 //const filePath = path.join(config.root, 'asuka.dff');
-const filePath = path.join(config.rootPath, 'models/generic/loplyguy.dff');
+const filePath = path.join(config.rootPath, 'models/fonts.txd');
 // test dir read
 /*parser
     .ext.dir('dir')

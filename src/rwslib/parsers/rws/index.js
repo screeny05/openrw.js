@@ -13,6 +13,7 @@ require('./material-list');
 require('./material');
 require('./texture');
 require('./atomic');
+require('./texture-dictionary');
 require('./h-anim-plg');
 require('./bin-mesh-plg');
 require('./morph-plg');

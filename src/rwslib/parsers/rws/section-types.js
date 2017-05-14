@@ -9,6 +9,7 @@ const sectionTypes = {
     RW_GEOMETRY: 0x0f,
     RW_CLUMP: 0x10,
     RW_ATOMIC: 0x14,
+    RW_TEXTURE_DICTIONARY: 0x16,
     RW_GEOMETRY_LIST: 0x1a,
     RW_FRAME: 0x0253f2fe,
 
