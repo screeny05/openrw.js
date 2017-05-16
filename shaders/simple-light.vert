@@ -2,6 +2,7 @@
 
 attribute vec3 vPosition;
 attribute vec4 vColor;
+attribute vec2 vUVCoords;
 
 uniform vec3 faceNormal;
 
@@ -11,6 +12,7 @@ uniform mat4 projectionMatrix;
 
 varying vec3 varVPosition;
 varying vec4 varVColor;
+varying vec2 varUVCoords;
 varying float varLightIntensity;
 
 vec3 lightDirectionVector = vec3(0.0, 1.0, -0.2);
@@ -24,6 +26,7 @@ void main(){
 
     varVPosition = vPosition;
     varVColor = vColor;
+    varUVCoords = vUVCoords;
     //varLightIntensity = map(lightAngle, 0.0, M_PI / 2.0, 0.5, 1.0);
     varLightIntensity = 0.7;
 

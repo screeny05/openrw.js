@@ -52,8 +52,8 @@ Corrode.addExtension('rwsTextureNative', function(){
     this.ext.rwsSection('section', sectionTypes.RW_DATA, function(header){
         this.vars.__name__ = 'rwsTextureNative';
 
-        let nextWidth = null;
-        let nextHeight = null;
+        let currentWidth = null;
+        let currentHeight = null;
 
         this
             .uint32('platformId')
@@ -71,7 +71,7 @@ Corrode.addExtension('rwsTextureNative', function(){
             .uint16('width')
             .uint16('height')
             .uint8('depth')
-            .uint8('countLevels')
+            .uint8('countMipLevels')
             .uint8('rasterType')
             .uint8('scanCompression')
 
@@ -95,11 +95,11 @@ Corrode.addExtension('rwsTextureNative', function(){
                 }
 
                 // temporary variable for the next size
-                nextWidth = this.vars.width;
-                nextHeight = this.vars.height;
+                currentWidth = this.vars.width;
+                currentHeight = this.vars.height;
             })
 
-            .repeat('mip', 'countLevels', function(){
+            .repeat('mipLevels', 'countMipLevels', function(){
                 this.uint32('size');
 
                 this.tap(function(){
@@ -108,14 +108,14 @@ Corrode.addExtension('rwsTextureNative', function(){
                     }
 
                     if(this.varStack.peek().usesPalette){
-                        this.vars.size = nextHeight * nextHeight;
+                        this.vars.size = currentHeight * currentHeight;
 
                         if(this.varStack.peek().flags.palette4){
                             this.vars.size /= 2;
                         }
                     } else if(this.varStack.peek().scanCompression !== compression.none) {
-                        let ttw = nextHeight;
-                        let tth = nextHeight;
+                        let ttw = currentHeight;
+                        let tth = currentHeight;
                         if(ttw < 4){
                             ttw = 4;
                         }
@@ -133,7 +133,7 @@ Corrode.addExtension('rwsTextureNative', function(){
                     if(this.varStack.peek().flags.palette8){
                         const data = this.vars.data;
                         const palette = this.varStack.peek().palette;
-                        const rgbaBuffer = Buffer.allocUnsafe(nextWidth * nextHeight * 4);
+                        const rgbaBuffer = Buffer.allocUnsafe(currentWidth * currentHeight * 4);
 
                         for(var i = 0; i < this.vars.size; i++){
                             palette.copy(rgbaBuffer, i * 4, data[i] * 4, data[i] * 4 + 4);
@@ -141,10 +141,14 @@ Corrode.addExtension('rwsTextureNative', function(){
                         this.vars.data = rgbaBuffer;
                     }
 
-                    nextHeight /= 2;
-                    nextHeight /= 2;
+                    currentHeight /= 2;
+                    currentHeight /= 2;
                 })
-            });
+
+                .map.push('data');
+            })
+
+            .ext.rwsSection('extension', sectionTypes.RW_EXTENSION);
     }).map.push('section');
 });
 

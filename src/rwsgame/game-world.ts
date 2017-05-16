@@ -4,6 +4,8 @@ import DffGeometry from '../rwsengine/dff-geometry';
 import Geometry from '../rwsengine/geometry';
 import Face3 from '../rwsengine/face3';
 
+import TxdTexture from '../rwsengine/txd-texture';
+
 import { IdeEntryObjs } from '../rwslib/loaders/ide';
 import { IplEntryInst } from '../rwslib/loaders/ipl';
 
@@ -21,17 +23,9 @@ export default class GameWorld {
     }
 
     async init(){
-        //this.addPlane();
-        //await this.createInstance('data/maps/industne/industne', 530);
-        await this.loadMap('data/maps/comse/comse');
-        await this.loadMap('data/maps/comsw/comsw');
-    }
-
-    addPlane(){
-        const plane = new Geometry(this.gl);
-        plane.addFaceFromVertices(vec3.fromValues(10, 0, 10), vec3.fromValues(10, 0, 0), vec3.fromValues(0, 0, 0));
-        plane.addFaceFromVertices(vec3.fromValues(0, 0, 0), vec3.fromValues(0, 0, 10), vec3.fromValues(10, 0, 10));
-        this.geometries.push(plane);
+        await this.createInstance('data/maps/industne/industne', 530);
+        //await this.loadMap('data/maps/comse/comse');
+        //await this.loadMap('data/maps/comsw/comsw');
     }
 
     async loadMap(definition: string){
@@ -61,8 +55,10 @@ export default class GameWorld {
             console.warn(`GameWorld: OBJS and INST differ in modelName. Using INST.\nOBJS: ${obj.modelName}\nINST: ${inst.modelName}`);
         }
 
+        const rwsTxd = await this.data.loadRWSFromImg('models/gta3.img', `${obj.txdName}.txd`);
         const rwsClump = await this.data.loadRWSFromImg('models/gta3.img', `${inst.modelName}.dff`);
-        const geometry = DffGeometry.loadFromIpl(this.gl, inst, rwsClump[0], inst.modelName);
+        const textures = TxdTexture.loadFromRwsTxd(this.gl, rwsTxd[0], obj.txdName);
+        const geometry = DffGeometry.loadFromIpl(this.gl, inst, rwsClump[0], inst.modelName, textures);
 
         return geometry;
     }

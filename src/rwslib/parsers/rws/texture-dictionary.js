@@ -29,7 +29,7 @@ Corrode.addExtension('rwsTextureDictionary', function(){
         this.repeat('textures', 'countTextures', function(){
             this
                 .ext.rwsSection('texture', sectionTypes.RW_TEXTURE_NATIVE)
-                .ext.rwsSection('extension', sectionTypes.RW_EXTENSION);
+                .map.push('texture');
         });
     }).map.push('section');
 });

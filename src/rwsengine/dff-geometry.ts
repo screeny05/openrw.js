@@ -1,6 +1,8 @@
 import Geometry from './geometry';
 import Face3 from './face3';
 
+import TxdTexture from './txd-texture';
+
 import RWSFrame from '../rwslib/types/rws/frame';
 import RWSAtomic from '../rwslib/types/rws/atomic';
 
@@ -15,8 +17,6 @@ import { vec3, mat4, quat } from 'gl-matrix';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const config = require('../../config.json');
-
 export default class DffGeometry extends Geometry {
     frameIndex: number;
     geometryIndex: number;
@@ -27,7 +27,7 @@ export default class DffGeometry extends Geometry {
         super(gl);
     }
 
-    static loadFromIpl(gl: WebGLRenderingContext, inst: IplEntryInst, rwsClump: any, name: string){
+    static loadFromIpl(gl: WebGLRenderingContext, inst: IplEntryInst, rwsClump: any, name: string, textures: Array<TxdTexture>){
         const geometry = new DffGeometry(gl);
 
         const frames: Array<DffGeometry> = [];
@@ -38,6 +38,8 @@ export default class DffGeometry extends Geometry {
 
         geometry.addChildren(rootGeometries);
 
+        rootGeometries[0].textures = textures;
+
         geometry.position = inst.position;
         geometry.rotation = inst.rotation;
         geometry.scaling = inst.scale;
@@ -47,28 +49,6 @@ export default class DffGeometry extends Geometry {
         geometry.debug();
 
         return geometry;
-    }
-
-    static loadFromDff(gl: WebGLRenderingContext, dffPath: string, callback: Function){
-        const parser = new Corrode();
-        const filePath = path.join(config.paths.base, dffPath);
-        const fileStream = fs.createReadStream(filePath);
-
-        parser.ext.rws('rws').map.push('rws');
-
-        fileStream.pipe(parser);
-
-        parser.on('finish', function(){
-            const frames: Array<DffGeometry> = [];
-
-            parser.vars.forEach(rwsClump => {
-                const rwsClumpFrames: Array<DffGeometry> = [];
-                rwsClump.frameList.frames.forEach((rwsFrame, i) => rwsClumpFrames.push(DffGeometry.loadFromRwsFrame(gl, rwsClump, rwsFrame, i)));
-                DffGeometry.setChildRelations(rwsClump, rwsClumpFrames);
-                frames.push(...rwsClumpFrames);
-            });
-            callback(frames);
-        });
     }
 
     static setChildRelations(rwsClump, dffGeometries: Array<DffGeometry>){
@@ -101,36 +81,20 @@ export default class DffGeometry extends Geometry {
             const { vertices, normals } = morphTarget;
             const triangles = rwsGeometry.triangles;
 
+            geometry.uvCoordinates = rwsGeometry.textureCoordinates;
+
             geometry.vertices = vertices;
 
+            if(rwsGeometry.flags.prelit){
+                geometry.vertexColors = rwsGeometry.colors;
+            }
+
+            if(rwsGeometry.flags.hasNormals){
+                geometry.vertexNormals = normals;
+            }
+
             triangles.forEach(triangle => {
-                const a = geometry.vertices[triangle.vertex1];
-                const b = geometry.vertices[triangle.vertex2];
-                const c = geometry.vertices[triangle.vertex3];
-
-                const faceNormal = vec3.create();
-                const productBA = vec3.create();
-                const productCA = vec3.create();
-
-                vec3.subtract(productBA, b, a);
-                vec3.subtract(productCA, c, a);
-                vec3.cross(faceNormal, productBA, productCA);
-                vec3.normalize(faceNormal, faceNormal);
-
-
-                const face = new Face3(triangle.vertex1, triangle.vertex2, triangle.vertex3, faceNormal);
-
-                if(rwsGeometry.flags.prelit){
-                    face.aColor = rwsGeometry.colors[triangle.vertex1];
-                    face.bColor = rwsGeometry.colors[triangle.vertex2];
-                    face.cColor = rwsGeometry.colors[triangle.vertex3];
-                }
-
-                if(rwsGeometry.flags.hasNormals){
-                    face.aNormal = normals[triangle.vertex1];
-                    face.bNormal = normals[triangle.vertex2];
-                    face.cNormal = normals[triangle.vertex3];
-                }
+                const face = new Face3(triangle.vertex1, triangle.vertex2, triangle.vertex3, triangle.materialId);
 
                 geometry.faces.push(face);
             });

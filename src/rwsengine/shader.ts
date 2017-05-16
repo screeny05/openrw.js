@@ -1,12 +1,16 @@
 import * as glslify from 'glslify';
 
+export interface ShaderLocations {
+    [name: string]: string;
+}
+
 export default class Shader {
     gl: WebGLRenderingContext;
 
     vertexSrc: string;
     fragmentSrc: string
 
-    locations: any;
+    locations: ShaderLocations;
     pointers: any = {};
 
     vertexShader: WebGLShader;
@@ -14,7 +18,7 @@ export default class Shader {
 
     program: WebGLProgram;
 
-    constructor(gl: WebGLRenderingContext, vertexSrc: string, fragmentSrc: string, locations: object){
+    constructor(gl: WebGLRenderingContext, vertexSrc: string, fragmentSrc: string, locations: ShaderLocations){
         this.gl = gl;
         this.vertexSrc = glslify(vertexSrc);
         this.fragmentSrc = glslify(fragmentSrc);
@@ -38,7 +42,9 @@ export default class Shader {
 
     getLocations(){
         Object.keys(this.locations).forEach(key => {
-            const locationType: string = this.locations[key];
+            let locationType: string = this.locations[key];
+
+
             let location;
 
             if(locationType === 'attribute'){

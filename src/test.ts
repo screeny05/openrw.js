@@ -13,8 +13,8 @@ const filePath = path.join(config.root, config.paths.gxt, config.language + '.gx
 parser
     .ext.rws('rws')
     .map.push('rws');
-//const filePath = path.join(config.root, 'asuka.dff');
-const filePath = path.join(config.rootPath, 'models/frontend.txd');
+const filePath = path.join(config.rootPath, 'asuka.dff');
+//const filePath = path.join(config.rootPath, 'models/frontend.txd');
 // test dir read
 /*parser
     .ext.dir('dir')
