@@ -30,9 +30,10 @@ parser.on('finish', () => {
     fstream2.pipe(parser2);
     parser2.on('finish', () => { fs.writeFileSync(path.join(config.root,'asuka.dff'),parser2.vars.img)});
 });*/
-parser.debug();
 var fstream = fs.createReadStream(filePath);
 fstream.pipe(parser);
+parser.debug();
 parser.on('finish', function () {
+    //console.log(JSON.stringify(parser.vars));
     //console.log(parser.vars[0].data.frameList);
 });

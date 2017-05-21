@@ -2,117 +2,89 @@ import Object3D from './object3d';
 import Face3 from './face3';
 import Sphere from './sphere';
 
-import TxdTexture from './txd-texture';
+import { vec4, vec3, vec2 } from 'gl-matrix';
 
-import { vec3, vec2 } from 'gl-matrix';
-
-export default class Geometry extends Object3D {
+export default class Geometry {
     faces: Array<Face3> = [];
+
     vertices: Array<vec3> = [];
-    vertexColors: Array<any> = [];
+    vertexColors: Array<Uint8Array[4]> = [];
     vertexNormals: Array<vec3> = [];
-    uvCoordinates: Array<any> = [];
+    uvCoordinates: Array<Array<vec2>> = [];
 
-    buffers: Array<any> = [];
-
+    vertexBuffer: WebGLBuffer;
     colorBuffer: WebGLBuffer;
     uvBuffer: WebGLBuffer;
-    vertexBuffer: WebGLBuffer;
-    indexBuffer: WebGLBuffer;
+    indicesPerMaterialBuffer: Array<WebGLBuffer>;
 
     boundingSphere: Sphere;
 
-    children: Array<Geometry> = [];
-
     gl: WebGLRenderingContext;
 
-    doRender: boolean = true;
-
-    textures: Array<TxdTexture> = [];
-
     constructor(gl: WebGLRenderingContext){
-        super();
-
         this.gl = gl;
     }
 
-    updateBuffer(){
-        //this.buffers = this.faces.map(face => this.updateFaceBuffer(face));
-        this.updateElementBuffer();
-    }
-
-    updateFaceBuffer(face: Face3): WebGLBuffer {
-        const buffer = this.gl.createBuffer();
-
-        if(!buffer){
-            throw new Error('Geometry: Couldn\'t create buffer.');
-        }
-
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-
-        const a = this.vertices[face.a];
-        const b = this.vertices[face.b];
-        const c = this.vertices[face.c];
-
-        const vertices = [
-            a[0], a[1], a[2],
-            b[0], b[1], b[2],
-            c[0], c[1], c[2],
-        ];
-
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
-
-        return buffer;
-    }
-
-    updateElementBuffer() {
+    updateBuffer() {
         const vertexBuffer = this.gl.createBuffer();
-        const indexBuffer = this.gl.createBuffer();
         const colorBuffer = this.gl.createBuffer();
         const uvBuffer = this.gl.createBuffer();
 
-        if(!indexBuffer || !vertexBuffer || !colorBuffer || !uvBuffer){
+        if(!vertexBuffer || !colorBuffer || !uvBuffer){
             throw new Error('Geometry: Couldn\'t create buffer.');
         }
 
         this.vertexBuffer = vertexBuffer;
-        this.indexBuffer = indexBuffer;
         this.colorBuffer = colorBuffer;
         this.uvBuffer = uvBuffer;
 
         const vertices: Array<number> = [];
-        const indices: Array<number> = [];
         const colors: Array<number> = [];
-        const uvCoordinates: Array<number> = [];
+        const uvCoordinates0: Array<number> = [];
+
+        const indicesPerMaterial: Array<Array<number>> = [];
+
+        this.faces.forEach(face => {
+            let materialIndices: Array<number> = indicesPerMaterial[face.materialIndex];
+            if(!materialIndices){
+                indicesPerMaterial[face.materialIndex] = materialIndices = [];
+            }
+
+            materialIndices.push(face.a, face.b, face.c);
+        });
+
 
         this.vertices.forEach(vertex => vertices.push(vertex[0], vertex[1], vertex[2]));
 
-        this.faces.forEach(face => {
-            indices.push(face.a, face.b, face.c);
-        });
+        this.vertexColors.forEach(color => colors.push(color[0], color[1], color[2], color[3]));
 
-        this.vertexColors.forEach(color => {
-            colors.push(color.r / 255, color.g / 255, color.b / 255, color.a / 255);
-        });
+        this.uvCoordinates[0].forEach(coordinate => uvCoordinates0.push(coordinate[0], coordinate[1]));
 
-        this.uvCoordinates.forEach(coordinate => {
-            uvCoordinates.push(coordinate.u, coordinate.v);
-        });
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(colors), this.gl.STATIC_DRAW);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Uint8Array(colors), this.gl.STATIC_DRAW);
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.uvBuffer);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(uvCoordinates), this.gl.STATIC_DRAW);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(uvCoordinates0), this.gl.STATIC_DRAW);
 
-        this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-        this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this.gl.STATIC_DRAW);
+        this.indicesPerMaterialBuffer = indicesPerMaterial.map(materialIndices => {
+            const materialIndicesBuffer = this.gl.createBuffer();
+
+            if(!materialIndicesBuffer){
+                throw new Error(`Geometry: Couldn\'t create materialIndicesBuffer.`);
+            }
+
+            this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, materialIndicesBuffer);
+            this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(materialIndices), this.gl.STATIC_DRAW);
+
+            return materialIndicesBuffer;
+        });
     }
 
     get [Symbol.toStringTag](){
-        return `Geometry ${this.name} (${this.faces.length} faces)`;
+        return `Geometry (${this.faces.length} faces)`;
     }
 }

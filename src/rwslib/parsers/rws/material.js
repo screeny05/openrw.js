@@ -30,7 +30,7 @@ Corrode.addExtension('rwsMaterial', function(){
         });
 
         this.tap(function(){
-            this.vars.hasAlpha = this.vars.color.a < 255 || (this.vars.texture && !!this.vars.texture.maskName);
+            this.vars.hasAlpha = this.vars.color[3] < 255 || (this.vars.texture && !!this.vars.texture.maskName);
         });
 
         this.ext.rwsSection('extension', sectionTypes.RW_EXTENSION);

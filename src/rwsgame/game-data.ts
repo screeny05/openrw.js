@@ -114,25 +114,25 @@ export default class GameData {
         this.gxtIndex = gxtIndex;
     }
 
-    async loadRWSFromFile(path: string){
+    async loadRWSFromFile(path: string, expectedSectionType?: number, expectedSectionCount?: number){
         const rwsStream = this.fileIndex.getFileStream(path);
-        const rws = await this.loadRWSFromStream(rwsStream);
+        const rws = await this.loadRWSFromStream(rwsStream, expectedSectionType, expectedSectionCount);
 
         this.rwsIndex.set(path, rws);
         return rws;
     }
 
-    async loadRWSFromImg(img: ImgIndex|string, name: string){
+    async loadRWSFromImg(img: ImgIndex|string, name: string, expectedSectionType?: number, expectedSectionCount?: number){
         img = this.getImg(img);
-        const rws = await this.loadRWSFromStream(img.getImgStreamByName(name));
+        const rws = await this.loadRWSFromStream(img.getImgStreamByName(name), expectedSectionType, expectedSectionCount);
 
         this.rwsIndex.set(name, rws);
         return rws;
     }
 
-    async loadRWSFromStream(rwsStream: fs.ReadStream){
+    async loadRWSFromStream(rwsStream: fs.ReadStream, expectedSectionType?: number, expectedSectionCount?: number){
         const rwsParser = new Corrode();
-        rwsParser.ext.rws('rws').map.push('rws');
+        rwsParser.ext.rws('rws', expectedSectionType, expectedSectionCount).map.push('rws');
 
         rwsStream.pipe(rwsParser);
         return await rwsParser.asPromised();
@@ -145,7 +145,7 @@ export default class GameData {
 
         const foundImg = this.imgIndices.get(img);
         if(!foundImg){
-            throw new ReferenceError(`GameData: No IMG with name ${img} fround.`);
+            throw new ReferenceError(`GameData: No IMG with name ${img} found.`);
         }
 
         return foundImg;

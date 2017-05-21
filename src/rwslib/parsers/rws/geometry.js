@@ -30,9 +30,9 @@ Corrode.addExtension('rwsGeometry', function(header){
 
         if(header.version.version < SURFACE_PROPERTIES_VERSION){
             this
-                .int32('surfaceAmbient')
-                .int32('surfaceSpecular')
-                .int32('surfaceDiffuse');
+                .float('surfaceAmbient')
+                .float('surfaceSpecular')
+                .float('surfaceDiffuse');
         }
 
         this.tap(function(){
@@ -56,7 +56,7 @@ Corrode.addExtension('rwsGeometry', function(header){
                     this
                         .ext.tcolor('color')
                         .tap(function(){
-                            if(this.vars.color.a < 255){
+                            if(this.vars.color[3] < 255){
                                 hasAlpha = true;
                             }
                         })
@@ -66,21 +66,14 @@ Corrode.addExtension('rwsGeometry', function(header){
                 });
             }
 
-            this.repeat(this.vars.countTextureCoordinates, function(end, discard, i){
+            this.repeat('textureCoordinates', this.vars.countTextureCoordinates, function(){
                 this
-                    .repeat('coordinates', this.vars.countVertices, function(){
+                    .repeat('coordinates', this.varStack.peek().countVertices, function(){
                         this
-                            .float('u')
-                            .float('v');
+                            .ext.tvector2('uv')
+                            .map.push('uv');
                     })
-                    .tap(function(){
-                        if(i === 0){
-                            this.vars.textureCoordinates = this.vars.coordinates;
-                        } else if(i === 1){
-                            this.vars.secondTextureCoordinates = this.vars.coordinates;
-                        }
-                        delete this.vars.coordinates;
-                    });
+                    .map.push('coordinates');
             });
 
             this.repeat('triangles', this.vars.countTriangles, function(){

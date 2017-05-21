@@ -1,21 +1,22 @@
 import Object3D from './object3d';
 import Geometry from './geometry';
-import Texture from './texture';
+import Material from './materials/material';
 
 import { IdeEntryObjs } from '../rwslib/loaders/ide';
 import { IplEntryInst } from '../rwslib/loaders/ipl';
 
 export default class Mesh extends Object3D {
-    geometries: Array<Geometry> = [];
-    textures: Array<Texture> = [];
+    geometry: Geometry;
+    materials: Array<Material> = [];
 
-    constructor(){
+    id: any;
+    parentId: any;
+
+    children: Array<Mesh> = [];
+
+    constructor(name: string){
         super();
-    }
 
-    static fromIpl(instance: IplEntryInst, definition: IdeEntryObjs): Mesh {
-        const mesh = new Mesh();
-
-        return mesh;
+        this.name = name;
     }
 }

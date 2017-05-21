@@ -39,6 +39,9 @@ export default class NativeWindow {
 
         this.gl = this.document.getContext("webgl");
         this.Image = webgl.Image;
+
+        // hide gl from console.log
+        (<any>this.gl).inspect = (depth, options) => options.stylize('[object WebGLRenderingContext]', 'special');
     }
 
     getSize() {

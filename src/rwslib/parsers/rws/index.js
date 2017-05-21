@@ -20,14 +20,17 @@ require('./bin-mesh-plg');
 require('./morph-plg');
 require('./material-effects-plg');
 
-Corrode.addExtension('rws', function(dataCallback){
-    this
-        .loop('entries', function(end, discard, i){
-            this
-                .ext.rwsSection('section')
-                .map.push('section');
-            end();
-        })
-        .map.push('entries');
+Corrode.addExtension('rws', function(expectedSectionType, expectedSectionCount){
+    this.loop('entries', function(end, discard, i){
+        this
+            .ext.rwsSection('section', expectedSectionType)
+            .map.push('section');
+        end();
+    });
 
+    if(typeof expectedSectionCount !== 'undefined'){
+        this.assert.arrayLength('entries', expectedSectionCount);
+    }
+
+    this.map.push('entries');
 });

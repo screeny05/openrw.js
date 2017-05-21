@@ -1,31 +1,42 @@
 import GameData from './game-data';
+import GameObjects from './game-objects';
+import GameState from './game-state';
 
-import DffGeometry from '../rwsengine/dff-geometry';
 import Geometry from '../rwsengine/geometry';
 import Face3 from '../rwsengine/face3';
 
-import TxdTexture from '../rwsengine/txd-texture';
+import Texture from '../rwsengine/texture';
+
+import Mesh from '../rwsengine/mesh';
 
 import { IdeEntryObjs } from '../rwslib/loaders/ide';
 import { IplEntryInst } from '../rwslib/loaders/ipl';
+import * as RwsSectionTypes from '../rwslib/parsers/rws/section-types';
 
 import { vec3 } from 'gl-matrix';
 
 export default class GameWorld {
     data: GameData;
+    objects: GameObjects;
+    state: GameState;
+
     gl: WebGLRenderingContext;
 
-    geometries: Array<Geometry> = [];
+    meshes: Array<Mesh> = [];
+
 
     constructor(data: GameData, gl: WebGLRenderingContext){
         this.data = data;
         this.gl = gl;
+
+        this.objects = new GameObjects(this.data, this.gl);
+        this.state = new GameState();
     }
 
     async init(){
-        await this.createInstance('data/maps/industne/industne', 530);
+        //await this.createInstance('data/maps/industne/industne', 530);
         //await this.loadMap('data/maps/comse/comse');
-        //await this.loadMap('data/maps/comsw/comsw');
+        await this.loadMap('data/maps/comsw/comsw');
     }
 
     async loadMap(definition: string){
@@ -44,23 +55,10 @@ export default class GameWorld {
                 return;
             }
 
-            tasks.push(this.createInstInstance(inst, obj));
+            tasks.push(this.objects.loadMesh(obj, inst));
         });
 
-        this.geometries.push(...(await Promise.all(tasks)));
-    }
-
-    async createInstInstance(inst: IplEntryInst, obj: IdeEntryObjs): Promise<DffGeometry> {
-        if(obj.modelName !== inst.modelName){
-            console.warn(`GameWorld: OBJS and INST differ in modelName. Using INST.\nOBJS: ${obj.modelName}\nINST: ${inst.modelName}`);
-        }
-
-        const rwsTxd = await this.data.loadRWSFromImg('models/gta3.img', `${obj.txdName}.txd`);
-        const rwsClump = await this.data.loadRWSFromImg('models/gta3.img', `${inst.modelName}.dff`);
-        const textures = TxdTexture.loadFromRwsTxd(this.gl, rwsTxd[0], obj.txdName);
-        const geometry = DffGeometry.loadFromIpl(this.gl, inst, rwsClump[0], inst.modelName, textures);
-
-        return geometry;
+        this.meshes.push(...(await Promise.all(tasks)));
     }
 
     async createInstance(definition: string, objectId: number){
@@ -78,13 +76,14 @@ export default class GameWorld {
             throw new ReferenceError(`GameWorld: cannot find objs/inst with id ${objectId}`);
         }
 
-        const geometry = await this.createInstInstance(inst, obj);
-        geometry.position[0]=0;
-        geometry.position[1]=0;
-        geometry.position[2]=0;
-        geometry.updateTransform();
+        const mesh = await this.objects.loadMesh(obj, inst);
 
-        this.geometries.push(geometry);
+        mesh.position[0]=0;
+        mesh.position[1]=0;
+        mesh.position[2]=0;
+        mesh.updateTransform();
+
+        this.meshes.push(mesh);
     }
 
     async loadIPL(path: string){

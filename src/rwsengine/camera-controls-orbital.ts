@@ -7,8 +7,8 @@ export default class CameraControlsOrbital {
     input: Input;
     camera: Camera;
 
-    forwardSpeed: number = 200;
-    sidewardSpeed: number = 100;
+    forwardSpeed: number = 20;
+    sidewardSpeed: number = 10;
 
     constructor(input: Input, camera: Camera){
         this.input = input;

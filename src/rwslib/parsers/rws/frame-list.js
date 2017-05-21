@@ -15,6 +15,7 @@ Corrode.addExtension('rwsFrameList', function(){
                     .int32('parentFrameId')
                     .skip(4)
             })
+            // @TODO move extension into its respective frame
             .repeat('extensions', 'countFrames', function(){
                 this
                     .ext.rwsSection('section', sectionTypes.RW_EXTENSION)

@@ -3,36 +3,19 @@ const Buffer = require('buffer').Buffer;
 
 const sectionTypes = require('./section-types');
 
-const filterMode = {
-    none: 0,
-    nearest: 1,
-    linear: 2,
-    mipNearest: 3,
-    mipLinear: 4,
-    linearMipNearest: 5,
-    linearMipLinear: 6
-};
-
-const addressMode = {
-    none: 0,
-    repeat: 1,
-    mirror: 2,
-    clamp: 3
-};
-
 const rasterFlags = {
-    default: 0x0000,
-    format1555: 0x0100,
-    format565: 0x0200,
-    format4444: 0x0300,
-    formatLum8: 0x0400,
-    format8888: 0x0500,
-    format888: 0x0600,
+    DEFAULT: 0x0000,
+    FORMAT_1555: 0x0100,
+    FORMAT_565: 0x0200,
+    FORMAT_4444: 0x0300,
+    FORMAT_LUM_8: 0x0400,
+    FORMAT_8888: 0x0500,
+    FORMAT_888: 0x0600,
 
-    autoMipmap: 0x1000,
-    palette8: 0x2000,
-    palette4: 0x4000,
-    mipmapped: 0x8000
+    AUTO_MIPMAP: 0x1000,
+    PALETTE_8: 0x2000,
+    PALETTE_4: 0x4000,
+    MIPMAPPED: 0x8000
 };
 
 const compression = {
@@ -44,7 +27,7 @@ const compression = {
 const platformIds = {
     pc3VC: 8,
     pcSA: 9,
-    ps2: 'PS2\0',
+    ps2: 0x50533200,
     xbox: 5
 };
 
@@ -83,11 +66,11 @@ Corrode.addExtension('rwsTextureNative', function(){
                 this.vars.uAddressing = this.vars.uvAddressing & 0x0f;
                 this.vars.vAddressing = this.vars.uvAddressing >> 4;
 
-                this.vars.usesPalette = this.vars.flags.palette8 || this.vars.flags.palette4;
+                this.vars.usesPalette = this.vars.flags.PALETTE_8 || this.vars.flags.PALETTE_4;
 
                 if(this.vars.usesPalette){
                     let paletteSize = 1024;
-                    if(this.vars.flags.palette4){
+                    if(this.vars.flags.PALETTE_4){
                         paletteSize = 64;
                     }
 
@@ -110,7 +93,7 @@ Corrode.addExtension('rwsTextureNative', function(){
                     if(this.varStack.peek().usesPalette){
                         this.vars.size = currentHeight * currentHeight;
 
-                        if(this.varStack.peek().flags.palette4){
+                        if(this.varStack.peek().flags.PALETTE_4){
                             this.vars.size /= 2;
                         }
                     } else if(this.varStack.peek().scanCompression !== compression.none) {
@@ -130,7 +113,7 @@ Corrode.addExtension('rwsTextureNative', function(){
                 .buffer('data', 'size')
 
                 .tap(function(){
-                    if(this.varStack.peek().flags.palette8){
+                    if(this.varStack.peek().flags.PALETTE_8){
                         const data = this.vars.data;
                         const palette = this.varStack.peek().palette;
                         const rgbaBuffer = Buffer.allocUnsafe(currentWidth * currentHeight * 4);
@@ -151,27 +134,3 @@ Corrode.addExtension('rwsTextureNative', function(){
             .ext.rwsSection('extension', sectionTypes.RW_EXTENSION);
     }).map.push('section');
 });
-
-const debugPPM = (width, height, rgbaBuffer) => {
-    let ppm = `P3\n${width} ${height}\n255\n`;
-
-    for (var i = 0; i < rgbaBuffer.length / 4; i++) {
-        let r = rgbaBuffer[i * 4 + 0];
-        let g = rgbaBuffer[i * 4 + 1];
-        let b = rgbaBuffer[i * 4 + 2];
-        const a = rgbaBuffer[i * 4 + 3] / 255;
-
-        r = r + ((1 - a) * 255);
-        b = b + ((1 - a) * 255);
-
-        if(a === 0){
-            r = 255;
-            g = 0;
-            b = 255;
-        }
-
-        ppm += r + ' ' + g + ' ' + b + '\n';
-    }
-
-    require('fs').writeFileSync(`txd-${width}.ppm`, ppm, 'utf8');
-};
