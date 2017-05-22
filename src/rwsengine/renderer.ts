@@ -101,9 +101,11 @@ export default class Renderer {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.uvBuffer);
         this.gl.vertexAttribPointer(vertexUvAttribute, 2, this.gl.FLOAT, false, 0, 0);
 
-        this.gl.activeTexture(this.gl.TEXTURE0);
-        this.gl.bindTexture(this.gl.TEXTURE_2D, material.texture.glTexture);
-        this.gl.uniform1i(samplerUniform, 0);
+        if(material.texture){
+            this.gl.activeTexture(this.gl.TEXTURE0);
+            this.gl.bindTexture(this.gl.TEXTURE_2D, material.texture.glTexture);
+            this.gl.uniform1i(samplerUniform, 0);
+        }
 
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, materialIndicesBuffer);
         this.gl.drawElements(drawingMode, geometry.faces.length, this.gl.UNSIGNED_SHORT, 0);

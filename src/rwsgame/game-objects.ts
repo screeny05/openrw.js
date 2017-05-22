@@ -85,11 +85,8 @@ export default class GameObjects {
         }
 
 
-        // TODO fix this
-        console.log(name)
         if(name === 'generic.txd'){
-            resource = await this.data.loadRWSFromFile('models/generic.txd', expectedRwsSectionType, 1)[0]
-            console.log('fromfile', resource)
+            resource = (await this.data.loadRWSFromFile('models/generic.txd', expectedRwsSectionType, 1))[0]
         } else {
             resource = (await this.data.loadRWSFromImg('models/gta3.img', name, expectedRwsSectionType, 1))[0];
         }
@@ -196,7 +193,7 @@ export default class GameObjects {
                 const rwsTextureNative = rwsTxd.textures.find(rwsTextureNative => rwsTextureNative.name === rwsMaterial.texture.name);
 
                 if(!rwsTextureNative){
-                    throw new Error(`GameObject: cannot find rwsTextureNative '${rwsMaterial.texture.name}' in given txd.`);
+                    console.warn(`GameObject: cannot find rwsTextureNative '${rwsMaterial.texture.name}' in given txd.`);
                 }
 
                 const texture: Texture = this.loadTextureFromRwsTexture(rwsTextureNative);
@@ -222,8 +219,15 @@ export default class GameObjects {
         return materials;
     }
 
-    loadTextureFromRwsTexture(rwsTextureNative: RWSTextureNative): Texture {
+    loadTextureFromRwsTexture(rwsTextureNative: RWSTextureNative|undefined): Texture {
         const texture = new Texture(this.gl);
+
+        if(!rwsTextureNative){
+            this.gl.bindTexture(this.gl.TEXTURE_2D, texture.glTexture);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 2, 2, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.fallbackTexture);
+            this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+            return texture;
+        }
 
         let currentWidth = rwsTextureNative.width;
         let currentHeight = rwsTextureNative.height;
