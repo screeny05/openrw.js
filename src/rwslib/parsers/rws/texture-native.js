@@ -11,6 +11,7 @@ const rasterFlags = {
     FORMAT_LUM_8: 0x0400,
     FORMAT_8888: 0x0500,
     FORMAT_888: 0x0600,
+    FORMAT_555: 0x0A00,
 
     AUTO_MIPMAP: 0x1000,
     PALETTE_8: 0x2000,

@@ -27,8 +27,8 @@ export default class GameObjects {
     mapCompressionMode = {};
 
     fallbackTexture: Float32Array = new Float32Array([
-        0, 0, 0, 1,  0, 1, 1, 1,
-        0, 1, 1, 1,  0, 0, 0, 1,
+        0, 1, 0, 1,  1, 0, 1, 1,
+        1, 0, 1, 1,  0, 1, 0, 1,
     ]);
 
     clumpPool: Map<string, RWSClump> = new Map();
@@ -78,17 +78,16 @@ export default class GameObjects {
         this.mapCompressionMode[RWSTextureNativeCompression.DXT3] = ext.COMPRESSED_RGBA_S3TC_DXT3_EXT;*/
     }
 
-    async loadResourceFromPool(name: string, pool: Map<string, any>, expectedRwsSectionType: number): Promise<any> {
+    async loadResourceFromPool(name: string, pool: Map<string, any>, expectedRwsSectionType: number, fromImg: boolean = true): Promise<any> {
         let resource = pool.get(name);
         if(resource){
             return resource;
         }
 
-
-        if(name === 'generic.txd'){
-            resource = (await this.data.loadRWSFromFile('models/generic.txd', expectedRwsSectionType, 1))[0]
-        } else {
+        if(fromImg){
             resource = (await this.data.loadRWSFromImg('models/gta3.img', name, expectedRwsSectionType, 1))[0];
+        } else {
+            resource = (await this.data.loadRWSFromFile(name, expectedRwsSectionType, 1))[0];
         }
 
 
@@ -100,12 +99,12 @@ export default class GameObjects {
         return resource;
     }
 
-    async loadRwsTextureDictionary(name): Promise<RWSTextureDictionary> {
-        return await this.loadResourceFromPool(name, this.textureDictionaryPool, RWSSectionTypes.RW_TEXTURE_DICTIONARY);
+    async loadRwsTextureDictionary(name, fromImg: boolean = true): Promise<RWSTextureDictionary> {
+        return await this.loadResourceFromPool(name, this.textureDictionaryPool, RWSSectionTypes.RW_TEXTURE_DICTIONARY, fromImg);
     }
 
-    async loadRwsClump(name): Promise<RWSClump> {
-        return await this.loadResourceFromPool(name, this.textureDictionaryPool, RWSSectionTypes.RW_CLUMP);
+    async loadRwsClump(name, fromImg: boolean = true): Promise<RWSClump> {
+        return await this.loadResourceFromPool(name, this.textureDictionaryPool, RWSSectionTypes.RW_CLUMP, fromImg);
     }
 
 
@@ -198,7 +197,7 @@ export default class GameObjects {
 
                 const texture: Texture = this.loadTextureFromRwsTexture(rwsTextureNative);
 
-                //debugPPM(i + '__' + rwsTextureNative.name, rwsTextureNative.width, rwsTextureNative.height, rwsTextureNative.mipLevels[0]);
+//if(rwsTextureNative)debugPPM(i + '__' + rwsTextureNative.name, rwsTextureNative.width, rwsTextureNative.height, rwsTextureNative.mipLevels[0]);
 
                 material.texture = texture;
             }
@@ -211,7 +210,7 @@ export default class GameObjects {
             if(rwsGeometry.surfaceSpecular){ material.specular = rwsGeometry.surfaceSpecular; }
             if(rwsGeometry.surfaceDiffuse){ material.diffuse = rwsGeometry.surfaceDiffuse; }
 
-            material.color = rwsMaterial.color;
+            material.color = new Float32Array([rwsMaterial.color[0] / 255, rwsMaterial.color[1] / 255, rwsMaterial.color[2] / 255, rwsMaterial.color[3] / 255]);
 
             return material;
         });
@@ -223,9 +222,7 @@ export default class GameObjects {
         const texture = new Texture(this.gl);
 
         if(!rwsTextureNative){
-            this.gl.bindTexture(this.gl.TEXTURE_2D, texture.glTexture);
-            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 2, 2, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.fallbackTexture);
-            this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+            this.bindErrorTexture(texture.glTexture);
             return texture;
         }
 
@@ -243,12 +240,48 @@ export default class GameObjects {
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.mapWrapMode[rwsTextureNative.uAddressing]);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.mapWrapMode[rwsTextureNative.vAddressing]);
 
+        const isFullColor = rwsTextureNative.flags.FORMAT_1555 || rwsTextureNative.flags.FORMAT_8888 || rwsTextureNative.flags.FORMAT_888;
+        const isTransparent = !rwsTextureNative.flags.FORMAT_888;
+
+        if(!rwsTextureNative.flags.PALETTE_8 && !isFullColor){
+            console.error(`Unsupported raster format ${JSON.stringify(rwsTextureNative.flags)}`);
+            this.bindErrorTexture(texture.glTexture);
+            return texture;
+        }
+
+        let type = this.gl.UNSIGNED_BYTE;
+        let format = this.gl.RGBA;
+
+        if(rwsTextureNative.flags.PALETTE_8){
+            // default
+
+        } else if(isFullColor) {
+
+            if(rwsTextureNative.flags.FORMAT_1555){
+                type = 0x8366;
+            } else if(rwsTextureNative.flags.FORMAT_8888){
+                format = 0x80E1;
+            } else if(rwsTextureNative.flags.FORMAT_888){
+                format = 0x80E1;
+            }
+        } else {
+            console.error(`Unsupported raster format ${JSON.stringify(rwsTextureNative.flags)}`);
+            this.bindErrorTexture(texture.glTexture);
+            return texture;
+        }
+
         rwsTextureNative.mipLevels.forEach((mipLevel, i) => {
-            this.gl.texImage2D(this.gl.TEXTURE_2D, i, this.gl.RGBA, currentWidth, currentHeight, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, mipLevel);
+            this.gl.texImage2D(this.gl.TEXTURE_2D, i, format, currentWidth, currentHeight, 0, format, type, mipLevel);
 
             currentWidth /= 2;
             currentHeight /= 2;
         });
+
+        this.gl.generateMipmap(this.gl.TEXTURE_2D);
+
+
+
+
 
         this.gl.bindTexture(this.gl.TEXTURE_2D, null);
 
@@ -267,6 +300,14 @@ export default class GameObjects {
                 meshes[i].addToParent(meshes[frame.parentFrameId]);
             }
         });
+    }
+
+    bindErrorTexture(glTexture: WebGLTexture){
+        this.gl.bindTexture(this.gl.TEXTURE_2D, glTexture);
+        this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 2, 2, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.fallbackTexture);
+        this.gl.generateMipmap(this.gl.TEXTURE_2D);
+
+        this.gl.bindTexture(this.gl.TEXTURE_2D, null);
     }
 }
 

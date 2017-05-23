@@ -16,6 +16,7 @@ export interface RWSTextureNativeRasterFlags {
     FORMAT_LUM_8: boolean;
     FORMAT_8888: boolean;
     FORMAT_888: boolean;
+    FORMAT_555: boolean;
 
     AUTO_MIPMAP: boolean;
     PALETTE_8: boolean;

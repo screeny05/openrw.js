@@ -34,9 +34,21 @@ export default class GameWorld {
     }
 
     async init(){
-        //await this.createInstance('data/maps/industne/industne', 530);
+        await this.initDefaultResources();
+        await this.createInstance('data/maps/industne/industne', 530);
         //await this.loadMap('data/maps/comse/comse');
-        await this.loadMap('data/maps/comsw/comsw');
+        //await this.loadMap('data/maps/comsw/comsw');
+    }
+
+    async initDefaultResources(){
+        console.time('txd-slots');
+        await this.objects.loadRwsTextureDictionary('icons.txd', true);
+        await this.objects.loadRwsTextureDictionary('models/particle.txd', false);
+        await this.objects.loadRwsTextureDictionary('models/hud.txd', false);
+        await this.objects.loadRwsTextureDictionary('models/fonts.txd', false);
+        await this.objects.loadRwsTextureDictionary('models/generic.txd', false);
+        await this.objects.loadRwsTextureDictionary('models/misc.txd', false);
+        console.timeEnd('txd-slots');
     }
 
     async loadMap(definition: string){

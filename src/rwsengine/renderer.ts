@@ -33,7 +33,9 @@ export default class Renderer {
             projectionMatrix: 'uniform',
             modelMatrix: 'uniform',
             viewMatrix: 'uniform',
-            uSampler: 'uniform'
+            uSampler: 'uniform',
+            materialColor: 'uniform',
+            isTextured: 'uniform'
         });
 
         this.init();
@@ -50,6 +52,8 @@ export default class Renderer {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.CULL_FACE);
         this.gl.enable(this.gl.TEXTURE_2D);
+        this.gl.enable(this.gl.BLEND);
+        this.gl.blendFuncSeparate(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ZERO);
 
         this.gl.uniformMatrix4fv(this.worldShader.pointers.viewMatrix, false, this.camera.getViewMatrix());
         this.gl.uniformMatrix4fv(this.worldShader.pointers.projectionMatrix, false, this.camera.projection);
@@ -78,7 +82,9 @@ export default class Renderer {
                     this.worldShader.pointers.vPosition,
                     this.worldShader.pointers.vColor,
                     this.worldShader.pointers.vUVCoords,
-                    this.worldShader.pointers.uSampler
+                    this.worldShader.pointers.uSampler,
+                    this.worldShader.pointers.materialColor,
+                    this.worldShader.pointers.isTextured
                 );
             });
         }
@@ -87,7 +93,7 @@ export default class Renderer {
         mesh.children.forEach(this.renderMesh);
     }
 
-    renderElementBuffer(geometry: Geometry, material: Material, materialIndicesBuffer: WebGLBuffer, vertexPositionAttribute, vertexColorAttribute, vertexUvAttribute, samplerUniform, drawingMode = this.gl.TRIANGLES){
+    renderElementBuffer(geometry: Geometry, material: Material, materialIndicesBuffer: WebGLBuffer, vertexPositionAttribute, vertexColorAttribute, vertexUvAttribute, samplerUniform, materialColorUniform, isTexturedUniform, drawingMode = this.gl.TRIANGLES){
         if(!geometry || !geometry.vertexBuffer){
             return;
         }
@@ -106,6 +112,9 @@ export default class Renderer {
             this.gl.bindTexture(this.gl.TEXTURE_2D, material.texture.glTexture);
             this.gl.uniform1i(samplerUniform, 0);
         }
+
+        this.gl.uniform4fv(materialColorUniform, material.color);
+        this.gl.uniform1i(isTexturedUniform, material.texture ? 1 : 0);
 
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, materialIndicesBuffer);
         this.gl.drawElements(drawingMode, geometry.faces.length, this.gl.UNSIGNED_SHORT, 0);
