@@ -19,6 +19,8 @@ export default class Renderer {
 
     worldShader: Shader;
 
+    cullingEnabled: boolean = false;
+
     constructor(window: NativeWindow, camera: Camera, world: GameWorld){
         this.window = window;
         this.gl = this.window.gl;
@@ -50,7 +52,6 @@ export default class Renderer {
         this.gl.viewport(0, 0, this.window.width, this.window.height);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
-        this.gl.enable(this.gl.CULL_FACE);
         this.gl.enable(this.gl.TEXTURE_2D);
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFuncSeparate(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ZERO);

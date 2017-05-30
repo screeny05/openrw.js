@@ -7,7 +7,7 @@ import { mat4, vec3, quat } from 'gl-matrix';
 // z as y and y as z
 export default class Camera {
     near: number = 0.1;
-    far: number = 2000;
+    far: number = 5000;
 
     fov: number;
     window: NativeWindow;

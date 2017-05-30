@@ -125,8 +125,8 @@ Corrode.addExtension('rwsTextureNative', function(){
                         this.vars.data = rgbaBuffer;
                     }
 
-                    currentHeight /= 2;
-                    currentHeight /= 2;
+                    currentHeight = currentHeight / 2;
+                    currentWidth = currentWidth / 2;
                 })
 
                 .map.push('data');

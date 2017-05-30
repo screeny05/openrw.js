@@ -1,7 +1,8 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "target": "es6",
+        "target": "ES2017",
+        "lib": ["DOM", "ES6", "DOM.Iterable"],
         "noImplicitAny": false,
         "rootDirs": ["src", "node_modules"],
         "typeRoots": ["node_modules/@types"],

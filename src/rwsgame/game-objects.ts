@@ -34,6 +34,9 @@ export default class GameObjects {
     clumpPool: Map<string, RWSClump> = new Map();
     textureDictionaryPool: Map<string, RWSTextureDictionary> = new Map();
 
+    texturePool: Map<string, Texture> = new Map();
+    geometryPool: Map<string, Geometry> = new Map();
+
     constructor(data: GameData, gl: WebGLRenderingContext){
         this.data = data;
         this.gl = gl;
@@ -43,14 +46,13 @@ export default class GameObjects {
 
     buildMappingLists(){
         // filtermodes
-        // TODO: mip mapping
         this.mapMinFilterMode[RWSTextureFilterMode.NONE] = this.gl.LINEAR;
         this.mapMinFilterMode[RWSTextureFilterMode.NEAREST] = this.gl.NEAREST;
         this.mapMinFilterMode[RWSTextureFilterMode.LINEAR] = this.gl.LINEAR;
-        this.mapMinFilterMode[RWSTextureFilterMode.MIP_NEAREST] = this.gl.NEAREST;
-        this.mapMinFilterMode[RWSTextureFilterMode.MIP_LINEAR] = this.gl.LINEAR;
-        this.mapMinFilterMode[RWSTextureFilterMode.LINEAR_MIP_NEAREST] = this.gl.NEAREST;
-        this.mapMinFilterMode[RWSTextureFilterMode.LINEAR_MIP_LINEAR] = this.gl.LINEAR;
+        this.mapMinFilterMode[RWSTextureFilterMode.MIP_NEAREST] = this.gl.NEAREST_MIPMAP_NEAREST;
+        this.mapMinFilterMode[RWSTextureFilterMode.MIP_LINEAR] = this.gl.NEAREST_MIPMAP_LINEAR;
+        this.mapMinFilterMode[RWSTextureFilterMode.LINEAR_MIP_NEAREST] = this.gl.LINEAR_MIPMAP_NEAREST;
+        this.mapMinFilterMode[RWSTextureFilterMode.LINEAR_MIP_LINEAR] = this.gl.LINEAR_MIPMAP_LINEAR;
 
         this.mapMagFilterMode[RWSTextureFilterMode.NONE] = this.gl.LINEAR;
         this.mapMagFilterMode[RWSTextureFilterMode.NEAREST] = this.gl.NEAREST;
@@ -88,6 +90,10 @@ export default class GameObjects {
             resource = (await this.data.loadRWSFromImg('models/gta3.img', name, expectedRwsSectionType, 1))[0];
         } else {
             resource = (await this.data.loadRWSFromFile(name, expectedRwsSectionType, 1))[0];
+
+            // filenames should be identified by their name, not their path
+            // TODO maybe improve this
+            name = <string>name.split('/').pop();
         }
 
 
@@ -185,6 +191,9 @@ export default class GameObjects {
     }
 
     loadMaterialsFromRwsGeometry(rwsGeometry: RWSGeometry, rwsTxd: RWSTextureDictionary): Array<Material> {
+        if(rwsGeometry.materialList.materialIndices.find(i => i !== -1)){
+        console.log('mat',rwsGeometry.materialList.materialIndices)}
+
         const materials: Array<Material> = rwsGeometry.materialList.materials.map((rwsMaterial, i) => {
             const material = new Material();
 
@@ -219,12 +228,20 @@ export default class GameObjects {
     }
 
     loadTextureFromRwsTexture(rwsTextureNative: RWSTextureNative|undefined): Texture {
-        const texture = new Texture(this.gl);
-
         if(!rwsTextureNative){
+            const texture = new Texture(this.gl);
             this.bindErrorTexture(texture.glTexture);
             return texture;
         }
+
+        const cachedTexture = this.texturePool.get(rwsTextureNative.name);
+
+        if(cachedTexture){
+            return cachedTexture;
+        }
+
+
+        const texture = new Texture(this.gl);
 
         let currentWidth = rwsTextureNative.width;
         let currentHeight = rwsTextureNative.height;
@@ -279,11 +296,9 @@ export default class GameObjects {
 
         this.gl.generateMipmap(this.gl.TEXTURE_2D);
 
-
-
-
-
         this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+
+        this.texturePool.set(rwsTextureNative.name, texture);
 
         return texture;
     }

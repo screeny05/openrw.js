@@ -35,9 +35,16 @@ export default class GameWorld {
 
     async init(){
         await this.initDefaultResources();
-        await this.createInstance('data/maps/industne/industne', 530);
+        //await this.createInstance('data/maps/industne/industne', 530);
         //await this.loadMap('data/maps/comse/comse');
         //await this.loadMap('data/maps/comsw/comsw');
+
+        console.time('map');
+await this.loadMap('data/maps/comse/comse');
+await this.loadMap('data/maps/comnbtm/comnbtm');
+await this.loadMap('data/maps/comsw/comsw');
+await this.loadMap('data/maps/comntop/comntop');
+        console.timeEnd('map');
     }
 
     async initDefaultResources(){

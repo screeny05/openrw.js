@@ -32,8 +32,8 @@ parser.on('finish', () => {
 });*/
 var fstream = fs.createReadStream(filePath);
 fstream.pipe(parser);
-parser.debug();
+//parser.debug();
 parser.on('finish', function () {
-    //console.log(JSON.stringify(parser.vars));
+    console.log(JSON.stringify(parser.vars));
     //console.log(parser.vars[0].data.frameList);
 });

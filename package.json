@@ -5,7 +5,10 @@
   "main": "dist/index.js",
   "bin": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc dist",
+    "run": "node --harmony_simd --abort-on-uncaught-exception dist",
+    "debug": "node --harmony_simd --inspect-brk dist",
+    "trace-deopt": "node --harmony_simd --trace-hydrogen --trace-phase=Z --trace-deopt --code-comments --hydrogen-track-positions --redirect-code-traces --redirect-code-traces-to=code.asm dist"
   },
   "author": "",
   "license": "MIT",
@@ -29,6 +32,7 @@
     "readdirp": "^2.1.0",
     "split2": "^2.1.1",
     "throttle-debounce": "^1.0.1",
+    "tsc": "^1.20150623.0",
     "webglew": "^1.0.5"
   },
   "devDependencies": {
