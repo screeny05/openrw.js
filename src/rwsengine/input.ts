@@ -1,6 +1,5 @@
 import { debounce } from 'throttle-debounce';
-import NativeWindow from './native-window';
-import * as GLFW from 'node-glfw';
+import { NativeWindow, rawGlfw } from 'node-gles3';
 
 export default class Input {
     kbdValues = {
@@ -44,19 +43,19 @@ export default class Input {
         this.window = window;
         this.registerEvents();
 
-        GLFW.SetInputMode(this.window.handle, GLFW.CURSOR, GLFW.CURSOR_DISABLED);
+        rawGlfw.setInputMode(this.window.handle, rawGlfw.CURSOR, rawGlfw.CURSOR_DISABLED);
     }
 
     registerEvents(){
-        this.window.on('keydown', this.onKey.bind(this, true), false);
-        this.window.on('keyup', this.onKey.bind(this, false), false);
-        this.window.on('mousedown', this.onMouse.bind(this, true), false);
-        this.window.on('mouseup', this.onMouse.bind(this, false), false);
+        this.window.on('keydown', this.onKey.bind(this, true));
+        this.window.on('keyup', this.onKey.bind(this, false));
+        this.window.on('mousedown', this.onMouse.bind(this, true));
+        this.window.on('mouseup', this.onMouse.bind(this, false));
     }
 
     onKey(isPressed, e){
-        const stateValueId = this.kbdValues[e.keyCode];
-        const stateToggleId = this.kbdToggles[e.keyCode];
+        const stateValueId = this.kbdValues[e.key];
+        const stateToggleId = this.kbdToggles[e.key];
 
         if(stateValueId){
             this.states[stateValueId] = isPressed ? 1 : 0;
@@ -80,14 +79,13 @@ export default class Input {
     }
 
     updateMouse(){
-        const mousePosition = GLFW.GetCursorPos(this.window.handle);
-        const windowSize = this.window.getSize();
-        const startMouseX = windowSize.width / 2;
-        const startMouseY = windowSize.height / 2;
+        const mousePosition = rawGlfw.getCursorPos(this.window.handle);
+        const startMouseX = this.window.width / 2;
+        const startMouseY = this.window.height / 2;
 
-        this.states.rotationX = (startMouseX - mousePosition.x) / windowSize.width;
-        this.states.rotationY = (startMouseY - mousePosition.y) / windowSize.height;
+        this.states.rotationX = (startMouseX - mousePosition.xpos) / this.window.width;
+        this.states.rotationY = (startMouseY - mousePosition.ypos) / this.window.height;
 
-        GLFW.SetCursorPos(this.window.handle, startMouseX, startMouseY);
+        rawGlfw.setCursorPos(this.window.handle, startMouseX, startMouseY);
     }
 }

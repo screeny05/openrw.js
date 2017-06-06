@@ -1,4 +1,4 @@
-import NativeWindow from './native-window';
+import { NativeWindow } from 'node-gles3';
 
 import { mat4, vec3, quat } from 'gl-matrix';
 

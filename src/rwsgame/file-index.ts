@@ -28,6 +28,7 @@ export default class FileIndex {
     }
 
     closeFileDescriptors(){
+        console.log(this.fileDescriptors);
         this.fileDescriptors.forEach(fd => fs.closeSync(fd));
     }
 

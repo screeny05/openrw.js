@@ -32,7 +32,7 @@ export default class Shader {
         this.gl.shaderSource(shader, source);
         this.gl.compileShader(shader);
 
-        if(!this.gl.getShaderParameter(shader, this.gl.COMPILE_STATUS) || !shader){
+        if(!this.gl.getShaderiv(shader, this.gl.COMPILE_STATUS) || !shader){
             console.error(`Error compiling ${type === this.gl.VERTEX_SHADER ? 'vertex' : 'fragment'} shader source.\n${this.gl.getShaderInfoLog(shader)}`);
             throw new Error();
         }
@@ -75,7 +75,7 @@ export default class Shader {
         this.gl.attachShader(this.program, this.fragmentShader);
         this.gl.linkProgram(this.program);
 
-        if(!this.gl.getProgramParameter(this.program, this.gl.LINK_STATUS)){
+        if(!this.gl.getProgramiv(this.program, this.gl.LINK_STATUS)){
             throw new Error(`Error compiling shader-program.\n${this.gl.getProgramInfoLog(this.program)}`);
         }
 

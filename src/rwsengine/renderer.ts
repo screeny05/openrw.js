@@ -1,6 +1,6 @@
 import Shader from './shader';
 import Camera from './camera';
-import NativeWindow from './native-window';
+import { NativeWindow } from 'node-gles3';
 
 import Geometry from './geometry';
 import Material from './materials/material';
@@ -49,7 +49,7 @@ export default class Renderer {
     }
 
     preRender(){
-        this.gl.viewport(0, 0, this.window.width, this.window.height);
+        this.gl.viewport(0, 0, this.window.fbWidth, this.window.fbHeight);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.TEXTURE_2D);

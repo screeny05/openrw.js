@@ -3,7 +3,7 @@ import GameData from './game-data';
 import GameWorld from './game-world';
 
 
-import NativeWindow from '../rwsengine/native-window';
+import { NativeWindow } from 'node-gles3';
 import Renderer from '../rwsengine/renderer';
 import Camera from '../rwsengine/camera';
 import CameraControlsOrbit from '../rwsengine/camera-controls-orbital';
@@ -26,6 +26,8 @@ export default class Game {
     lastTime: number = 0;
     framesCount: number = 0;
 
+    timeoutMeasureFps: NodeJS.Timer;
+
     constructor(config: Config){
         this.config = config;
 
@@ -40,11 +42,18 @@ export default class Game {
         this.camera = new Camera(Math.PI / 180 * 60, this.window);
         this.cameraControls = new CameraControlsOrbit(this.input, this.camera);
         this.renderer = new Renderer(this.window, this.camera, this.world);
+
+        this.window.on('close', this.onWindowClose);
     }
 
     async init(){
         await this.data.init();
         await this.world.init();
+    }
+
+    @Bind()
+    onWindowClose(){
+        clearTimeout(this.timeoutMeasureFps);
     }
 
     start(){
@@ -55,7 +64,7 @@ export default class Game {
 
     @Bind()
     tick(currentTime: number = 0){
-        const delta = (currentTime - this.lastTime) / 1000;
+        const delta = currentTime - this.lastTime;
         this.lastTime = currentTime;
         this.framesCount++;
 
@@ -65,7 +74,7 @@ export default class Game {
         this.renderer.render();
 
         if(this.isRunning){
-            this.window.requestAnimationFrame(this.tick);
+            this.window.requestFrame(this.tick);
         }
     }
 
@@ -73,6 +82,6 @@ export default class Game {
     measureFps(){
         console.log(`${this.framesCount}fps`);
         this.framesCount = 0;
-        setTimeout(this.measureFps, 1000);
+        this.timeoutMeasureFps = setTimeout(this.measureFps, 1000);
     }
 }

@@ -250,8 +250,9 @@ export default class GameObjects {
 
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture.glTexture);
 
-        this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 
+        // UNPACK_FLIP_Y_WEBGL not supported in gles
+        //this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.mapMagFilterMode[rwsTextureNative.filterMode]);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.mapMinFilterMode[rwsTextureNative.filterMode]);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.mapWrapMode[rwsTextureNative.uAddressing]);
