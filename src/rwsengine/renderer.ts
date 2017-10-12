@@ -11,7 +11,7 @@ import GameWorld from '../rwsgame/game-world';
 import { Bind } from 'lodash-decorators';
 
 export default class Renderer {
-    gl: WebGLRenderingContext;
+    gl: GLESRenderingContext;
     window: NativeWindow;
     camera: Camera;
 
@@ -37,7 +37,10 @@ export default class Renderer {
             viewMatrix: 'uniform',
             uSampler: 'uniform',
             materialColor: 'uniform',
-            isTextured: 'uniform'
+            isTextured: 'uniform',
+            ambient: 'uniform',
+            diffuse: 'uniform',
+            specular: 'uniform'
         });
 
         this.init();
@@ -54,7 +57,8 @@ export default class Renderer {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.TEXTURE_2D);
         this.gl.enable(this.gl.BLEND);
-        this.gl.blendFuncSeparate(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ZERO);
+        this.gl.blendEquation(this.gl.FUNC_ADD);
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
         this.gl.uniformMatrix4fv(this.worldShader.pointers.viewMatrix, false, this.camera.getViewMatrix());
         this.gl.uniformMatrix4fv(this.worldShader.pointers.projectionMatrix, false, this.camera.projection);
@@ -76,17 +80,7 @@ export default class Renderer {
 
         if(mesh.geometry){
             mesh.geometry.indicesPerMaterialBuffer.forEach((materialIndicesBuffer, i) => {
-                this.renderElementBuffer(
-                    mesh.geometry,
-                    mesh.materials[i],
-                    materialIndicesBuffer,
-                    this.worldShader.pointers.vPosition,
-                    this.worldShader.pointers.vColor,
-                    this.worldShader.pointers.vUVCoords,
-                    this.worldShader.pointers.uSampler,
-                    this.worldShader.pointers.materialColor,
-                    this.worldShader.pointers.isTextured
-                );
+                this.renderElementBuffer(mesh.geometry, mesh.materials[i], materialIndicesBuffer);
             });
         }
 
@@ -94,28 +88,32 @@ export default class Renderer {
         mesh.children.forEach(this.renderMesh);
     }
 
-    renderElementBuffer(geometry: Geometry, material: Material, materialIndicesBuffer: WebGLBuffer, vertexPositionAttribute, vertexColorAttribute, vertexUvAttribute, samplerUniform, materialColorUniform, isTexturedUniform, drawingMode = this.gl.TRIANGLES){
+    renderElementBuffer(geometry: Geometry, material: Material, materialIndicesBuffer: GLESBuffer, drawingMode = this.gl.TRIANGLES){
         if(!geometry || !geometry.vertexBuffer){
             return;
         }
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.vertexBuffer);
-        this.gl.vertexAttribPointer(vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
+        this.gl.vertexAttribPointer(this.worldShader.pointers.vPosition, 3, this.gl.FLOAT, false, 0, 0);
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.colorBuffer);
-        this.gl.vertexAttribPointer(vertexColorAttribute, 4, this.gl.UNSIGNED_BYTE, true, 0, 0);
+        this.gl.vertexAttribPointer(this.worldShader.pointers.vColor, 4, this.gl.UNSIGNED_BYTE, true, 0, 0);
 
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, geometry.uvBuffer);
-        this.gl.vertexAttribPointer(vertexUvAttribute, 2, this.gl.FLOAT, false, 0, 0);
+        this.gl.vertexAttribPointer(this.worldShader.pointers.vUVCoords, 2, this.gl.FLOAT, false, 0, 0);
 
         if(material.texture){
             this.gl.activeTexture(this.gl.TEXTURE0);
             this.gl.bindTexture(this.gl.TEXTURE_2D, material.texture.glTexture);
-            this.gl.uniform1i(samplerUniform, 0);
+            this.gl.uniform1i(this.worldShader.pointers.uSampler, 0);
         }
 
-        this.gl.uniform4fv(materialColorUniform, material.color);
-        this.gl.uniform1i(isTexturedUniform, material.texture ? 1 : 0);
+        this.gl.uniform1f(this.worldShader.pointers.ambient, material.ambient);
+        this.gl.uniform1f(this.worldShader.pointers.specular, material.specular);
+        this.gl.uniform1f(this.worldShader.pointers.diffuse, material.diffuse);
+
+        this.gl.uniform4fv(this.worldShader.pointers.materialColor, material.color);
+        this.gl.uniform1i(this.worldShader.pointers.isTextured, material.texture ? 1 : 0);
 
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, materialIndicesBuffer);
         this.gl.drawElements(drawingMode, geometry.faces.length, this.gl.UNSIGNED_SHORT, 0);

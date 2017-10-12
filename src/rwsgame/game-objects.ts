@@ -15,11 +15,10 @@ import { RWSAtomic } from '../rwslib/types/rws/atomic';
 import { RWSTextureDictionary, RWSTextureNative, RWSTextureNativeCompression } from '../rwslib/types/rws/texture-dictionary';
 
 import { quat } from 'gl-matrix';
-import * as webglew from 'webglew';
 
 export default class GameObjects {
     data: GameData;
-    gl: WebGLRenderingContext;
+    gl: GLESRenderingContext;
 
     mapMagFilterMode = {};
     mapMinFilterMode = {};
@@ -37,7 +36,7 @@ export default class GameObjects {
     texturePool: Map<string, Texture> = new Map();
     geometryPool: Map<string, Geometry> = new Map();
 
-    constructor(data: GameData, gl: WebGLRenderingContext){
+    constructor(data: GameData, gl: GLESRenderingContext){
         this.data = data;
         this.gl = gl;
 
@@ -70,8 +69,8 @@ export default class GameObjects {
         this.mapWrapMode[RWSTextureAddressMode.BORDER] = this.gl.CLAMP_TO_EDGE;
 
         // compression modes
-        // TODO for node-webgl
-        /*const ext = this.gl.getExtension(webglew(this.gl).texture_compression_s3tc);
+        // TODO for node-GLES
+        /*const ext = this.gl.getExtension(GLESew(this.gl).texture_compression_s3tc);
         if(!ext){
             throw new Error(`GameObjects: extension compressed_texture_s3tc not supported`);
         }
@@ -211,13 +210,13 @@ export default class GameObjects {
                 material.texture = texture;
             }
 
-            if(rwsMaterial.ambient){ material.ambient = rwsMaterial.ambient; }
-            if(rwsMaterial.specular){ material.specular = rwsMaterial.specular; }
-            if(rwsMaterial.diffuse){ material.diffuse = rwsMaterial.diffuse; }
+            if(typeof rwsGeometry.surfaceAmbient !== 'undefined'){ material.ambient = rwsGeometry.surfaceAmbient; }
+            if(typeof rwsGeometry.surfaceSpecular !== 'undefined'){ material.specular = rwsGeometry.surfaceSpecular; }
+            if(typeof rwsGeometry.surfaceDiffuse !== 'undefined'){ material.diffuse = rwsGeometry.surfaceDiffuse; }
 
-            if(rwsGeometry.surfaceAmbient){ material.ambient = rwsGeometry.surfaceAmbient; }
-            if(rwsGeometry.surfaceSpecular){ material.specular = rwsGeometry.surfaceSpecular; }
-            if(rwsGeometry.surfaceDiffuse){ material.diffuse = rwsGeometry.surfaceDiffuse; }
+            if(typeof rwsMaterial.ambient !== 'undefined'){ material.ambient = rwsMaterial.ambient; }
+            if(typeof rwsMaterial.specular !== 'undefined'){ material.specular = rwsMaterial.specular; }
+            if(typeof rwsMaterial.diffuse !== 'undefined'){ material.diffuse = rwsMaterial.diffuse; }
 
             material.color = new Float32Array([rwsMaterial.color[0] / 255, rwsMaterial.color[1] / 255, rwsMaterial.color[2] / 255, rwsMaterial.color[3] / 255]);
 
@@ -251,8 +250,8 @@ export default class GameObjects {
         this.gl.bindTexture(this.gl.TEXTURE_2D, texture.glTexture);
 
 
-        // UNPACK_FLIP_Y_WEBGL not supported in gles
-        //this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+        // UNPACK_FLIP_Y_GLES not supported in gles
+        //this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_GLES, true);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.mapMagFilterMode[rwsTextureNative.filterMode]);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.mapMinFilterMode[rwsTextureNative.filterMode]);
         this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.mapWrapMode[rwsTextureNative.uAddressing]);
@@ -318,7 +317,7 @@ export default class GameObjects {
         });
     }
 
-    bindErrorTexture(glTexture: WebGLTexture){
+    bindErrorTexture(glTexture: GLESTexture){
         this.gl.bindTexture(this.gl.TEXTURE_2D, glTexture);
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 2, 2, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.fallbackTexture);
         this.gl.generateMipmap(this.gl.TEXTURE_2D);

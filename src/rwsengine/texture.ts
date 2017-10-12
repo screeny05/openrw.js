@@ -1,12 +1,12 @@
 export default class Texture {
-    gl: WebGLRenderingContext;
+    gl: GLESRenderingContext;
 
     name: string;
     format: number;
 
-    glTexture: WebGLTexture;
+    glTexture: GLESTexture;
 
-    constructor(gl: WebGLRenderingContext){
+    constructor(gl: GLESRenderingContext){
         this.gl = gl;
 
         const texture = this.gl.createTexture();

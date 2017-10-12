@@ -28,8 +28,10 @@ export default class FileIndex {
     }
 
     closeFileDescriptors(){
-        console.log(this.fileDescriptors);
-        this.fileDescriptors.forEach(fd => fs.closeSync(fd));
+        this.fileDescriptors.forEach(fd => {
+            try { fs.closeSync(fd); }
+            catch(e) { }
+        });
     }
 
     normalizePath(orgPath: string): string {

@@ -20,12 +20,12 @@ export default class GameWorld {
     objects: GameObjects;
     state: GameState;
 
-    gl: WebGLRenderingContext;
+    gl: GLESRenderingContext;
 
     meshes: Array<Mesh> = [];
 
 
-    constructor(data: GameData, gl: WebGLRenderingContext){
+    constructor(data: GameData, gl: GLESRenderingContext){
         this.data = data;
         this.gl = gl;
 

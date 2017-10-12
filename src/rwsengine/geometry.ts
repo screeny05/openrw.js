@@ -12,16 +12,16 @@ export default class Geometry {
     vertexNormals: Array<vec3> = [];
     uvCoordinates: Array<Array<vec2>> = [];
 
-    vertexBuffer: WebGLBuffer;
-    colorBuffer: WebGLBuffer;
-    uvBuffer: WebGLBuffer;
-    indicesPerMaterialBuffer: Array<WebGLBuffer>;
+    vertexBuffer: GLESBuffer;
+    colorBuffer: GLESBuffer;
+    uvBuffer: GLESBuffer;
+    indicesPerMaterialBuffer: Array<GLESBuffer>;
 
     boundingSphere: Sphere;
 
-    gl: WebGLRenderingContext;
+    gl: GLESRenderingContext;
 
-    constructor(gl: WebGLRenderingContext){
+    constructor(gl: GLESRenderingContext){
         this.gl = gl;
     }
 

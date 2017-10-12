@@ -5,7 +5,7 @@ export interface ShaderLocations {
 }
 
 export default class Shader {
-    gl: WebGLRenderingContext;
+    gl: GLESRenderingContext;
 
     vertexSrc: string;
     fragmentSrc: string
@@ -13,12 +13,12 @@ export default class Shader {
     locations: ShaderLocations;
     pointers: any = {};
 
-    vertexShader: WebGLShader;
-    fragmentShader: WebGLShader;
+    vertexShader: GLESShader;
+    fragmentShader: GLESShader;
 
-    program: WebGLProgram;
+    program: GLESProgram;
 
-    constructor(gl: WebGLRenderingContext, vertexSrc: string, fragmentSrc: string, locations: ShaderLocations){
+    constructor(gl: GLESRenderingContext, vertexSrc: string, fragmentSrc: string, locations: ShaderLocations){
         this.gl = gl;
         this.vertexSrc = glslify(vertexSrc);
         this.fragmentSrc = glslify(fragmentSrc);
@@ -27,14 +27,14 @@ export default class Shader {
         this.createProgram();
     }
 
-    compileShader(source: string, type: number): WebGLShader {
+    compileShader(source: string, type: number): GLESShader {
         const shader = this.gl.createShader(type);
+
         this.gl.shaderSource(shader, source);
         this.gl.compileShader(shader);
 
-        if(!this.gl.getShaderiv(shader, this.gl.COMPILE_STATUS) || !shader){
-            console.error(`Error compiling ${type === this.gl.VERTEX_SHADER ? 'vertex' : 'fragment'} shader source.\n${this.gl.getShaderInfoLog(shader)}`);
-            throw new Error();
+        if(!shader || !this.gl.getShaderiv(shader, this.gl.COMPILE_STATUS)){
+            throw new Error(`Shader: Error compiling ${type === this.gl.VERTEX_SHADER ? 'vertex' : 'fragment'} shader source.\n${this.gl.getShaderInfoLog(shader)}`);
         }
 
         return shader;
@@ -66,7 +66,7 @@ export default class Shader {
 
         const program = this.gl.createProgram();
         if(!program){
-            throw new Error('Shader: Unknown Error, cannot create WebGLProgram.');
+            throw new Error('Shader: Unknown Error, cannot create GLESProgram.');
         }
 
         this.program = program;
@@ -76,7 +76,7 @@ export default class Shader {
         this.gl.linkProgram(this.program);
 
         if(!this.gl.getProgramiv(this.program, this.gl.LINK_STATUS)){
-            throw new Error(`Error compiling shader-program.\n${this.gl.getProgramInfoLog(this.program)}`);
+            throw new Error(`Shader: Error compiling shader-program.\n${this.gl.getProgramInfoLog(this.program)}`);
         }
 
         this.getLocations();

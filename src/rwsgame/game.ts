@@ -2,16 +2,16 @@ import Config from './config';
 import GameData from './game-data';
 import GameWorld from './game-world';
 
-
-import { NativeWindow } from 'node-gles3';
+import { NativeWindow, glfw, gles } from 'node-gles3';
 import Renderer from '../rwsengine/renderer';
 import Camera from '../rwsengine/camera';
 import CameraControlsOrbit from '../rwsengine/camera-controls-orbital';
 import Input from '../rwsengine/input';
 
 import { Bind } from 'lodash-decorators';
+import { EventEmitter } from 'events';
 
-export default class Game {
+export default class Game extends EventEmitter {
     config: Config;
     data: GameData;
     world: GameWorld;
@@ -25,15 +25,20 @@ export default class Game {
     isRunning: boolean = false;
     lastTime: number = 0;
     framesCount: number = 0;
+    framesMeasureCount: number = 0;
 
     timeoutMeasureFps: NodeJS.Timer;
 
     constructor(config: Config){
+        super();
         this.config = config;
 
         this.window = new NativeWindow({
             title: `${this.config.packageName} ${this.config.packageVersion} (${this.config.packageRevShort})`
         });
+
+        console.log('supp',glfw.extensionSupported('EXT_texture_compression_s3tc'))
+        console.log(gles.getString(gles.VERSION), gles.getString(gles.SHADING_LANGUAGE_VERSION))
 
         this.data = new GameData(this.config);
         this.world = new GameWorld(this.data, this.window.gl);
@@ -49,6 +54,7 @@ export default class Game {
     async init(){
         await this.data.init();
         await this.world.init();
+        this.emit('init');
     }
 
     @Bind()
@@ -80,7 +86,8 @@ export default class Game {
 
     @Bind()
     measureFps(){
-        console.log(`${this.framesCount}fps`);
+        this.emit('fps', this.framesCount, this.framesMeasureCount);
+        this.framesMeasureCount++;
         this.framesCount = 0;
         this.timeoutMeasureFps = setTimeout(this.measureFps, 1000);
     }

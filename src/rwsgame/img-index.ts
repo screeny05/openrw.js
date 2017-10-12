@@ -37,8 +37,14 @@ export default class ImgIndex {
         });
     }
 
-    async parseEntry(name: string){
-        const imgStream = this.getImgStreamByName(name);
+    async parseEntry(name: string|DirEntry){
+        let imgStream: fs.ReadStream;
+
+        if(typeof name === 'string'){
+            imgStream = this.getImgStreamByName(name);
+        } else {
+            imgStream = this.getImgStreamByEntry(name);
+        }
 
         return new Promise<never>((resolve, reject) => {
             const rwsParser = new Corrode();
