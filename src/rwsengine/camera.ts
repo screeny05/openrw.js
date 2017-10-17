@@ -1,4 +1,5 @@
-import { NativeWindow } from 'node-gles3';
+import { NativeWindow } from '@glaced/lwngl';
+import { GLES2Context } from '@glaced/gles2-2.0';
 
 import { mat4, vec3, quat } from 'gl-matrix';
 
@@ -10,7 +11,7 @@ export default class Camera {
     far: number = 5000;
 
     fov: number;
-    window: NativeWindow;
+    window: NativeWindow<GLES2Context>;
 
     projection: mat4 = mat4.create();
     view: mat4 = mat4.create();
@@ -21,7 +22,7 @@ export default class Camera {
     horizontalRotation: number = 0;
     verticalRotation: number = 0;
 
-    constructor(fov, window: NativeWindow){
+    constructor(fov, window: NativeWindow<GLES2Context>){
         this.fov = fov;
         this.window = window;
 

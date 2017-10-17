@@ -1,3 +1,4 @@
+import { GLES2Context } from '@glaced/gles2-2.0';
 import * as glslify from 'glslify';
 
 export interface ShaderLocations {
@@ -5,7 +6,7 @@ export interface ShaderLocations {
 }
 
 export default class Shader {
-    gl: GLESRenderingContext;
+    gl: GLES2Context;
 
     vertexSrc: string;
     fragmentSrc: string
@@ -13,12 +14,12 @@ export default class Shader {
     locations: ShaderLocations;
     pointers: any = {};
 
-    vertexShader: GLESShader;
-    fragmentShader: GLESShader;
+    vertexShader: number;
+    fragmentShader: number;
 
-    program: GLESProgram;
+    program: number;
 
-    constructor(gl: GLESRenderingContext, vertexSrc: string, fragmentSrc: string, locations: ShaderLocations){
+    constructor(gl: GLES2Context, vertexSrc: string, fragmentSrc: string, locations: ShaderLocations){
         this.gl = gl;
         this.vertexSrc = glslify(vertexSrc);
         this.fragmentSrc = glslify(fragmentSrc);
@@ -27,13 +28,15 @@ export default class Shader {
         this.createProgram();
     }
 
-    compileShader(source: string, type: number): GLESShader {
+    compileShader(source: string, type: number): number {
         const shader = this.gl.createShader(type);
 
         this.gl.shaderSource(shader, source);
         this.gl.compileShader(shader);
 
-        if(!shader || !this.gl.getShaderiv(shader, this.gl.COMPILE_STATUS)){
+        console.log('shadersource[2]', this.gl.getShaderiv(shader, this.gl.SHADER_SOURCE_LENGTH, 2));
+
+        if(!shader || !this.gl.getShaderiv(shader, this.gl.COMPILE_STATUS, 1)[0]){
             throw new Error(`Shader: Error compiling ${type === this.gl.VERTEX_SHADER ? 'vertex' : 'fragment'} shader source.\n${this.gl.getShaderInfoLog(shader)}`);
         }
 
@@ -75,7 +78,7 @@ export default class Shader {
         this.gl.attachShader(this.program, this.fragmentShader);
         this.gl.linkProgram(this.program);
 
-        if(!this.gl.getProgramiv(this.program, this.gl.LINK_STATUS)){
+        if(!this.gl.getProgramiv(this.program, this.gl.LINK_STATUS, 1)[0]){
             throw new Error(`Shader: Error compiling shader-program.\n${this.gl.getProgramInfoLog(this.program)}`);
         }
 

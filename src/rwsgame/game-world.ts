@@ -1,3 +1,5 @@
+import { GLES2Context } from '@glaced/gles2-2.0';
+
 import GameData from './game-data';
 import GameObjects from './game-objects';
 import GameState from './game-state';
@@ -20,12 +22,12 @@ export default class GameWorld {
     objects: GameObjects;
     state: GameState;
 
-    gl: GLESRenderingContext;
+    gl: GLES2Context;
 
     meshes: Array<Mesh> = [];
 
 
-    constructor(data: GameData, gl: GLESRenderingContext){
+    constructor(data: GameData, gl: GLES2Context){
         this.data = data;
         this.gl = gl;
 

@@ -1,3 +1,5 @@
+import { GLES2Context } from '@glaced/gles2-2.0';
+
 import Object3D from './object3d';
 import Face3 from './face3';
 import Sphere from './sphere';
@@ -12,23 +14,24 @@ export default class Geometry {
     vertexNormals: Array<vec3> = [];
     uvCoordinates: Array<Array<vec2>> = [];
 
-    vertexBuffer: GLESBuffer;
-    colorBuffer: GLESBuffer;
-    uvBuffer: GLESBuffer;
-    indicesPerMaterialBuffer: Array<GLESBuffer>;
+    vertexBuffer: number;
+    colorBuffer: number;
+    uvBuffer: number;
+    indicesPerMaterialBuffer: Array<number>;
 
     boundingSphere: Sphere;
 
-    gl: GLESRenderingContext;
+    gl: GLES2Context;
 
-    constructor(gl: GLESRenderingContext){
+    constructor(gl: GLES2Context){
         this.gl = gl;
     }
 
     updateBuffer() {
-        const vertexBuffer = this.gl.createBuffer();
-        const colorBuffer = this.gl.createBuffer();
-        const uvBuffer = this.gl.createBuffer();
+        const buffers = this.gl.genBuffers(3);
+        const vertexBuffer = buffers[0];
+        const colorBuffer = buffers[1];
+        const uvBuffer = buffers[2];
 
         if(!vertexBuffer || !colorBuffer || !uvBuffer){
             throw new Error('Geometry: Couldn\'t create buffer.');
@@ -70,8 +73,10 @@ export default class Geometry {
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.uvBuffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(uvCoordinates0), this.gl.STATIC_DRAW);
 
-        this.indicesPerMaterialBuffer = indicesPerMaterial.map(materialIndices => {
-            const materialIndicesBuffer = this.gl.createBuffer();
+        const materialIndicesBuffers = this.gl.genBuffers(indicesPerMaterial.length);
+
+        this.indicesPerMaterialBuffer = indicesPerMaterial.map((materialIndices, i) => {
+            const materialIndicesBuffer = materialIndicesBuffers[i];
 
             if(!materialIndicesBuffer){
                 throw new Error(`Geometry: Couldn\'t create materialIndicesBuffer.`);

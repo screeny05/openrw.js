@@ -1,3 +1,5 @@
+import { GLES2Context } from '@glaced/gles2-2.0';
+
 import GameData from './game-data';
 
 import Geometry from '../rwsengine/geometry';
@@ -18,7 +20,7 @@ import { quat } from 'gl-matrix';
 
 export default class GameObjects {
     data: GameData;
-    gl: GLESRenderingContext;
+    gl: GLES2Context;
 
     mapMagFilterMode = {};
     mapMinFilterMode = {};
@@ -36,7 +38,7 @@ export default class GameObjects {
     texturePool: Map<string, Texture> = new Map();
     geometryPool: Map<string, Geometry> = new Map();
 
-    constructor(data: GameData, gl: GLESRenderingContext){
+    constructor(data: GameData, gl: GLES2Context){
         this.data = data;
         this.gl = gl;
 
@@ -296,7 +298,7 @@ export default class GameObjects {
 
         this.gl.generateMipmap(this.gl.TEXTURE_2D);
 
-        this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, 0);
 
         this.texturePool.set(rwsTextureNative.name, texture);
 
@@ -317,12 +319,12 @@ export default class GameObjects {
         });
     }
 
-    bindErrorTexture(glTexture: GLESTexture){
+    bindErrorTexture(glTexture: number){
         this.gl.bindTexture(this.gl.TEXTURE_2D, glTexture);
         this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 2, 2, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, this.fallbackTexture);
         this.gl.generateMipmap(this.gl.TEXTURE_2D);
 
-        this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, 0);
     }
 }
 

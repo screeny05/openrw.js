@@ -2,7 +2,8 @@ import Config from './config';
 import GameData from './game-data';
 import GameWorld from './game-world';
 
-import { NativeWindow, glfw, gles } from 'node-gles3';
+import { NativeWindow } from '@glaced/lwngl';
+import { GLES2Context, glContext } from '@glaced/gles2-2.0';
 import Renderer from '../rwsengine/renderer';
 import Camera from '../rwsengine/camera';
 import CameraControlsOrbit from '../rwsengine/camera-controls-orbital';
@@ -16,7 +17,7 @@ export default class Game extends EventEmitter {
     data: GameData;
     world: GameWorld;
 
-    window: NativeWindow;
+    window: NativeWindow<GLES2Context>;
     renderer: Renderer;
     input: Input;
     camera: Camera;
@@ -33,15 +34,14 @@ export default class Game extends EventEmitter {
         super();
         this.config = config;
 
-        this.window = new NativeWindow({
-            title: `${this.config.packageName} ${this.config.packageVersion} (${this.config.packageRevShort})`
+        this.window = new NativeWindow<GLES2Context>({
+            title: `${this.config.packageName} ${this.config.packageVersion} (${this.config.packageRevShort})`,
+            context: glContext
         });
 
-        console.log('supp',glfw.extensionSupported('EXT_texture_compression_s3tc'))
-        console.log(gles.getString(gles.VERSION), gles.getString(gles.SHADING_LANGUAGE_VERSION))
-
+        console.log(glContext.getString(glContext.VERSION), '-', glContext.getString(glContext.SHADING_LANGUAGE_VERSION))
         this.data = new GameData(this.config);
-        this.world = new GameWorld(this.data, this.window.gl);
+        this.world = new GameWorld(this.data, this.window.context);
 
         this.input = new Input(this.window);
         this.camera = new Camera(Math.PI / 180 * 60, this.window);

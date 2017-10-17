@@ -1,5 +1,4 @@
-import { debounce } from 'throttle-debounce';
-import { NativeWindow, glfw } from 'node-gles3';
+import { NativeWindow } from '@glaced/lwngl';
 
 export default class Input {
     kbdValues = {
@@ -43,7 +42,7 @@ export default class Input {
         this.window = window;
         this.registerEvents();
 
-        glfw.setInputMode(this.window.handle, glfw.CURSOR, glfw.CURSOR_DISABLED);
+        this.window.setInputMode(this.window.glfw.CURSOR, this.window.glfw.CURSOR_DISABLED);
     }
 
     registerEvents(){
@@ -79,13 +78,13 @@ export default class Input {
     }
 
     updateMouse(){
-        const mousePosition = glfw.getCursorPos(this.window.handle);
+        const mousePosition = this.window.getCursorPos();
         const startMouseX = this.window.width / 2;
         const startMouseY = this.window.height / 2;
 
         this.states.rotationX = (startMouseX - mousePosition.xpos) / this.window.width;
         this.states.rotationY = (startMouseY - mousePosition.ypos) / this.window.height;
 
-        glfw.setCursorPos(this.window.handle, startMouseX, startMouseY);
+        this.window.setCursorPos(startMouseX, startMouseY);
     }
 }

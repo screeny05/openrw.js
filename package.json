@@ -10,10 +10,9 @@
     "debug": "node --napi-modules --inspect-brk dist",
     "trace-deopt": "node --napi-modules --trace-hydrogen --trace-phase=Z --trace-deopt --code-comments --hydrogen-track-positions --redirect-code-traces --redirect-code-traces-to=code.asm dist"
   },
-  "author": "",
+  "author": "Sebastian Langer <sl@scn.cx>",
   "license": "MIT",
   "dependencies": {
-    "@types/split2": "^2.1.5",
     "autobind-decorator": "^1.4.0",
     "core-decorators": "^0.17.0",
     "corrode": "^1.0.2",
@@ -32,10 +31,11 @@
     "readdirp": "^2.1.0",
     "split2": "^2.1.1",
     "throttle-debounce": "^1.0.1",
-    "tsc": "^1.20150623.0",
-    "webglew": "^1.0.5"
+    "@glaced/lwngl": "^0.1.0",
+    "@glaced/gles2-2.0": "^1.0.0"
   },
   "devDependencies": {
+    "@types/split2": "^2.1.5",
     "@types/autobind-decorator": "^1.3.2",
     "@types/core-decorators": "^0.10.32",
     "@types/debug": "0.0.29",
@@ -43,7 +43,6 @@
     "@types/klaw": "^1.3.2",
     "@types/lodash": "^4.14.62",
     "@types/lodash-decorators": "^1.0.30",
-    "@types/node": "^7.0.12",
-    "tsc": "^1.20150623.0"
+    "@types/node": "^7.0.12"
   }
 }

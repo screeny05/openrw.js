@@ -1,6 +1,7 @@
 import Shader from './shader';
 import Camera from './camera';
-import { NativeWindow } from 'node-gles3';
+import { GLES2Context } from '@glaced/gles2-2.0';
+import { NativeWindow } from '@glaced/lwngl';
 
 import Geometry from './geometry';
 import Material from './materials/material';
@@ -11,8 +12,8 @@ import GameWorld from '../rwsgame/game-world';
 import { Bind } from 'lodash-decorators';
 
 export default class Renderer {
-    gl: GLESRenderingContext;
-    window: NativeWindow;
+    gl: GLES2Context;
+    window: NativeWindow<GLES2Context>;
     camera: Camera;
 
     world: GameWorld;
@@ -21,9 +22,9 @@ export default class Renderer {
 
     cullingEnabled: boolean = false;
 
-    constructor(window: NativeWindow, camera: Camera, world: GameWorld){
+    constructor(window: NativeWindow<GLES2Context>, camera: Camera, world: GameWorld){
         this.window = window;
-        this.gl = this.window.gl;
+        this.gl = this.window.context;
         this.camera = camera;
         this.world = world;
 
@@ -88,7 +89,7 @@ export default class Renderer {
         mesh.children.forEach(this.renderMesh);
     }
 
-    renderElementBuffer(geometry: Geometry, material: Material, materialIndicesBuffer: GLESBuffer, drawingMode = this.gl.TRIANGLES){
+    renderElementBuffer(geometry: Geometry, material: Material, materialIndicesBuffer: number, drawingMode = this.gl.TRIANGLES){
         if(!geometry || !geometry.vertexBuffer){
             return;
         }
