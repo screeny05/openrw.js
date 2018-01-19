@@ -9,7 +9,7 @@ import Mesh from './mesh';
 
 import GameWorld from '../rwsgame/game-world';
 
-import { Bind } from 'lodash-decorators';
+import bind from 'bind-decorator';
 
 export default class Renderer {
     gl: GLES2Context;
@@ -49,7 +49,7 @@ export default class Renderer {
 
     init(){
         this.gl.useProgram(this.worldShader.program);
-        this.gl.clearColor(0, 0, 0, 0);
+        this.gl.clearColor(0, 0.5, 0.5, 0);
     }
 
     preRender(){
@@ -71,7 +71,7 @@ export default class Renderer {
         this.world.meshes.forEach(this.renderMesh);
     }
 
-    @Bind()
+    @bind
     renderMesh(mesh: Mesh|null = null){
         if(!mesh){
             return;
@@ -117,6 +117,6 @@ export default class Renderer {
         this.gl.uniform1i(this.worldShader.pointers.isTextured, material.texture ? 1 : 0);
 
         this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, materialIndicesBuffer);
-        this.gl.drawElements(drawingMode, geometry.faces.length, this.gl.UNSIGNED_SHORT, 0);
+        this.gl.drawElements(drawingMode, geometry.faces.length, this.gl.UNSIGNED_SHORT, new Int32Array([0]));
     }
 }

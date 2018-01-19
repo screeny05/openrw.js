@@ -22,6 +22,10 @@ export default class Config {
     packageVersion: string;
     packageName: string;
 
+    debugGl: boolean;
+
+    fov: number;
+
     constructor(){
         this.projectRoot = path.resolve(__dirname, '../..');
         this.configPath = path.resolve(this.projectRoot, 'config.json');
@@ -30,18 +34,62 @@ export default class Config {
         const configObject = JSON.parse(fs.readFileSync(this.configPath, 'utf8'));
         const packageObject = JSON.parse(fs.readFileSync(this.packagePath, 'utf8'));
 
-        Object.keys(configObject).forEach(key => {
-            this[key] = configObject[key];
-        });
+        Object.assign(this, configObject);
+        this.parseCmdArgs();
 
-        // make sure rootPath has a trailing slash
-        this.rootPath = path.join(configObject.rootPath, '/');
-
+        // make sure rootPath is absolute
+        this.rootPath = path.resolve(this.rootPath);
         // transform version into our enum
-        this.version = GameVersion[<string>configObject.version];
+        this.version = GameVersion[<string><any>this.version];
 
         this.packageRevShort = git.short();
         this.packageVersion = packageObject.version;
         this.packageName = packageObject.name;
+        console.log(this);
+    }
+
+    parseCmdArgs(argv = process.argv): void {
+        argv.forEach((arg, i) => {
+            const argMatch = arg.match(/^--(.*)/);
+            if(!argMatch){
+                return;
+            }
+
+            let optValue: any = argv[i + 1];
+            let optName = argMatch[1];
+            const equalsArgMatch = arg.match(/^--(.*)?=(.*)$/);
+
+            if(equalsArgMatch){
+                optName = equalsArgMatch[1];
+                optValue = equalsArgMatch[2];
+            }
+
+            optName = this.dashCaseToCamelCase(optName);
+
+            if(!this[optName]){
+                return;
+            }
+
+            if(optValue === 'true'){
+                optValue = true;
+            }
+            if(optValue === 'false'){
+                optValue = false;
+            }
+            if(!Number.isNaN(Number.parseFloat(optValue))){
+                optValue = Number.parseFloat(optValue);
+            }
+
+            this[optName] = optValue;
+        });
+    }
+
+    dashCaseToCamelCase(str: string): string {
+        return str
+            .split('-')
+            .map((v, i) =>
+                i === 0 ? v : v.slice(0, 1).toUpperCase() + v.slice(1)
+            )
+            .join('');
     }
 }

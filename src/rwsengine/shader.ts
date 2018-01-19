@@ -2,7 +2,7 @@ import { GLES2Context } from '@glaced/gles2-2.0';
 import * as glslify from 'glslify';
 
 export interface ShaderLocations {
-    [name: string]: string;
+    [name: string]: 'attribute' | 'uniform';
 }
 
 export default class Shader {
@@ -34,8 +34,6 @@ export default class Shader {
         this.gl.shaderSource(shader, source);
         this.gl.compileShader(shader);
 
-        console.log('shadersource[2]', this.gl.getShaderiv(shader, this.gl.SHADER_SOURCE_LENGTH, 2));
-
         if(!shader || !this.gl.getShaderiv(shader, this.gl.COMPILE_STATUS, 1)[0]){
             throw new Error(`Shader: Error compiling ${type === this.gl.VERTEX_SHADER ? 'vertex' : 'fragment'} shader source.\n${this.gl.getShaderInfoLog(shader)}`);
         }
@@ -46,8 +44,6 @@ export default class Shader {
     getLocations(){
         Object.keys(this.locations).forEach(key => {
             let locationType: string = this.locations[key];
-
-
             let location;
 
             if(locationType === 'attribute'){
@@ -83,5 +79,9 @@ export default class Shader {
         }
 
         this.getLocations();
+    }
+
+    use(){
+        this.gl.useProgram(this.program);
     }
 }

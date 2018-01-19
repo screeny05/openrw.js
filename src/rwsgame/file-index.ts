@@ -8,7 +8,7 @@ import * as death from 'death';
 export default class FileIndex {
     root: string;
     index: Map<string, klaw.Item> = new Map();
-    fileDescriptors: Array<number> = [];
+    fileDescriptors: number[] = [];
 
     constructor(root: string){
         this.root = path.join(root, '/');
@@ -62,7 +62,7 @@ export default class FileIndex {
         return fs.createReadStream(this.getPath(orgPath));
     }
 
-    async getFileDescriptor(orgPath: string, flags: string = 'r'){
+    async getFileDescriptor(orgPath: string, flags: string = 'r'): Promise<number> {
         return new Promise<number>((resolve, reject) => {
             fs.open(this.getPath(orgPath), flags, (err, fd) => {
                 if(err){

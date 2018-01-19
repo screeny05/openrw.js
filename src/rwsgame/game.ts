@@ -4,12 +4,13 @@ import GameWorld from './game-world';
 
 import { NativeWindow } from '@glaced/lwngl';
 import { GLES2Context, glContext } from '@glaced/gles2-2.0';
+import { getGlDebugProxy } from '../rwsengine/gl-debug';
 import Renderer from '../rwsengine/renderer';
 import Camera from '../rwsengine/camera';
-import CameraControlsOrbit from '../rwsengine/camera-controls-orbital';
+import CameraControlsOrbital from '../rwsengine/camera-controls-orbital';
 import Input from '../rwsengine/input';
 
-import { Bind } from 'lodash-decorators';
+import bind from 'bind-decorator';
 import { EventEmitter } from 'events';
 
 export default class Game extends EventEmitter {
@@ -21,7 +22,7 @@ export default class Game extends EventEmitter {
     renderer: Renderer;
     input: Input;
     camera: Camera;
-    cameraControls: CameraControlsOrbit;
+    cameraControls: CameraControlsOrbital;
 
     isRunning: boolean = false;
     lastTime: number = 0;
@@ -34,18 +35,25 @@ export default class Game extends EventEmitter {
         super();
         this.config = config;
 
+        let context = glContext;
+        if(this.config.debugGl){
+            context = getGlDebugProxy(glContext, {
+                enableLogging: false,
+                sanityCheck: true
+            });
+        }
+
         this.window = new NativeWindow<GLES2Context>({
             title: `${this.config.packageName} ${this.config.packageVersion} (${this.config.packageRevShort})`,
-            context: glContext
+            context
         });
 
-        console.log(glContext.getString(glContext.VERSION), '-', glContext.getString(glContext.SHADING_LANGUAGE_VERSION))
         this.data = new GameData(this.config);
         this.world = new GameWorld(this.data, this.window.context);
 
         this.input = new Input(this.window);
-        this.camera = new Camera(Math.PI / 180 * 60, this.window);
-        this.cameraControls = new CameraControlsOrbit(this.input, this.camera);
+        this.camera = new Camera(Math.PI / 180 * this.config.fov, this.window);
+        this.cameraControls = new CameraControlsOrbital(this.input, this.camera);
         this.renderer = new Renderer(this.window, this.camera, this.world);
 
         this.window.on('close', this.onWindowClose);
@@ -57,7 +65,7 @@ export default class Game extends EventEmitter {
         this.emit('init');
     }
 
-    @Bind()
+    @bind
     onWindowClose(){
         clearTimeout(this.timeoutMeasureFps);
     }
@@ -68,7 +76,7 @@ export default class Game extends EventEmitter {
         this.measureFps();
     }
 
-    @Bind()
+    @bind
     tick(currentTime: number = 0){
         const delta = currentTime - this.lastTime;
         this.lastTime = currentTime;
@@ -84,7 +92,7 @@ export default class Game extends EventEmitter {
         }
     }
 
-    @Bind()
+    @bind
     measureFps(){
         this.emit('fps', this.framesCount, this.framesMeasureCount);
         this.framesMeasureCount++;

@@ -1,5 +1,3 @@
-#define M_PI 3.1415926535897932384626433832795
-
 attribute vec3 vPosition;
 attribute vec4 vColor;
 attribute vec2 vUVCoords;

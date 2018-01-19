@@ -28,10 +28,7 @@ export default class Geometry {
     }
 
     updateBuffer() {
-        const buffers = this.gl.genBuffers(3);
-        const vertexBuffer = buffers[0];
-        const colorBuffer = buffers[1];
-        const uvBuffer = buffers[2];
+        const [vertexBuffer, colorBuffer, uvBuffer] = this.gl.genBuffers(3);
 
         if(!vertexBuffer || !colorBuffer || !uvBuffer){
             throw new Error('Geometry: Couldn\'t create buffer.');

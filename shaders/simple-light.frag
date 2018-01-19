@@ -25,7 +25,8 @@ void main(){
     diffuse.a *= textureColor.a;
     diffuse.rgb *= ambient;
 
-    if(diffuse.a <= alphaThreshold){ discard; }
+    //if(diffuse.a <= alphaThreshold){ discard; }
 
     gl_FragColor = diffuse;
+    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

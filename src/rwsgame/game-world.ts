@@ -24,7 +24,7 @@ export default class GameWorld {
 
     gl: GLES2Context;
 
-    meshes: Array<Mesh> = [];
+    meshes: Mesh[] = [];
 
 
     constructor(data: GameData, gl: GLES2Context){
@@ -68,7 +68,7 @@ export default class GameWorld {
             throw new ReferenceError(`GameWorld: cannot find definition '${definition}'`);
         }
 
-        const tasks: Array<any> = [];
+        const tasks: Array<Promise<Mesh>> = [];
 
         ipl.entriesInst.forEach(inst => {
             const obj = ide.entriesObjs.find(obj => obj.id === inst.id);
@@ -79,7 +79,9 @@ export default class GameWorld {
             tasks.push(this.objects.loadMesh(obj, inst));
         });
 
-        this.meshes.push(...(await Promise.all(tasks)));
+        const meshes = await Promise.all(tasks);
+
+        this.meshes.push(...meshes);
     }
 
     async createInstance(definition: string, objectId: number){
@@ -99,9 +101,9 @@ export default class GameWorld {
 
         const mesh = await this.objects.loadMesh(obj, inst);
 
-        mesh.position[0]=0;
-        mesh.position[1]=0;
-        mesh.position[2]=0;
+        mesh.position[0] = 0;
+        mesh.position[1] = 0;
+        mesh.position[2] = 0;
         mesh.updateTransform();
 
         this.meshes.push(mesh);

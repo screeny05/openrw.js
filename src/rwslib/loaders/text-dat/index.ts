@@ -8,7 +8,7 @@ const defaults = {
     commentIndicator: /#|;/
 };
 
-export type DatCommand = Array<string>;
+export type DatCommand = string[];
 
 export function parseLineIntoCommand(line: string, options: any): DatCommand|undefined {
     line = line.split(options.commentIndicator)[0];
@@ -31,7 +31,7 @@ export default function streamTextDat(path: string, options: any = {}){
     options = { ...defaults, ...options };
 
     return fs
-        .createReadStream(path, 'utf8')
+        .createReadStream(path, { encoding:'utf8' })
         .pipe(split2(line =>
             parseLineIntoCommand(line, options))
         );

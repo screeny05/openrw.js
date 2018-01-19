@@ -79,6 +79,10 @@ export default class Input {
 
     updateMouse(){
         const mousePosition = this.window.getCursorPos();
+        if(!mousePosition){
+            return;
+        }
+
         const startMouseX = this.window.width / 2;
         const startMouseY = this.window.height / 2;
 

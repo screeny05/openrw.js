@@ -3,7 +3,7 @@ import * as blessedContrib from 'blessed-contrib';
 
 import { inspect, format } from 'util';
 import * as death from 'death';
-import { Bind } from 'lodash-decorators';
+import bind from 'bind-decorator';
 
 import Game from '../rwsgame/game';
 import ImgIndex from '../rwsgame/img-index';
@@ -144,7 +144,7 @@ export default class CLI {
         this.imgTree.setData(this.imgData);
     }
 
-    @Bind()
+    @bind
     onDestroy(){
         this.screen.destroy();
     }

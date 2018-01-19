@@ -275,7 +275,6 @@ export default class GameObjects {
             // default
 
         } else if(isFullColor) {
-
             if(rwsTextureNative.flags.FORMAT_1555){
                 type = 0x8366;
             } else if(rwsTextureNative.flags.FORMAT_8888){
