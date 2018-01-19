@@ -149,7 +149,7 @@ export default class GameObjects {
         return placementMesh;
     }
 
-    loadMeshFromRwsFrame(rwsClump: RWSClump, rwsFrame: RWSFrame, frameIndex: number, rwsTxd: RWSTextureDictionary): Mesh {
+    loadMeshFromRwsFrame(rwsClump: RWSClump, rwsFrame: RWSFrame, frameIndex: number, rwsTxd?: RWSTextureDictionary): Mesh {
         const rwsFrameExtension = rwsClump.frameList.extensions[frameIndex].sections.find(section => section.__name__ === 'rwsFrame');
         const rwsAtomic: RWSAtomic|undefined = rwsClump.atomics.find(atomic => atomic.frameIndex === frameIndex);
 
@@ -171,7 +171,6 @@ export default class GameObjects {
 
         const { vertices, normals } = rwsMorphTarget;
 
-        const materials = this.loadMaterialsFromRwsGeometry(rwsGeometry, rwsTxd);
 
         geometry.boundingSphere = new Sphere(rwsMorphTarget.spherePosition, rwsMorphTarget.sphereRadius);
         geometry.uvCoordinates = rwsGeometry.textureCoordinates;
@@ -186,7 +185,11 @@ export default class GameObjects {
 
         geometry.updateBuffer();
         mesh.geometry = geometry;
-        mesh.materials = materials;
+
+        if(rwsTxd){
+            const materials = this.loadMaterialsFromRwsGeometry(rwsGeometry, rwsTxd);
+            mesh.materials = materials;
+        }
 
         return mesh;
     }
@@ -262,7 +265,7 @@ export default class GameObjects {
         const isFullColor = rwsTextureNative.flags.FORMAT_1555 || rwsTextureNative.flags.FORMAT_8888 || rwsTextureNative.flags.FORMAT_888;
         const isTransparent = !rwsTextureNative.flags.FORMAT_888;
 
-        if(!rwsTextureNative.flags.PALETTE_8 && !isFullColor){
+        if(!rwsTextureNative.flags.PALETTE_8 /*&& !isFullColor*/){
             console.error(`Unsupported raster format ${JSON.stringify(rwsTextureNative.flags)}`);
             this.bindErrorTexture(texture.glTexture);
             return texture;

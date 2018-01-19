@@ -45,7 +45,6 @@ export default class Config {
         this.packageRevShort = git.short();
         this.packageVersion = packageObject.version;
         this.packageName = packageObject.name;
-        console.log(this);
     }
 
     parseCmdArgs(argv = process.argv): void {

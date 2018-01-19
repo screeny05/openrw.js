@@ -37,14 +37,15 @@ export default class GameWorld {
 
     async init(){
         await this.initDefaultResources();
+        //await this.createInstanceFromFile();
         await this.createInstance('data/maps/industne/industne', 530);
         //await this.loadMap('data/maps/comse/comse');
         //await this.loadMap('data/maps/comsw/comsw');
 
         console.time('map');
 //await this.loadMap('data/maps/comse/comse');
-//await this.loadMap('data/maps/comnbtm/comnbtm');
 //await this.loadMap('data/maps/comsw/comsw');
+//await this.loadMap('data/maps/comnbtm/comnbtm');
 //await this.loadMap('data/maps/comntop/comntop');
         console.timeEnd('map');
     }
@@ -107,6 +108,28 @@ export default class GameWorld {
         mesh.updateTransform();
 
         this.meshes.push(mesh);
+    }
+
+    async createInstanceFromFile(){
+        const rwsClump = await this.objects.loadRwsClump('asuka.dff', false);
+
+        const placementMesh = new Mesh('asuka');
+
+        const rwsMeshes: Array<Mesh> = rwsClump.frameList.frames.map((rwsFrame, i) => this.objects.loadMeshFromRwsFrame(rwsClump, rwsFrame, i));
+
+        this.objects.setMeshChildRelations(rwsClump, rwsMeshes);
+
+        const rwsRootMesh = this.objects.getRootMesh(rwsMeshes);
+        if(!rwsRootMesh){
+            throw new ReferenceError(`GameObject: couldn't find rootMesh in asuka`);
+        }
+
+        placementMesh.addChild(rwsRootMesh);
+
+        placementMesh.position = vec3.create(0, 0, 0);
+        placementMesh.updateTransform();
+
+        this.meshes.push(placementMesh);
     }
 
     async loadIPL(path: string){

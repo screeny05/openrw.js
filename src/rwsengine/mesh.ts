@@ -6,8 +6,8 @@ import { IdeEntryObjs } from '../rwslib/loaders/ide';
 import { IplEntryInst } from '../rwslib/loaders/ipl';
 
 export default class Mesh extends Object3D {
-    geometry: Geometry;
-    materials: Array<Material> = [];
+    geometry: Geometry|null;
+    materials: Material[] = [];
 
     id: any;
     parentId: any;

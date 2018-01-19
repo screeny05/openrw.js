@@ -141,7 +141,7 @@ const models: any[] = [];
 
 const parser = new Corrode();
 parser.ext.rws('rws').map.push('rws');
-const filePath = path.join('./fixtures/game/newramp2.dff');
+const filePath = path.join('./fixtures/game/asuka.dff');
 const fstream = fs.createReadStream(filePath);
 fstream.pipe(parser);
 parser.on('finish', function(){

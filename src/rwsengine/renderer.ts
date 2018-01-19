@@ -48,11 +48,11 @@ export default class Renderer {
     }
 
     init(){
-        this.gl.useProgram(this.worldShader.program);
         this.gl.clearColor(0, 0.5, 0.5, 0);
     }
 
     preRender(){
+        this.worldShader.use();
         this.gl.viewport(0, 0, this.window.fbWidth, this.window.fbHeight);
         this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
         this.gl.enable(this.gl.DEPTH_TEST);
@@ -67,7 +67,6 @@ export default class Renderer {
 
     render(){
         this.preRender();
-
         this.world.meshes.forEach(this.renderMesh);
     }
 
@@ -77,14 +76,15 @@ export default class Renderer {
             return;
         }
 
-        this.gl.uniformMatrix4fv(this.worldShader.pointers.modelMatrix, false, mesh.worldTransform);
+        const { geometry } = mesh;
 
-        if(mesh.geometry){
-            mesh.geometry.indicesPerMaterialBuffer.forEach((materialIndicesBuffer, i) => {
-                this.renderElementBuffer(mesh.geometry, mesh.materials[i], materialIndicesBuffer);
+        if(geometry){
+            this.gl.uniformMatrix4fv(this.worldShader.pointers.modelMatrix, false, mesh.worldTransform);
+
+            geometry.indicesPerMaterialBuffer.forEach((materialIndicesBuffer, i) => {
+                this.renderElementBuffer(geometry, mesh.materials[i], materialIndicesBuffer);
             });
         }
-
 
         mesh.children.forEach(this.renderMesh);
     }

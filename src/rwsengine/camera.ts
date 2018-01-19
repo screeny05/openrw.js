@@ -22,7 +22,7 @@ export default class Camera {
     horizontalRotation: number = 0;
     verticalRotation: number = 0;
 
-    constructor(fov, window: NativeWindow<GLES2Context>){
+    constructor(fov: number, window: NativeWindow<GLES2Context>){
         this.fov = fov;
         this.window = window;
 
