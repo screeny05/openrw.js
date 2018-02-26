@@ -1,44 +1,25 @@
 {
-  "name": "openrwjs",
-  "version": "0.1.0",
+  "name": "openrwjs-web",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
-  "bin": "dist/index.js",
   "scripts": {
-    "build": "tsc dist",
-    "run": "node --abort-on-uncaught-exception --napi-modules dist",
-    "debug": "node --napi-modules --inspect-brk dist",
-    "trace-deopt": "node --napi-modules --trace-hydrogen --trace-phase=Z --trace-deopt --code-comments --hydrogen-track-positions --redirect-code-traces --redirect-code-traces-to=code.asm dist"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Sebastian Langer <sl@scn.cx>",
+  "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@glaced/gles2-2.0": "0.1.0-33548",
-    "@glaced/lwngl": "^0.1.0",
-    "bind-decorator": "^1.0.11",
-    "blessed": "^0.1.81",
-    "blessed-contrib": "^4.8.5",
-    "corrode": "^1.0.4",
-    "death": "^1.1.0",
-    "debug": "^2.6.6",
-    "deep-eql": "^2.0.2",
-    "git-rev-sync": "^1.9.1",
-    "gl-matrix": "^2.4.0",
-    "glslify": "^6.1.0",
-    "klaw": "^1.3.1",
-    "lodash": "^4.17.4",
-    "lsof": "^0.1.0",
-    "readdirp": "^2.1.0",
-    "split2": "^2.2.0",
-    "throttle-debounce": "^1.0.1"
-  },
   "devDependencies": {
-    "@types/blessed": "^0.1.7",
-    "@types/debug": "0.0.29",
-    "@types/gl-matrix": "^2.2.34",
-    "@types/klaw": "^1.3.2",
-    "@types/lodash": "^4.14.62",
-    "@types/node": "^7.0.46",
-    "@types/split2": "^2.1.6"
+    "@types/node": "^9.4.5",
+    "typescript": "^2.7.1"
+  },
+  "dependencies": {
+    "corrode": "^1.0.4",
+    "deep-eql": "^3.0.1",
+    "filereader-stream": "^1.0.0",
+    "readable-stream": "^2.3.3",
+    "setimmediate": "^1.0.5",
+    "split2": "^2.2.0",
+    "three": "^0.90.0",
+    "ts-keycode-enum": "^1.0.4"
   }
 }

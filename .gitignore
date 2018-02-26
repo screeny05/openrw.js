@@ -1,6 +1,7 @@
 fixtures
 dist
 debug
+.cache
 
 .vscode
 openrw
