@@ -70,7 +70,7 @@ export interface RwsBinMeshPlg extends RwsSection {
 export interface RwsMaterial extends RwsSection {
     __name__: 'rwsMaterial';
     extension: RwsExtension<RwsBinMeshPlg>;
-    color: Uint8Array[4];
+    color: number[];
     flags: number;
     hasAlpha: boolean;
     isTextured: number;
@@ -99,7 +99,7 @@ export interface RwsGeometry extends RwsSection {
     surfaceAmbient?: number;
     surfaceDiffuse?: number;
     surfaceSpecular?: number;
-    colors: Array<Uint8Array[4]>;
+    colors?: Array<Uint8Array>;
     textureCoordinates: Array<Array<vec2>>;
     triangles: Array<{
         materialId: number;

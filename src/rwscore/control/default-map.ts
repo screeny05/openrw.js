@@ -4,50 +4,68 @@ import { InputControlMap } from "./mapper";
 import { InputDevice } from "./device";
 
 export const defaultMap: InputControlMap = {
-    [Control.Aim]: {
+    [Control.Aim]: [{
         isToggle: true,
         device: InputDevice.Mouse,
-        inputs: [MouseButton.Secondary]
-    },
-    [Control.Fire]: {
+        input: MouseButton.Secondary
+    }],
+    [Control.Fire]: [{
         device: InputDevice.Mouse,
-        inputs: [MouseButton.Primary]
-    },
-    [Control.MoveForwardOnFoot]: {
+        input: MouseButton.Primary
+    }],
+    [Control.MoveForwardOnFoot]: [{
         device: InputDevice.Keyboard,
-        inputs: [Key.UpArrow, Key.W]
-    },
-    [Control.MoveForwardInCar]: {
+        input: Key.UpArrow
+    }, {
         device: InputDevice.Keyboard,
-        inputs: [Key.UpArrow, Key.W]
-    },
-    [Control.MoveLeft]: {
+        input: Key.W
+    }],
+    [Control.MoveForwardInCar]: [{
         device: InputDevice.Keyboard,
-        inputs: [Key.LeftArrow, Key.A]
-    },
-    [Control.MoveBackwardOnFoot]: {
+        input: Key.UpArrow
+    }, {
         device: InputDevice.Keyboard,
-        inputs: [Key.DownArrow, Key.S]
-    },
-    [Control.MoveBackwardInCar]: {
+        input: Key.W
+    }],
+    [Control.MoveLeft]: [{
         device: InputDevice.Keyboard,
-        inputs: [Key.DownArrow, Key.S]
-    },
-    [Control.MoveRight]: {
+        input: Key.LeftArrow
+    }, {
         device: InputDevice.Keyboard,
-        inputs: [Key.RightArrow, Key.D]
-    },
-    [Control.Sprint]: {
+        input: Key.A
+    }],
+    [Control.MoveBackwardOnFoot]: [{
+        device: InputDevice.Keyboard,
+        input: Key.DownArrow
+    }, {
+        device: InputDevice.Keyboard,
+        input: Key.S
+    }],
+    [Control.MoveBackwardInCar]: [{
+        device: InputDevice.Keyboard,
+        input: Key.DownArrow
+    }, {
+        device: InputDevice.Keyboard,
+        input: Key.S
+    }],
+    [Control.MoveRight]: [{
+        device: InputDevice.Keyboard,
+        input: Key.RightArrow
+    }, {
+        device: InputDevice.Keyboard,
+        input: Key.D
+    }],
+    [Control.Sprint]: [{
         isToggle: true,
         device: InputDevice.Keyboard,
-        inputs: [Key.Shift]
-    },
-    [Control.LookY]: {
+        input: Key.Shift
+    }],
+    [Control.LookY]: [{
         device: InputDevice.Mouse,
-        inputs: [MouseMove.Y]
-    },
-    [Control.LookX]: {
+        input: MouseMove.X
+    }],
+    [Control.LookX]: [{
         device: InputDevice.Mouse,
-        inputs: [MouseMove.X]
-    },
+        input: MouseMove.Y
+    }],
 }

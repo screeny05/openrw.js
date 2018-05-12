@@ -1,16 +1,17 @@
 import { mat4, vec3, quat } from 'gl-matrix';
+import { IObject3d } from './index';
 
-export default class Object3D {
+export default class NativeObject3d implements IObject3d {
     position: vec3 = vec3.create();
     scaling: vec3 = vec3.fromValues(1, 1, 1);
     rotation: quat = quat.create();
     worldTransform: mat4 = mat4.create();
     localTransform: mat4 = mat4.create();
 
-    parent: Object3D|null;
-    children: Array<Object3D> = [];
+    parent?: NativeObject3d;
+    children: NativeObject3d[] = [];
 
-    name: string|null;
+    name?: string;
 
     constructor(){}
 
@@ -31,28 +32,28 @@ export default class Object3D {
         this.updateHierarchyTransform();
     }
 
-    addChild(child: Object3D): void {
+    addChild(child: NativeObject3d): void {
         this.children.push(child);
         child.removeFromParent();
         child.parent = this;
         child.updateHierarchyTransform();
     }
 
-    addChildren(children: Array<Object3D>): void {
+    addChildren(children: Array<NativeObject3d>): void {
         children.forEach(child => this.addChild(child));
     }
 
-    removeChild(child: Object3D): void {
+    removeChild(child: NativeObject3d): void {
         const index = this.children.indexOf(child);
         if(index === -1){
             return;
         }
 
         this.children.splice(index, 1);
-        child.parent = null;
+        child.parent = undefined;
     }
 
-    addToParent(parent: Object3D): void {
+    addToParent(parent: NativeObject3d): void {
         parent.addChild(this);
     }
 

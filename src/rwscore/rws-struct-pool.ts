@@ -11,9 +11,10 @@ import * as Corrode from 'corrode';
 import { RwsRootSection, RwsClump, RwsTextureDictionary } from "./type/rws/index";
 import { ColIndex } from "./index/col";
 
-export default class RwsStructPool {
+export class RwsStructPool {
     fileIndex: IPlatformFileIndex;
     language: string;
+    isLoaded: boolean = false;
 
     gxtIndex: GxtIndex;
     rwsClumpIndex: Map<string, RwsClump> = new Map();
@@ -58,6 +59,8 @@ export default class RwsStructPool {
         await this.loadLevelFile('data/gta3.dat');
 
         // await this.loadPedGroups('data/pedgrp.dat');
+
+        this.isLoaded = true;
     }
 
     async loadLevelFile(path: string): Promise<void> {

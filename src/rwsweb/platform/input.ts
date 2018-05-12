@@ -17,43 +17,51 @@ export class PlatformInput implements IPlatformInput {
     constructor($el: HTMLElement){
         this.$el = $el;
         this.registerEvents();
-        this.$el.requestPointerLock();
     }
 
     registerEvents(): void {
-        // TODO: add gamepad, add mousepointerlock, add scroll
-        this.$el.addEventListener('keydown', this.onKey.bind(this, true));
-        this.$el.addEventListener('keyup', this.onKey.bind(this, false));
-        this.$el.addEventListener('mousedown', this.onMouseButton.bind(this, true));
-        this.$el.addEventListener('mouseup', this.onMouseButton.bind(this, false));
+        // TODO: add gamepad, add mousepointerlock, add scroll, add touch, add webvr?
+        this.$el.addEventListener('keydown', this.onKey.bind(this, 1));
+        this.$el.addEventListener('keyup', this.onKey.bind(this, 0));
+        this.$el.addEventListener('mousedown', this.onMouseButton.bind(this, 1));
+        this.$el.addEventListener('mouseup', this.onMouseButton.bind(this, 0));
         this.$el.addEventListener('mousemove', this.onMouseMove.bind(this));
         this.$el.addEventListener('wheel', this.onMouseWheel.bind(this));
+        this.$el.addEventListener('contextmenu', e => e.preventDefault());
     }
 
-    onKey(isPressed, e: KeyboardEvent){
-        const keyboardState = this.getState(InputDevice.Keyboard, e.keyCode, false);
-        keyboardState.state = isPressed;
+    onKey(state: number, e: KeyboardEvent){
+        const keyboardState = this.getState(InputDevice.Keyboard, e.keyCode, 0);
+        keyboardState.value = state;
     }
 
-    onMouseButton(isPressed, e: MouseEvent){
-        const mouseState = this.getState(InputDevice.Mouse, e.button, false);
-        mouseState.state = isPressed;
+    onMouseButton(state: number, e: MouseEvent){
+        if(!document.pointerLockElement){
+            this.$el.requestPointerLock();
+        }
+
+        const mouseState = this.getState(InputDevice.Mouse, e.button, 0);
+        mouseState.value = state;
     }
 
     onMouseMove(e: MouseEvent){
+        if(!document.pointerLockElement){
+            return;
+        }
+
         const moveInputX = this.getState(InputDevice.Mouse, MouseMove.X, 0);
         const moveInputY = this.getState(InputDevice.Mouse, MouseMove.Y, 0);
 
-        moveInputX.state += e.movementX;
-        moveInputY.state += e.movementY;
+        moveInputX.value += e.movementX;
+        moveInputY.value += e.movementY;
     }
 
     onMouseWheel(e: WheelEvent){
         const wheelInputX = this.getState(InputDevice.Mouse, MouseMove.WheelX, 0);
         const wheelInputY = this.getState(InputDevice.Mouse, MouseMove.WheelY, 0);
 
-        wheelInputX.state += e.deltaX;
-        wheelInputY.state += e.deltaY;
+        wheelInputX.value += e.deltaX;
+        wheelInputY.value += e.deltaY;
     }
 
     startGamepadPolling(){
@@ -71,14 +79,14 @@ export class PlatformInput implements IPlatformInput {
         }
     }
 
-    getState(device: InputDevice, input: number, defaultState?: any): IPlatformInputState {
+    getState(device: InputDevice, input: number, defaultState: number = 0): IPlatformInputState {
         const stateContainer = this.getStateContainer(device);
         let state = stateContainer.get(input);
         if(!state){
             state = {
                 device,
                 input,
-                state: defaultState,
+                value: defaultState,
             };
             stateContainer.set(input, state);
         }
@@ -97,10 +105,10 @@ export class PlatformInput implements IPlatformInput {
     }
 
     updateMouseState(){
-        this.getState(InputDevice.Mouse, MouseMove.X, 0).state = 0;
-        this.getState(InputDevice.Mouse, MouseMove.Y, 0).state = 0;
-        this.getState(InputDevice.Mouse, MouseMove.WheelX, 0).state = 0;
-        this.getState(InputDevice.Mouse, MouseMove.WheelY, 0).state = 0;
+        this.getState(InputDevice.Mouse, MouseMove.X).value = 0;
+        this.getState(InputDevice.Mouse, MouseMove.Y).value = 0;
+        this.getState(InputDevice.Mouse, MouseMove.WheelX).value = 0;
+        this.getState(InputDevice.Mouse, MouseMove.WheelY).value = 0;
     }
 
     updateGamepadState(){

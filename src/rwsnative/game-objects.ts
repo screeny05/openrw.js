@@ -114,8 +114,6 @@ export default class GameObjects {
         return await this.loadResourceFromPool(name, this.textureDictionaryPool, RWSSectionTypes.RW_CLUMP, fromImg);
     }
 
-
-
     async loadMesh(definition: IdeEntryObjs, placement: IplEntryInst): Promise<Mesh> {
         if(definition.modelName !== placement.modelName){
             console.warn(`GameObject: OBJS and INST differ in modelName. Using INST.\nOBJS: ${definition.modelName}\nINST: ${placement.modelName}`);
@@ -243,7 +241,6 @@ export default class GameObjects {
         if(cachedTexture){
             return cachedTexture;
         }
-
 
         const texture = new Texture(this.gl);
 

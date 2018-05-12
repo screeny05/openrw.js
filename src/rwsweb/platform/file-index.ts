@@ -5,14 +5,14 @@ export class PlatformFileIndex implements IPlatformFileIndex {
     private index: Map<string, PlatformFile> = new Map();
     private root: string;
 
-    constructor(input: HTMLInputElement) {
-        if(!input.files || input.files.length === 0){
+    constructor(files: FileList | null) {
+        if(!files || files.length === 0){
             throw new Error('No Files selected');
         }
 
-        this.root = input.files[0].webkitRelativePath.split('/')[0];
+        this.root = files[0].webkitRelativePath.split('/')[0];
 
-        Array.from(input.files).forEach(file => {
+        Array.from(files).forEach(file => {
             const normalizedPath = this.normalizePath(file.webkitRelativePath);
             this.index.set(normalizedPath, new PlatformFile(file));
         });

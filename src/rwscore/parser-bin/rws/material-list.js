@@ -13,7 +13,10 @@ Corrode.addExtension('rwsMaterialList', function(){
                     .int32('index')
                     .map.push('index');
             })
-            .repeat('materials', 'countMaterials', function(){
+            .tap(function(){
+                this.vars.countMaterialData = this.vars.materialIndices.filter(index => index === -1).length;
+            })
+            .repeat('materials', 'countMaterialData', function(){
                 this
                     .ext.rwsSection('material', sectionTypes.RW_MATERIAL)
                     .map.push('material');

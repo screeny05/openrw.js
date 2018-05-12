@@ -8,7 +8,8 @@ Corrode.addExtension('rwsFrameList', function(){
 
         this
             .uint32('countFrames')
-            .repeat('frames', 'countFrames', function(){
+            .repeat('frames', 'countFrames', function(end, discard, i){
+                this.id = i;
                 this
                     .ext.tmatrix('rotation')
                     .ext.tvector3('position')

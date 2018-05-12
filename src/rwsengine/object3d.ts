@@ -12,8 +12,6 @@ export default class Object3D {
 
     name: string|null;
 
-    constructor(){}
-
     updateLocalTransform(): void {
         mat4.fromRotationTranslationScaleOrigin(this.localTransform, this.rotation, this.position, this.scaling, this.position);
     }

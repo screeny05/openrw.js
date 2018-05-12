@@ -4,7 +4,7 @@
         "target": "ES2017",
         "lib": ["dom", "es6", "dom.iterable"],
         "noImplicitAny": false,
-        "rootDirs": ["src", "node_modules"],
+        "rootDirs": ["src"],
         "typeRoots": ["node_modules/@types"],
         "rootDir": "src",
         "outDir": "dist",
@@ -15,7 +15,11 @@
         "noFallthroughCasesInSwitch": true,
         "strictNullChecks": true,
         "sourceMap": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
+        "baseUrl": ".",
+        "paths": {
+            "@rwstypes": ["src/rwscore/type/rws/index.ts"]
+        }
     },
     "exclude": [
         "node_modules",

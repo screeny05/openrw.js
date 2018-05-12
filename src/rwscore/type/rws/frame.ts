@@ -5,6 +5,7 @@ export interface RwsFrame {
     rotation: mat3;
     position: vec3;
     parentFrameId: number;
+    id: number;
 }
 
 export interface RwsFrameExtension extends RwsSection {

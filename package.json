@@ -9,7 +9,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
+    "@types/gl-matrix": "^2.4.0",
     "@types/node": "^9.4.5",
+    "@types/three": "^0.89.11",
+    "@types/throttle-debounce": "^1.0.0",
     "typescript": "^2.7.1"
   },
   "dependencies": {
@@ -17,9 +20,11 @@
     "deep-eql": "^3.0.1",
     "filereader-stream": "^1.0.0",
     "readable-stream": "^2.3.3",
+    "regenerator-runtime": "^0.11.1",
     "setimmediate": "^1.0.5",
     "split2": "^2.2.0",
     "three": "^0.90.0",
+    "throttle-debounce": "^1.0.1",
     "ts-keycode-enum": "^1.0.4"
   }
 }
