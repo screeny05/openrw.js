@@ -1,4 +1,4 @@
-import * as split2 from 'split2';
+import split2 from 'split2';
 
 import { IPlatformFile } from '../platform/file';
 

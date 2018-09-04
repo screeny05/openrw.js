@@ -5,5 +5,5 @@ export interface IPlatformFile {
     name: string;
     size: number;
     parse<T>(parser: TransformStream, start?: number, end?: number): Promise<T>;
-    stream(offset?: number): ReadableStream;
+    stream(start?: number): ReadableStream;
 }

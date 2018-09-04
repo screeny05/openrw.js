@@ -1,4 +1,4 @@
-import * as Corrode from 'corrode';
+import Corrode from 'corrode';
 import { IPlatformFile } from '../platform/file';
 import { Expression as GxtExpression, parse as parseGxt } from '../parser-text/gxt';
 

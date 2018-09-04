@@ -7,9 +7,10 @@ import { IplIndex } from "./index/ipl";
 
 import { RwsSectionType } from './type/rws';
 
-import * as Corrode from 'corrode';
+import Corrode from 'corrode';
 import { RwsRootSection, RwsClump, RwsTextureDictionary } from "./type/rws/index";
 import { ColIndex } from "./index/col";
+import { CarcolsIndex } from "./index/carcols";
 
 export class RwsStructPool {
     fileIndex: IPlatformFileIndex;
@@ -17,6 +18,7 @@ export class RwsStructPool {
     isLoaded: boolean = false;
 
     gxtIndex: GxtIndex;
+    carcolsIndex: CarcolsIndex;
     rwsClumpIndex: Map<string, RwsClump> = new Map();
     rwsTextureDictionaryIndex: Map<string, RwsTextureDictionary> = new Map();
     imgIndices: Map<string, ImgIndex> = new Map();
@@ -27,10 +29,6 @@ export class RwsStructPool {
     constructor(fileIndex: IPlatformFileIndex, language: string = 'american'){
         this.fileIndex = fileIndex;
         this.language = language;
-    }
-
-    isValidPath(): boolean {
-        return this.fileIndex.has('models/gta3.img');
     }
 
     async load(): Promise<void> {
@@ -46,7 +44,7 @@ export class RwsStructPool {
         await this.loadRws('models/generic.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
         await this.loadRws('models/misc.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
 
-        // await this.loadCarcols('data/carcols.dat');
+        await this.loadCarcols('data/carcols.dat');
         // await this.loadWeather('data/timecyc.dat');
         // await this.loadHandling('data/handling.cfg');
         // await this.loadWaterpro('data/waterpro.dat');
@@ -131,6 +129,13 @@ export class RwsStructPool {
         await gxtIndex.load();
 
         this.gxtIndex = gxtIndex;
+    }
+
+    async loadCarcols(path: string): Promise<void> {
+        const carcolsIndex = new CarcolsIndex(this.fileIndex.get(path));
+        await carcolsIndex.load();
+
+        this.carcolsIndex = carcolsIndex;
     }
 
     async loadColfile(path: string, zone: number): Promise<void> {

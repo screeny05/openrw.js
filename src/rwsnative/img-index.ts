@@ -2,7 +2,7 @@ import FileIndex from './file-index';
 
 import DirEntry from '../rwslib/types/dir-entry';
 
-import * as Corrode from 'corrode';
+import Corrode from 'corrode';
 
 import * as fs from 'fs';
 

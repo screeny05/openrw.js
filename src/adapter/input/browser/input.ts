@@ -1,6 +1,6 @@
-import { IPlatformInput, IPlatformInputState } from "../../rwscore/platform/input";
-import { InputDevice } from "../../rwscore/control/device";
-import { MouseMove } from "../../rwscore/control/input";
+import { IPlatformInput, IPlatformInputState } from '../interface/input';
+import { InputDevice } from '../../../rwscore/control/device';
+import { MouseMove } from '../../../rwscore/control/input';
 
 type InputStateContainer = Map<number, IPlatformInputState>;
 
@@ -73,7 +73,10 @@ export class PlatformInput implements IPlatformInput {
     }
 
     pollGamepads(){
-        this.gamepads = navigator.getGamepads();
+        const gamepads = navigator.getGamepads();
+        if(!gamepads){
+            this.gamepads = [];
+        }
         if(this.gamepads.length > 0){
             this.stopGamepadPolling();
         }

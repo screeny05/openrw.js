@@ -1,6 +1,6 @@
 import { IPlatformFile } from "../platform/file";
 
-import * as Corrode from 'corrode';
+import Corrode from 'corrode';
 import { CollEntry, ColPossibleVersion } from "../type/rws/coll";
 
 export class ColIndex {

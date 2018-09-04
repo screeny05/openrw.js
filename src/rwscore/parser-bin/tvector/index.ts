@@ -1,4 +1,4 @@
-import * as Corrode from 'corrode';
+import Corrode from 'corrode';
 
 Corrode.addExtension('nativeArray', function(type, elementCount){
     this

@@ -1,7 +1,7 @@
 import { ReadableStream } from 'readable-stream';
-import { IPlatformFile } from "../../rwscore/platform/file";
+import { IPlatformFile } from '../interface/file';
 
-import * as fileReadStream from 'filereader-stream';
+import fileReadStream from 'filereader-stream';
 
 export class PlatformFile implements IPlatformFile {
     file: File;
@@ -31,6 +31,9 @@ export class PlatformFile implements IPlatformFile {
     async getData(start?: number, end?: number): Promise<ArrayBuffer> {
         if(typeof start === 'undefined' && typeof end !== 'undefined' || typeof start !== 'undefined' && typeof end === 'undefined'){
             throw new TypeError('If start or end is provided, both are required.');
+        }
+        if(typeof start === 'number' && typeof end === 'number' && (length > this.size || start > this.size || end > this.size)){
+            throw new Error('Index out of bounds error');
         }
 
         const getSlice = (buffer: ArrayBuffer) => {

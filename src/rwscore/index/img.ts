@@ -1,4 +1,4 @@
-import * as Corrode from 'corrode';
+import Corrode from 'corrode';
 
 import { DirEntry } from '../type/dir-entry';
 import { RwsRootSection } from '../type/rws/index';

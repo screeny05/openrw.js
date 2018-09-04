@@ -10,15 +10,21 @@
   "license": "MIT",
   "devDependencies": {
     "@types/gl-matrix": "^2.4.0",
+    "@types/lodash": "^4.14.116",
+    "@types/lodash.chunk": "^4.2.4",
     "@types/node": "^9.4.5",
+    "@types/p-queue": "^2.3.1",
     "@types/three": "^0.89.11",
     "@types/throttle-debounce": "^1.0.0",
-    "typescript": "^2.7.1"
+    "typescript": "^2.8.3"
   },
   "dependencies": {
     "corrode": "^1.0.4",
     "deep-eql": "^3.0.1",
     "filereader-stream": "^1.0.0",
+    "lodash": "^4.17.10",
+    "lodash.chunk": "^4.2.0",
+    "p-queue": "^2.4.2",
     "readable-stream": "^2.3.3",
     "regenerator-runtime": "^0.11.1",
     "setimmediate": "^1.0.5",

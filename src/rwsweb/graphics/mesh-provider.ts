@@ -24,7 +24,7 @@ export class ThreeMeshProvider implements IMeshProvider {
             throw new Error(`Couldn't load DFF ${name}.dff or TXD ${name}.txd`);
         }
 
-        const rootMesh = new THREE.Mesh();
+        const rootMesh = new THREE.Mesh(undefined, new THREE.MeshBasicMaterial());
 
         const threeMeshes = dff.atomics.map(atomic => {
             const mesh = this.atomicToMesh(atomic);
@@ -43,7 +43,6 @@ export class ThreeMeshProvider implements IMeshProvider {
                 parentThree.add(mesh);
             }
         });
-
         return new ThreeMesh(rootMesh);
     }
 
@@ -133,7 +132,7 @@ export class ThreeMeshProvider implements IMeshProvider {
 
         let nextInstancedIndex = 0;
         const materials: THREE.Material[] = [];
-        const materialInstances: THREE.Material[] = materialList.materials.map(material => this.materialToThreeMaterial.bind(this));
+        const materialInstances: THREE.Material[] = materialList.materials.map(material => this.materialToThreeMaterial(material, dictionary, true));
 
         const instanceIndices = materialList.materialIndices.map(index => {
             if(index === -1){
@@ -199,7 +198,7 @@ export class ThreeMeshProvider implements IMeshProvider {
             this.filterToThreeFilter(textureNative.filterMode),
         );
 
-        this.textureCache.set()
+        //this.textureCache.set()
     }
 
     wrapToThreeWrap(addressMode: RwsTextureAddressMode): THREE.Wrapping {

@@ -7,7 +7,7 @@ import streamTextDat, { DatCommand } from '../rwslib/loaders/text-dat';
 import IplLoader from '../rwslib/loaders/ipl';
 import IdeLoader from '../rwslib/loaders/ide';
 
-import * as Corrode from 'corrode';
+import Corrode from 'corrode';
 import * as fs from 'fs';
 
 interface PreDefinedTextures {

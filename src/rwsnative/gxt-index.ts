@@ -1,6 +1,6 @@
 import FileIndex from './file-index';
 
-import * as Corrode from 'corrode';
+import Corrode from 'corrode';
 
 interface GxtEntry {
     readable: string;

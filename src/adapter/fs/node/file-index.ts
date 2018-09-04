@@ -1,20 +1,28 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
+import * as klaw from 'klaw';
+import * as death from 'death';
+
 import { PlatformFile } from './file';
-import { IPlatformFileIndex } from "../../rwscore/platform/file-index";
+import { IPlatformFileIndex } from '../interface/file-index';
 
 export class PlatformFileIndex implements IPlatformFileIndex {
     private index: Map<string, PlatformFile> = new Map();
     private root: string;
 
-    constructor(files: FileList | null) {
-        if(!files || files.length === 0){
-            throw new Error('No Files selected');
-        }
+    constructor(root: string){
+        this.root = path.join(root, '/');
+    }
 
-        this.root = files[0].webkitRelativePath.split('/')[0];
-
-        Array.from(files).forEach(file => {
-            const normalizedPath = this.normalizePath(file.webkitRelativePath);
-            this.index.set(normalizedPath, new PlatformFile(file));
+    async init(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            klaw(this.root)
+                .on('data', item =>
+                    this.index.set(this.normalizePath(item.path), new PlatformFile(item))
+                )
+                .on('error', reject)
+                .on('end', resolve);
         });
     }
 

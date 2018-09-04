@@ -1,4 +1,4 @@
-import { InputDevice } from '../control/device';
+import { InputDevice } from '../../../rwscore/control/device';
 
 export interface IPlatformInputState {
     device: InputDevice;

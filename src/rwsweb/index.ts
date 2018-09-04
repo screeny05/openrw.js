@@ -2,13 +2,13 @@ import 'setimmediate';
 import "regenerator-runtime/runtime";
 import '../rwscore/parser-bin';
 
-import { PlatformFileIndex } from './platform/file-index';
+import { PlatformFileIndex } from '../adapter/fs/browser/file-index';
 import { RwsStructPool } from '../rwscore/rws-struct-pool';
 import { ThreeRenderer } from './graphics/renderer';
 import { ThreeMeshProvider } from './graphics/mesh-provider';
 import { InputControlMapper } from '../rwscore/control/mapper';
 import { defaultMap } from '../rwscore/control/default-map';
-import { PlatformInput } from './platform/input';
+import { PlatformInput } from '../adapter/input/browser/input';
 import { Control } from '../rwscore/control/control';
 
 const $select: HTMLInputElement = <any>document.querySelector('.js--folder-select');
@@ -36,10 +36,6 @@ class WebPlatform {
         this.fileIndex = new PlatformFileIndex(files);
         this.rwsPool = new RwsStructPool(this.fileIndex);
 
-        if(!this.rwsPool.isValidPath()){
-            throw new Error('Given Path does not contain Gamefiles');
-        }
-
         this.meshProvider = new ThreeMeshProvider(this.rwsPool);
         this.renderer = new ThreeRenderer(this.meshProvider);
         this.input = new PlatformInput(document.documentElement);
@@ -47,8 +43,13 @@ class WebPlatform {
     }
 
     async load(): Promise<void> {
+        await this.fileIndex.init();
         await this.rwsPool.load();
         await this.renderer.setupScene();
+
+        if(!this.rwsPool.isValidPath()){
+            throw new Error('Given Path does not contain Gamefiles');
+        }
     }
 
     start(): void {
