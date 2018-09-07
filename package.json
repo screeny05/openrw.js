@@ -1,11 +1,6 @@
 {
   "name": "openrwjs-web",
   "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "Sebastian Langer <sl@scn.cx>",
   "browserslist": "last 2 chrome versions, last 2 firefox versions, last 1 edge version, last 1 safari version",
   "license": "MIT",
@@ -24,15 +19,12 @@
     "corrode": "^1.0.4",
     "deep-eql": "^3.0.1",
     "filereader-stream": "^1.0.0",
-    "lerp": "^1.0.3",
     "lodash": "^4.17.10",
-    "lodash.chunk": "^4.2.0",
     "p-queue": "^2.4.2",
     "readable-stream": "^2.3.3",
     "regenerator-runtime": "^0.11.1",
     "setimmediate": "^1.0.5",
     "split2": "^2.2.0",
-    "src": "^1.1.2",
     "three": "^0.90.0",
     "throttle-debounce": "^1.0.1",
     "ts-keycode-enum": "^1.0.4"
