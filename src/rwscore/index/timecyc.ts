@@ -1,15 +1,12 @@
-import { IPlatformFile } from "../../adapter/fs/interface/file";
+import { IPlatformFile } from "@rws/adapter/fs/interface/file";
 import { vec3 } from "gl-matrix";
-import { chunk } from 'lodash';
+import { lerp } from '../math';
 
 import streamTextDat, { DatCommand } from '../parser-text/text-dat';
 import { rgbFromString } from "../parser-text/string-native";
 
 export interface TimecycEntry {
-    staticAmbienceColor: vec3;
-    dynamicAmbienceColor: vec3;
-    staticAmbienceBlurColor: vec3;
-    dynamicAmbienceBlurColor: vec3;
+    ambientColor: vec3;
     directLightColor: vec3;
     skyTopColor: vec3;
     skyBottomColor: vec3;
@@ -17,19 +14,17 @@ export interface TimecycEntry {
     sunCoronaColor: vec3;
     sunCoreSize: number;
     sunCoronaSize: number;
-    spriteBrightness: number;
+    sunBrightness: number;
     shadowIntensity: number;
-    lightShadingValue: number;
-    poleShadingValue: number;
+    lightShading: number;
+    poleShading: number;
     farClippingOffset: number;
     fogStartOffset: number;
-    lightOnGround: number;
-    lowerCloudsColor: vec3;
-    upperCloudsTopColor: vec3;
-    upperCloudsBottomColor: vec3;
-    blurColor: vec3;
-    waterColor: vec3;
-    waterAlphaLevel: number;
+    amountGroundLight: number;
+    lowerCloudColor: vec3;
+    upperCloudTopColor: vec3;
+    upperCloudBottomColor: vec3;
+    //unknown: [number, number, number, number];
 }
 
 const WeatherCycleGTAIII = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 1, 0, 0, 0, 1, 3, 3, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 2, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 2, 1];
@@ -51,35 +46,29 @@ export class TimecycIndex {
             });
 
             timecycTransform.on('data', (item: DatCommand) => {
-                if(item.length !== 52){
+                if(item.length !== 40){
                     throw new TypeError(`Timecyc entry must have a length of 52. Got ${item.length} entries.`);
                 }
 
                 this.entries.push({
-                    staticAmbienceColor: rgbFromString(item[0], item[1], item[2]),
-                    dynamicAmbienceColor: rgbFromString(item[3], item[4], item[5]),
-                    staticAmbienceBlurColor: rgbFromString(item[6], item[7], item[8]),
-                    dynamicAmbienceBlurColor: rgbFromString(item[9], item[10], item[11]),
-                    directLightColor: rgbFromString(item[12], item[13], item[14]),
-                    skyTopColor: rgbFromString(item[15], item[16], item[17]),
-                    skyBottomColor: rgbFromString(item[18], item[19], item[20]),
-                    sunCoreColor: rgbFromString(item[21], item[22], item[23]),
-                    sunCoronaColor: rgbFromString(item[24], item[25], item[26]),
-                    sunCoreSize: Number.parseFloat(item[27]),
-                    sunCoronaSize: Number.parseFloat(item[28]),
-                    spriteBrightness: Number.parseFloat(item[29]),
-                    shadowIntensity: Number.parseFloat(item[30]),
-                    lightShadingValue: Number.parseFloat(item[31]),
-                    poleShadingValue: Number.parseFloat(item[32]),
-                    farClippingOffset: Number.parseFloat(item[33]),
-                    fogStartOffset: Number.parseFloat(item[34]),
-                    lightOnGround: Number.parseFloat(item[35]),
-                    lowerCloudsColor: rgbFromString(item[36], item[37], item[38]),
-                    upperCloudsTopColor: rgbFromString(item[39], item[40], item[41]),
-                    upperCloudsBottomColor: rgbFromString(item[42], item[43], item[44]),
-                    blurColor: rgbFromString(item[45], item[46], item[47]),
-                    waterColor: rgbFromString(item[48], item[49], item[50]),
-                    waterAlphaLevel: Number.parseFloat(item[51])
+                    ambientColor: rgbFromString(item[0], item[1], item[2]),
+                    directLightColor: rgbFromString(item[3], item[4], item[5]),
+                    skyTopColor: rgbFromString(item[6], item[7], item[8]),
+                    skyBottomColor: rgbFromString(item[9], item[10], item[11]),
+                    sunCoreColor: rgbFromString(item[12], item[13], item[14]),
+                    sunCoronaColor: rgbFromString(item[15], item[16], item[17]),
+                    sunCoreSize: Number.parseFloat(item[18]),
+                    sunCoronaSize: Number.parseFloat(item[19]),
+                    sunBrightness: Number.parseFloat(item[20]),
+                    shadowIntensity: Number.parseFloat(item[21]),
+                    lightShading: Number.parseFloat(item[22]),
+                    poleShading: Number.parseFloat(item[23]),
+                    farClippingOffset: Number.parseFloat(item[24]),
+                    fogStartOffset: Number.parseFloat(item[25]),
+                    amountGroundLight: Number.parseFloat(item[26]),
+                    lowerCloudColor: rgbFromString(item[27], item[28], item[29]),
+                    upperCloudTopColor: rgbFromString(item[30], item[31], item[32]),
+                    upperCloudBottomColor: rgbFromString(item[33], item[34], item[35]),
                 });
             });
 
@@ -88,7 +77,54 @@ export class TimecycIndex {
         });
     }
 
-    getInterpolatedTimecycEntry(time: number): TimecycEntry {
-        return <any>{};
+    getInterpolatedTimecycEntry(weatherType: number, time: number): TimecycEntry {
+        const currentHour = Math.floor(time) % 24;
+        const nextHour = (currentHour + 1) % 24;
+        const currentEntry = this.entries[weatherType * 24 + currentHour];
+        const nextEntry = this.entries[weatherType * 24 + nextHour];
+        return this.interpolateEntries(currentEntry, nextEntry, time % 1);
+    }
+
+    interpolateEntries(start: TimecycEntry, end: TimecycEntry, t: number): TimecycEntry {
+        const ambientColor = vec3.create();
+        const directLightColor = vec3.create();
+        const skyTopColor = vec3.create();
+        const skyBottomColor = vec3.create();
+        const sunCoreColor = vec3.create();
+        const sunCoronaColor = vec3.create();
+        const lowerCloudColor = vec3.create();
+        const upperCloudTopColor = vec3.create();
+        const upperCloudBottomColor = vec3.create();
+
+        vec3.lerp(ambientColor, start.ambientColor, end.ambientColor, t);
+        vec3.lerp(directLightColor, start.directLightColor, end.directLightColor, t);
+        vec3.lerp(skyTopColor, start.skyTopColor, end.skyTopColor, t);
+        vec3.lerp(skyBottomColor, start.skyBottomColor, end.skyBottomColor, t);
+        vec3.lerp(sunCoreColor, start.sunCoreColor, end.sunCoreColor, t);
+        vec3.lerp(sunCoronaColor, start.sunCoronaColor, end.sunCoronaColor, t);
+        vec3.lerp(lowerCloudColor, start.lowerCloudColor, end.lowerCloudColor, t);
+        vec3.lerp(upperCloudTopColor, start.upperCloudTopColor, end.upperCloudTopColor, t);
+        vec3.lerp(upperCloudBottomColor, start.upperCloudBottomColor, end.upperCloudBottomColor, t);
+
+        return {
+            ambientColor,
+            directLightColor,
+            skyTopColor,
+            skyBottomColor,
+            sunCoreColor,
+            sunCoronaColor,
+            sunCoreSize: lerp(start.sunCoreSize, end.sunCoreSize, t),
+            sunCoronaSize: lerp(start.sunCoronaSize, end.sunCoronaSize, t),
+            sunBrightness: lerp(start.sunBrightness, end.sunBrightness, t),
+            shadowIntensity: lerp(start.shadowIntensity, end.shadowIntensity, t),
+            lightShading: lerp(start.lightShading, end.lightShading, t),
+            poleShading: lerp(start.poleShading, end.poleShading, t),
+            farClippingOffset: lerp(start.farClippingOffset, end.farClippingOffset, t),
+            fogStartOffset: lerp(start.fogStartOffset, end.fogStartOffset, t),
+            amountGroundLight: lerp(start.amountGroundLight, end.amountGroundLight, t),
+            lowerCloudColor,
+            upperCloudTopColor,
+            upperCloudBottomColor,
+        };
     }
 }

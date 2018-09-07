@@ -18,7 +18,9 @@
         "experimentalDecorators": true,
         "baseUrl": ".",
         "paths": {
-            "@rwstypes": ["src/rwscore/type/rws/index.ts"]
+            "@rws/type/*": ["src/rwscore/type/rws/*"],
+            "@rws/adapter/*": ["src/adapter/*"],
+            "@rws/core/*": ["src/rwscore/*"]
         }
     },
     "exclude": [

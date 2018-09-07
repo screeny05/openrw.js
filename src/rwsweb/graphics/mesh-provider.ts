@@ -24,13 +24,15 @@ export class ThreeMeshProvider implements IMeshProvider {
             throw new Error(`Couldn't load DFF ${name}.dff or TXD ${name}.txd`);
         }
 
-        const rootMesh = new THREE.Mesh(undefined, new THREE.MeshBasicMaterial());
+        const rootMesh = new THREE.Mesh();
+        rootMesh.name = '__root__' + name;
 
         const threeMeshes = dff.atomics.map(atomic => {
-            const mesh = this.atomicToMesh(atomic);
-            const material = this.atomicToMaterials(atomic, txd);
+            const mesh = this.atomicToMesh(atomic, dff.frameList.extensions[atomic.frameIndex].sections[0].name);
+            const materials = this.atomicToMaterials(atomic, txd);
 
-            mesh.material = material[0];
+            // Typings bug - Mesh.prototype.material accepts THREE.Material[]
+            mesh.material = materials as any;
 
             return mesh;
         });
@@ -46,14 +48,8 @@ export class ThreeMeshProvider implements IMeshProvider {
         return new ThreeMesh(rootMesh);
     }
 
-    atomicToMesh(atomic: RwsAtomic): THREE.Mesh {
+    atomicToMesh(atomic: RwsAtomic, name: string = ''): THREE.Mesh {
         const geometry = new THREE.Geometry();
-        const material = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            flatShading: true,
-            vertexColors: atomic.geometry.flags.prelit ? THREE.VertexColors : THREE.NoColors,
-            shininess: 0.6
-        });
 
         const rwGeometry = atomic.geometry;
         const morphTarget = rwGeometry.morphTargets[0];
@@ -105,7 +101,8 @@ export class ThreeMeshProvider implements IMeshProvider {
 
         geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(morphTarget.spherePosition[0], morphTarget.spherePosition[1], morphTarget.spherePosition[2]), morphTarget.sphereRadius);
 
-        const mesh = new THREE.Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry);
+        mesh.name = name;
 
         const rotationQ = quat.create();
         quat.fromMat3(rotationQ, atomic.frame.rotation);
@@ -119,26 +116,21 @@ export class ThreeMeshProvider implements IMeshProvider {
     atomicToMaterials(atomic: RwsAtomic, dictionary: RwsTextureDictionary): THREE.Material[] {
         const { materialList } = atomic.geometry;
 
-        let nextMaterialDataIndex = 0;
-
-        const instancedMaterials: THREE.Material[] = [];
-        materialList.materialIndices.forEach((index, i) => {
+        let currentIndex = 0;
+        const instancedMaterials = materialList.materialIndices.map(index => {
             if(index !== -1){
-                return instancedMaterials.push(instancedMaterials[index]);
+                return null;
             }
-
-            const materialData = materialList.materials[nextMaterialDataIndex];
+            return this.materialToThreeMaterial(materialList.materials[currentIndex++], dictionary, true);
         });
 
-        let nextInstancedIndex = 0;
-        const materials: THREE.Material[] = [];
-        const materialInstances: THREE.Material[] = materialList.materials.map(material => this.materialToThreeMaterial(material, dictionary, true));
-
-        const instanceIndices = materialList.materialIndices.map(index => {
-            if(index === -1){
-                return nextInstancedIndex++;
+        const materials = materialList.materialIndices.map((index, i) => {
+            const instanceIndex = index === -1 ? i : index;
+            const material = instancedMaterials[i];
+            if(!material){
+                throw new Error(`Material with index ${i} not found.`);
             }
-            return index;
+            return material;
         });
         return materials;
     }
@@ -149,7 +141,7 @@ export class ThreeMeshProvider implements IMeshProvider {
 
         const threeMaterial = new THREE.MeshLambertMaterial({
             color,
-            flatShading: true,
+            flatShading: false,
             vertexColors: isPrelit ? THREE.VertexColors : THREE.NoColors,
         });
 
@@ -185,20 +177,29 @@ export class ThreeMeshProvider implements IMeshProvider {
             ctx.fillRect(x, y, 1, 1);
         }*/
 
-        const threeTexture = new THREE.DataTexture(
-            textureNative.mipLevels[0],
-            textureNative.width,
-            textureNative.height,
-            THREE.RGBAFormat,
-            THREE.UnsignedByteType,
+        const threeTexture = new THREE.Texture(
+            undefined,
             THREE.UVMapping,
             this.wrapToThreeWrap(textureNative.uAddressing),
             this.wrapToThreeWrap(textureNative.vAddressing),
             this.filterToThreeFilter(textureNative.filterMode),
             this.filterToThreeFilter(textureNative.filterMode),
+            THREE.RGBAFormat,
+            THREE.UnsignedByteType
         );
+        threeTexture.mipmaps = textureNative.mipLevels.map((level, i) => new ImageData(
+            new Uint8ClampedArray(level),
+            textureNative.width / (2 ** i),
+            textureNative.height / (2 ** i)
+        ));
+        threeTexture.image = threeTexture.mipmaps[0];
 
-        //this.textureCache.set()
+        threeTexture.generateMipmaps = false;
+        threeTexture.flipY = false;
+        threeTexture.unpackAlignment = 1;
+        threeTexture.needsUpdate = true;
+
+        return threeTexture;
     }
 
     wrapToThreeWrap(addressMode: RwsTextureAddressMode): THREE.Wrapping {

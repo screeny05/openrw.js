@@ -2,33 +2,50 @@ import 'setimmediate';
 import "regenerator-runtime/runtime";
 import '../rwscore/parser-bin';
 
-import { PlatformFileIndex } from '../adapter/fs/browser/file-index';
+import { PlatformFileIndex } from '@rws/adapter/fs/browser/file-index';
+import { PlatformInput } from '@rws/adapter/input/browser/input';
 import { RwsStructPool } from '../rwscore/rws-struct-pool';
 import { ThreeRenderer } from './graphics/renderer';
 import { ThreeMeshProvider } from './graphics/mesh-provider';
 import { InputControlMapper } from '../rwscore/control/mapper';
 import { defaultMap } from '../rwscore/control/default-map';
-import { PlatformInput } from '../adapter/input/browser/input';
 import { Control } from '../rwscore/control/control';
 
-const $select: HTMLInputElement = <any>document.querySelector('.js--folder-select');
+const $select = <HTMLInputElement>document.querySelector('.js--folder-select');
+const $reload = <HTMLButtonElement>document.querySelector('.js--reload');
 
-$select.addEventListener('change', async () => {
-    const platform = new WebPlatform($select.files);
+let platform: WebPlatform | null = null;
 
-    $select.remove();
+const setupPlatform = async () => {
+    platform = new WebPlatform($select.files);
+
+    $select.style.display = 'none';
 
     await platform.load();
     platform.start();
+};
+
+$select.addEventListener('change', setupPlatform);
+
+$reload.addEventListener('click', () => {
+    if(platform){
+        platform.stop();
+        platform.renderer.renderer.domElement.remove();
+    }
+    setupPlatform();
 });
 
-class WebPlatform {
+export class WebPlatform {
     fileIndex: PlatformFileIndex;
     rwsPool: RwsStructPool;
     meshProvider: ThreeMeshProvider;
     renderer: ThreeRenderer;
     input: PlatformInput;
     controls: InputControlMapper;
+
+    lastTime: number;
+    gameTime: number;
+    gameTimeMultiplier: number = 1;
 
     isRunning: boolean = false;
 
@@ -37,7 +54,7 @@ class WebPlatform {
         this.rwsPool = new RwsStructPool(this.fileIndex);
 
         this.meshProvider = new ThreeMeshProvider(this.rwsPool);
-        this.renderer = new ThreeRenderer(this.meshProvider);
+        this.renderer = new ThreeRenderer(this.meshProvider, this);
         this.input = new PlatformInput(document.documentElement);
         this.controls = new InputControlMapper(defaultMap, this.input);
     }
@@ -54,26 +71,37 @@ class WebPlatform {
 
     start(): void {
         this.isRunning = true;
+        this.gameTime = 12;
+        this.lastTime = this.gameTime;
         this.requestTick();
+    }
+
+    stop(): void {
+        this.isRunning = false;
     }
 
     requestTick(): void {
         if(!this.isRunning){
             return;
         }
-        requestAnimationFrame(delta => this.tick(delta));
+        requestAnimationFrame(time => this.tick(time));
     }
 
-    tick(delta: number): void {
-        const forward = this.controls.getState(Control.MoveForwardOnFoot) * delta * 0.00001;
-        const backward = this.controls.getState(Control.MoveBackwardOnFoot) * delta * 0.00001;
-        const left = this.controls.getState(Control.MoveLeft) * delta * 0.00001;
-        const right = this.controls.getState(Control.MoveRight) * delta * 0.00001;
+    tick(time: number): void {
+        const delta = time - this.lastTime;
+        this.lastTime = time;
+        this.gameTime += delta / 1000 / 60 * this.gameTimeMultiplier;
+        //console.log(Math.floor(this.gameTime % 24) + ':' + Math.floor(this.gameTime * 60) % 60);
+
+        const forward = this.controls.getState(Control.MoveForwardOnFoot) * delta * 0.01;
+        const backward = this.controls.getState(Control.MoveBackwardOnFoot) * delta * 0.01;
+        const left = this.controls.getState(Control.MoveLeft) * delta * 0.01;
+        const right = this.controls.getState(Control.MoveRight) * delta * 0.01;
         const movementSidewards = this.renderer.camera.getWorldDirection().clone().cross(this.renderer.camera.up).multiplyScalar(right - left);
         this.renderer.camera.position.addScaledVector(this.renderer.camera.getWorldDirection(), forward - backward);
         this.renderer.camera.position.add(movementSidewards);
-        const newRotationZ = this.renderer.camera.rotation.z + this.controls.getState(Control.LookY) * delta * -0.0000002;
-        const newRotationX = this.renderer.camera.rotation.x + this.controls.getState(Control.LookX) * delta * -0.0000002;
+        const newRotationZ = this.renderer.camera.rotation.z + this.controls.getState(Control.LookY) * delta * -0.0002;
+        const newRotationX = this.renderer.camera.rotation.x + this.controls.getState(Control.LookX) * delta * -0.0002;
 
         this.renderer.camera.rotation.z = newRotationZ;
         if(newRotationX < Math.PI && newRotationX > 0){

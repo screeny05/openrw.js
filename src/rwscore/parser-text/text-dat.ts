@@ -1,10 +1,11 @@
 import split2 from 'split2';
 
-import { IPlatformFile } from '../platform/file';
+import { IPlatformFile } from '@rws/adapter/fs/interface/file';
 
 const defaults = {
     lowercase: false,
     splitBy: /, |,| /,
+    trimTrailingComma: true,
     commentIndicator: /#|;/
 };
 
@@ -18,6 +19,10 @@ export function parseLineIntoCommand(line: string, options: typeof defaults): Da
     // remove excess whitespace
     line = line.trim();
     line = line.replace(/\s+/g, ' ');
+
+    if(options.trimTrailingComma){
+        line = line.replace(/,+$/, '');
+    }
 
     if(options.lowercase){
         line = line.toLowerCase();

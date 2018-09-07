@@ -1,16 +1,16 @@
-import { IPlatformFileIndex } from "./platform/file-index";
+import { IPlatformFileIndex } from "@rws/adapter/fs/interface/file-index";
 import streamTextDat, { DatCommand } from "./parser-text/text-dat";
 import { ImgIndex } from "./index/img";
 import { GxtIndex } from "./index/gxt";
 import { IdeIndex } from "./index/ide";
 import { IplIndex } from "./index/ipl";
 
-import { RwsSectionType } from './type/rws';
-
 import Corrode from 'corrode';
-import { RwsRootSection, RwsClump, RwsTextureDictionary } from "./type/rws/index";
+import { RwsSectionType, RwsRootSection, RwsClump, RwsTextureDictionary } from "./type/rws";
 import { ColIndex } from "./index/col";
 import { CarcolsIndex } from "./index/carcols";
+import { TimecycIndex } from "./index/timecyc";
+import { HandlingIndex } from "./index/handling";
 
 export class RwsStructPool {
     fileIndex: IPlatformFileIndex;
@@ -19,6 +19,8 @@ export class RwsStructPool {
 
     gxtIndex: GxtIndex;
     carcolsIndex: CarcolsIndex;
+    timecycIndex: TimecycIndex;
+    handlingIndex: HandlingIndex;
     rwsClumpIndex: Map<string, RwsClump> = new Map();
     rwsTextureDictionaryIndex: Map<string, RwsTextureDictionary> = new Map();
     imgIndices: Map<string, ImgIndex> = new Map();
@@ -29,6 +31,10 @@ export class RwsStructPool {
     constructor(fileIndex: IPlatformFileIndex, language: string = 'american'){
         this.fileIndex = fileIndex;
         this.language = language;
+    }
+
+    isValidPath(): boolean {
+        return this.fileIndex.has('models/gta3.img');
     }
 
     async load(): Promise<void> {
@@ -45,8 +51,8 @@ export class RwsStructPool {
         await this.loadRws('models/misc.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
 
         await this.loadCarcols('data/carcols.dat');
-        // await this.loadWeather('data/timecyc.dat');
-        // await this.loadHandling('data/handling.cfg');
+        await this.loadTimecyc('data/timecyc.dat');
+        await this.loadHandling('data/handling.cfg');
         // await this.loadWaterpro('data/waterpro.dat');
         // await this.loadWeaponDAT('data/weapon.dat');
         // await this.loadPedStats('data/pedstats.dat');
@@ -136,6 +142,20 @@ export class RwsStructPool {
         await carcolsIndex.load();
 
         this.carcolsIndex = carcolsIndex;
+    }
+
+    async loadTimecyc(path: string): Promise<void> {
+        const timecycIndex = new TimecycIndex(this.fileIndex.get(path));
+        await timecycIndex.load();
+
+        this.timecycIndex = timecycIndex;
+    }
+
+    async loadHandling(path: string): Promise<void> {
+        const handlingIndex = new HandlingIndex(this.fileIndex.get(path));
+        await handlingIndex.load();
+
+        this.handlingIndex = handlingIndex;
     }
 
     async loadColfile(path: string, zone: number): Promise<void> {

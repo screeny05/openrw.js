@@ -21,3 +21,7 @@ export function bitmaskFromString<T>(number: string|number, bitmask: object): T 
 export function rgbFromString(r: string, g: string, b: string): vec3 {
     return vec3.fromValues(Number.parseFloat(r) / 255, Number.parseFloat(g) / 255, Number.parseFloat(b) / 255);
 }
+
+export function booleanFromStringNumber(b: string): boolean {
+    return b === '1';
+}

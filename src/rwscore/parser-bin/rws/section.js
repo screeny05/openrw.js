@@ -15,7 +15,6 @@ Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback){
         .tap(function(){
             const { header } = this.vars;
             const { type } = header;
-            const predictedEndOffset = this.streamOffset + header.size;
 
             if(expectedSectionType && type !== expectedSectionType){
                 console.log(this.varStack.stack);
@@ -87,7 +86,7 @@ Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback){
 
 
             // SKIP
-            } else if(type === sectionTypes.RW_SKY_MIPMAP){
+            } else if(type === sectionTypes.RW_SKY_MIPMAP || type === sectionTypes.RW_PARTICLES_PLG){
                 // TODO: ignore?
                 this.skip(header.size);
                 this.vars.data = {
@@ -96,7 +95,7 @@ Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback){
                 };
 
             } else {
-                console.warn('encountered unknown section-type.', sectionTypes.getNameByType(header.type), header, ' using buffer');
+                console.warn('Encountered unknown/unimplemented section-type.', sectionTypes.getNameByType(header.type), header);
                 this.buffer('data', header.size);
                 //throw new Error(`No Section handler for type ${type}.\nHeader:\n${JSON.stringify(header)}`);
             }

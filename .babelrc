@@ -1,0 +1,12 @@
+{
+    "plugins": [
+        ["module-resolver", {
+            "root": ["."],
+            "alias": {
+                "@rws/type": "./src/rwscore/type/rws",
+                "@rws/adapter": "./src/adapter",
+                "@rws/core": "./src/rwscore"
+            }
+        }]
+    ]
+}

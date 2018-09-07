@@ -1,4 +1,4 @@
-import { IPlatformFile } from "../../adapter/fs/interface/file";
+import { IPlatformFile } from "@rws/adapter/fs/interface/file";
 import { vec3 } from "gl-matrix";
 import { chunk } from 'lodash';
 
