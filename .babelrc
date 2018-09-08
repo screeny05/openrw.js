@@ -3,9 +3,17 @@
         ["module-resolver", {
             "root": ["."],
             "alias": {
-                "@rws/type": "./src/rwscore/type/rws",
-                "@rws/adapter": "./src/adapter",
-                "@rws/core": "./src/rwscore"
+                "@rws/game/": "./packages/game",
+                "@rws/library/": "./packages/library",
+                "@rws/platform/": "./packages/platform",
+                "@rws/platform-control-browser/": "./packages/platform-control-browser/",
+                "@rws/platform-control-glfw/": "./packages/platform-control-glfw/",
+                "@rws/platform-fs-browser/": "./packages/platform-fs-browser/",
+                "@rws/platform-fs-node/": "./packages/platform-fs-node/",
+                "@rws/platform-game-browser/": "./packages/platform-game-browser/",
+                "@rws/platform-game-native/": "./packages/platform-game-native/",
+                "@rws/platform-graphics-gles2/": "./packages/platform-graphics-gles2/",
+                "@rws/platform-graphics-three/": "./packages/platform-graphics-three/"
             }
         }]
     ]

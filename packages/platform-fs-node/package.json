@@ -1,0 +1,13 @@
+{
+    "name": "@rws/platform-fs-node",
+    "version": "1.0.0",
+    "author": "Sebastian Langer <sl@scn.cx>",
+    "license": "MIT",
+    "dependencies": {
+        "death": "^1.1.0",
+        "klaw": "^2.1.1"
+    },
+    "devDependencies": {
+        "@types/klaw": "^2.1.1"
+    }
+}

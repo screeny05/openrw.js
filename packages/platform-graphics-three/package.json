@@ -1,0 +1,13 @@
+{
+    "name": "@rws/platform-graphics-three",
+    "version": "1.0.0",
+    "author": "Sebastian Langer <sl@scn.cx>",
+    "license": "MIT",
+    "dependencies": {
+        "gl-matrix": "^2.8.1",
+        "three": "^0.92.0"
+    },
+    "devDependencies": {
+        "@types/three": "^0.92.18"
+    }
+}

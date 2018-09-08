@@ -1,0 +1,9 @@
+{
+    "name": "@rws/platform-control-glfw",
+    "version": "1.0.0",
+    "author": "Sebastian Langer <sl@scn.cx>",
+    "license": "MIT",
+    "devDependencies": {
+        "@glaced/lwngl": "^0.1.0"
+    }
+}

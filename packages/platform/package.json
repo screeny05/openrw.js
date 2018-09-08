@@ -1,0 +1,10 @@
+{
+    "name": "@rws/platform",
+    "version": "1.0.0",
+    "author": "Sebastian Langer <sl@scn.cx>",
+    "license": "MIT",
+    "dependencies": {
+        "gl-matrix": "^2.8.1",
+        "ts-keycode-enum": "^1.0.6"
+    }
+}

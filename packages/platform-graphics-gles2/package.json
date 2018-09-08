@@ -1,0 +1,6 @@
+{
+    "name": "@rws/platform-graphics-gles2",
+    "version": "1.0.0",
+    "author": "Sebastian Langer <sl@scn.cx>",
+    "license": "MIT"
+}
