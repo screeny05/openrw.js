@@ -1,0 +1,18 @@
+{
+    "name": "@rws/library",
+    "version": "1.0.0",
+    "author": "Sebastian Langer <sl@scn.cx>",
+    "license": "MIT",
+    "dependencies": {
+        "buffer": "^5.2.1",
+        "corrode": "^1.0.5",
+        "deep-eql": "^3.0.1",
+        "gl-matrix": "^2.8.1",
+        "lodash": "^4.17.10",
+        "split2": "^3.0.0"
+    },
+    "devDependencies": {
+        "@types/gl-matrix": "^2.4.1",
+        "@types/lodash": "^4.14.116"
+    }
+}
