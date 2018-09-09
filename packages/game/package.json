@@ -1,0 +1,9 @@
+{
+    "name": "@rws/game",
+    "version": "1.0.0",
+    "author": "Sebastian Langer <sl@scn.cx>",
+    "license": "MIT",
+    "dependencies": {
+        "bind-decorator": "^1.0.11"
+    }
+}
