@@ -20,11 +20,15 @@ export class ThreeMeshProvider implements IMeshProvider {
     rwsPool: RwsStructPool;
     textureCache: Map<string, THREE.Texture> = new Map();
 
-    constructor(rwsPool: RwsStructPool){
+    setRwsStructPool(rwsPool: RwsStructPool){
         this.rwsPool = rwsPool;
     }
 
     async getMesh(name: string): Promise<ThreeMesh> {
+        if(!this.rwsPool){
+            throw new Error('RwsStructPool has to be provided, before MeshProvider can be used');
+        }
+
         await this.rwsPool.loadRwsFromImg('models/gta3.img', name + '.dff', RwsSectionType.RW_CLUMP);
         await this.rwsPool.loadRwsFromImg('models/gta3.img', name + '.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
         const dff = this.rwsPool.rwsClumpIndex.get('models/gta3.img/' + name + '.dff');

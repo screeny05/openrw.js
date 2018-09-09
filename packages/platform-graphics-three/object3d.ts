@@ -1,67 +1,75 @@
 import { IObject3d } from '@rws/platform/graphic';
-import { Object3D } from "three";
-import { vec3, quat } from "gl-matrix";
-import { threeVector3ToGlVec3, setThreeVector3FromGlVec3, threeEulerToGlQuat, setThreeEulerFromGlQuat } from "./converter";
+import { Object3D, Quaternion, Vector3 } from "three";
+import { ThreeVec3 } from './vec3';
+import { ThreeQuat } from './quat';
 
 export class ThreeObject3d implements IObject3d {
-    _object3d: Object3D;
+    src: Object3D;
+    readonly position: ThreeVec3;
+    readonly scale: ThreeVec3;
+    readonly up: ThreeVec3;
+    readonly rotation: ThreeQuat;
 
-    get name(): string | undefined { return this._object3d.name; }
-    set name(name: string | undefined) { this._object3d.name = name!; }
+    get name(): string | undefined { return this.src.name; }
+    set name(name: string | undefined) { this.src.name = name!; }
 
     constructor(threeObj: Object3D){
-        this._object3d = threeObj;
+        this.src = threeObj;
+        this.src.userData.adapter = this;
+        this.position = new ThreeVec3(this.src.position);
+        this.scale = new ThreeVec3(this.src.scale);
+        this.up = new ThreeVec3(this.src.up);
+        this.rotation = new ThreeQuat(this.src.quaternion);
     }
 
-    getPosition(): vec3 {
-        return threeVector3ToGlVec3(this._object3d.position);
+    getWorldPosition(): ThreeVec3 {
+        const vec3 = new Vector3();
+        this.src.getWorldPosition(vec3);
+        return new ThreeVec3(vec3);
     }
 
-    setPosition(v: vec3): void {
-        setThreeVector3FromGlVec3(v, this._object3d.position);
+    getWorldScale(): ThreeVec3 {
+        const vec3 = new Vector3();
+        this.src.getWorldScale(vec3);
+        return new ThreeVec3(vec3);
     }
 
-    getScaling(): vec3 {
-        return threeVector3ToGlVec3(this._object3d.scale);
+    getWorldRotation(): ThreeQuat {
+        const quat = new Quaternion();
+        this.src.getWorldQuaternion(quat);
+        return new ThreeQuat(quat);
     }
 
-    setScaling(v: vec3): void {
-        setThreeVector3FromGlVec3(v, this._object3d.scale);
-    }
-
-    getRotation(): quat {
-        return threeEulerToGlQuat(this._object3d.rotation);
-    }
-
-    setRotation(q: quat): void {
-        setThreeEulerFromGlQuat(q, this._object3d.rotation);
+    getWorldDirection(): ThreeVec3 {
+        const vec3 = new Vector3();
+        this.src.getWorldDirection(vec3);
+        return new ThreeVec3(vec3);
     }
 
     addChild(...children: IObject3d[]): void {
-        this._object3d.add(...children.map(c => (<ThreeObject3d>c)._object3d));
+        this.src.add(...children.map(c => (<ThreeObject3d>c).src));
     }
 
     removeChild(...children: IObject3d[]): void {
-        this._object3d.remove(...children.map(c => (<ThreeObject3d>c)._object3d));
+        this.src.remove(...children.map(c => (<ThreeObject3d>c).src));
     }
 
     addToParent(parent: IObject3d): void {
-        this._object3d.parent = (<ThreeObject3d>parent)._object3d;
+        this.src.parent = (<ThreeObject3d>parent).src;
     }
 
     removeFromParent(): void {
-        // ! needed because of bug in typings
-        this._object3d.parent = null!;
+        this.src.parent = null;
     }
 
     getParent(): IObject3d | null {
-        if(this._object3d.parent){
-            return <IObject3d>new ThreeObject3d(this._object3d.parent);
+        if(this.src.parent){
+            return <IObject3d>new ThreeObject3d(this.src.parent);
         }
         return null;
     }
 
     getChildren(): IObject3d[] {
-        return this._object3d.children.map(c => <IObject3d>new ThreeObject3d(c));
+        return this.src.children.map(c => <IObject3d>new ThreeObject3d(c));
     }
 }

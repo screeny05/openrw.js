@@ -6,6 +6,7 @@ import { IdeIndex } from "./index/ide";
 import { IplIndex } from "./index/ipl";
 
 import Corrode from 'corrode';
+import './parser-bin';
 import { RwsSectionType, RwsRootSection, RwsClump, RwsTextureDictionary } from "./type/rws";
 import { ColIndex } from "./index/col";
 import { CarcolsIndex } from "./index/carcols";

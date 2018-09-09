@@ -2,7 +2,7 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "ES2017",
-        "lib": ["dom", "es6", "dom.iterable"],
+        "lib": ["dom", "dom.iterable", "es2015", "es2016", "es2017"],
         "noImplicitAny": false,
         "rootDirs": ["src"],
         "typeRoots": ["node_modules/@types"],
@@ -21,14 +21,18 @@
             "@rws/game/*": ["packages/game/*"],
             "@rws/library/*": ["packages/library/*"],
             "@rws/platform/*": ["packages/platform/*"],
+            "@rws/game-browser/*": ["packages/game-browser/*"],
+            "@rws/game-native/*": ["packages/game-native/*"],
+            "@rws/platform-config-browser/*": ["packages/platform-config-browser/*"],
+            "@rws/platform-config-node/*": ["packages/platform-config-node/*"],
             "@rws/platform-control-browser/*": ["packages/platform-control-browser/*"],
             "@rws/platform-control-glfw/*": ["packages/platform-control-glfw/*"],
             "@rws/platform-fs-browser/*": ["packages/platform-fs-browser/*"],
             "@rws/platform-fs-node/*": ["packages/platform-fs-node/*"],
-            "@rws/platform-game-browser/*": ["packages/platform-game-browser/*"],
-            "@rws/platform-game-native/*": ["packages/platform-game-native/*"],
             "@rws/platform-graphics-gles2/*": ["packages/platform-graphics-gles2/*"],
-            "@rws/platform-graphics-three/*": ["packages/platform-graphics-three/*"]
+            "@rws/platform-graphics-three/*": ["packages/platform-graphics-three/*"],
+            "@rws/platform-loop-browser/*": ["packages/platform-loop-browser/*"],
+            "@rws/platform-loop-lwngl/*": ["packages/platform-loop-lwngl/*"]
         }
     },
     "exclude": [

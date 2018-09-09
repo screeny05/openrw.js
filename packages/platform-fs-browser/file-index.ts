@@ -6,7 +6,7 @@ export class BrowserFileIndex implements IFileIndex {
     private root: string;
     private files: FileList;
 
-    constructor(files: FileList | null) {
+    constructor(files: FileList) {
         if(!files || files.length === 0){
             throw new Error('No Files selected');
         }
@@ -15,7 +15,7 @@ export class BrowserFileIndex implements IFileIndex {
         this.files = files;
     }
 
-    async init(): Promise<void> {
+    async load(): Promise<void> {
         Array.from(this.files).forEach(file => {
             const normalizedPath = this.normalizePath(file.webkitRelativePath);
             this.index.set(normalizedPath, new BrowserFile(file));

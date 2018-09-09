@@ -1,7 +1,7 @@
 import { IFile } from './file';
 
 export interface IFileIndex {
-    init(): Promise<void>;
+    load(): Promise<void>;
     normalizePath(path: string): string;
     has(path: string): boolean;
     get(path: string): IFile;

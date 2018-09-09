@@ -1,5 +1,5 @@
 {
-    "name": "@rws/platform-game-browser",
+    "name": "@rws/game-native",
     "version": "1.0.0",
     "author": "Sebastian Langer <sl@scn.cx>",
     "license": "MIT"

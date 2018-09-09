@@ -5,7 +5,7 @@ import { EventManager } from './event-manager';
 
 type InputStateContainer = Map<number, IInputState>;
 
-export class PlatformInput implements IInput {
+export class BrowserInput implements IInput {
     $el: HTMLElement;
     eventManager: EventManager;
 

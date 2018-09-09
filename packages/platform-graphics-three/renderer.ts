@@ -37,7 +37,7 @@ export class ThreeRenderer {
         const light3 = new THREE.PointLight(0xffffff, 1, 0);
 
         const model = await this.meshProvider.getMesh('asuka');
-        this.scene.add(model._object3d);
+        this.scene.add(model.src);
 
         gridHelper.rotateX(Math.PI / 2);
         light1.position.set(0, 200, 0);

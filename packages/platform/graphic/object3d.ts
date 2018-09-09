@@ -1,14 +1,18 @@
 import { vec3, quat } from "gl-matrix";
+import { IVec3 } from "./vec3";
+import { IQuat } from "@rws/platform/graphic/quat";
 
 export interface IObject3d {
     name?: string;
+    readonly position: IVec3;
+    readonly scale: IVec3;
+    readonly up: IVec3;
+    readonly rotation: IQuat;
 
-    getPosition(): vec3;
-    setPosition(v: vec3): void;
-    getScaling(): vec3;
-    setScaling(v: vec3): void;
-    getRotation(): quat;
-    setRotation(q: quat): void;
+    getWorldPosition(): IVec3;
+    getWorldScale(): IVec3;
+    getWorldRotation(): IQuat;
+    getWorldDirection(): IVec3;
 
     addChild(...children: IObject3d[]): void;
     removeChild(...children: IObject3d[]): void;
