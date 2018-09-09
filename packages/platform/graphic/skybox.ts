@@ -1,8 +1,8 @@
-import { IObject3d } from "./object3d";
+import { IMesh } from "./mesh";
 import { GlobalState } from "@rws/game/global-state";
 import { TimecycIndex } from "@rws/library/index/timecyc";
 
-export interface ISkybox extends IObject3d {
+export interface ISkybox extends IMesh {
     update(delta: number): void;
 }
 
