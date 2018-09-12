@@ -12,6 +12,8 @@ import { ColIndex } from "./index/col";
 import { CarcolsIndex } from "./index/carcols";
 import { TimecycIndex } from "./index/timecyc";
 import { HandlingIndex } from "./index/handling";
+import { ITexturePool, IMeshPool } from "@rws/platform/graphic";
+import { PlatformAdapter } from "@rws/platform/adapter";
 
 export class RwsStructPool {
     fileIndex: IFileIndex;
@@ -28,10 +30,14 @@ export class RwsStructPool {
     ideIndices: Map<string, IdeIndex> = new Map();
     iplIndices: Map<string, IplIndex> = new Map();
     colIndices: Map<string, ColIndex> = new Map();
+    texturePool: ITexturePool;
+    meshPool: IMeshPool;
 
-    constructor(fileIndex: IFileIndex, language: string = 'american'){
+    constructor(fileIndex: IFileIndex, language: string = 'american', adapter: PlatformAdapter){
         this.fileIndex = fileIndex;
         this.language = language;
+        this.texturePool = new adapter.graphicConstructors.TexturePool(this);
+        this.meshPool = new adapter.graphicConstructors.MeshPool(this);
     }
 
     isValidPath(): boolean {
@@ -44,12 +50,12 @@ export class RwsStructPool {
         await this.loadImg('models/gta3.img');
         await this.loadImg('anim/cuts.img');
 
-        await this.loadRws('models/particle.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
-        await this.loadRwsFromImg('models/gta3.img', 'icons.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
-        await this.loadRws('models/hud.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
-        await this.loadRws('models/fonts.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
-        await this.loadRws('models/generic.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
-        await this.loadRws('models/misc.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
+        await this.texturePool.loadFromFile('models/particle.txd');
+        await this.texturePool.loadFromImg('models/gta3.img', 'icons.txd');
+        await this.texturePool.loadFromFile('models/hud.txd');
+        await this.texturePool.loadFromFile('models/fonts.txd');
+        await this.texturePool.loadFromFile('models/generic.txd');
+        await this.texturePool.loadFromFile('models/misc.txd');
 
         await this.loadCarcols('data/carcols.dat');
         await this.loadTimecyc('data/timecyc.dat');
@@ -76,6 +82,7 @@ export class RwsStructPool {
         commandStream.on('data', (entry: DatCommand) => {
             const [command, ...args] = entry;
 
+            // TODO: migrate model-loading to ModelPool
             // TODO: load splashes into different index?
             // TODO: load mapzone into different index?
             if(command === 'img' || command === 'cdimage'){
@@ -87,11 +94,11 @@ export class RwsStructPool {
             } else if(command === 'ipl' || command === 'mapzone'){
                 tasks.push(this.loadIpl(args[0]));
             } else if(command === 'texdiction'){
-                tasks.push(this.loadRws(args[0], RwsSectionType.RW_TEXTURE_DICTIONARY));
+                tasks.push(this.texturePool.loadFromFile(args[0]));
             } else if(command === 'modelfile'){
                 tasks.push(this.loadRws(args[0], RwsSectionType.RW_CLUMP));
             } else if(command === 'splash'){
-                tasks.push(this.loadRws('txd/' + args[0] + '.txd', RwsSectionType.RW_TEXTURE_DICTIONARY));
+                tasks.push(this.texturePool.loadFromFile('txd/' + args[0] + '.txd'));
             } else {
                 console.warn(`LoadLevelFile '${command}' loading not implemented.`);
             }
@@ -166,14 +173,13 @@ export class RwsStructPool {
         this.colIndices.set(this.fileIndex.normalizePath(path), colIndex);
     }
 
-    async loadRws(path: string, expectedSectionType?: number): Promise<void> {
+    async parseRws(path: string, expectedSectionType: number): Promise<RwsRootSection> {
         const file = this.fileIndex.get(path);
         const parser = new Corrode().ext.rwsSingle('rws', expectedSectionType).map.push('rws');
-        const rws = await file.parse<RwsRootSection>(parser);
-        this.setRwsSlot(this.fileIndex.normalizePath(path), rws);
+        return await file.parse<RwsRootSection>(parser);
     }
 
-    async loadRwsFromImg(img: string | ImgIndex, entryname: string, expectedSectionType?: number): Promise<void> {
+    async parseRwsFromImg(img: string | ImgIndex, entryname: string, expectedSectionType: number): Promise<RwsRootSection> {
         if(typeof img === 'string'){
             const foundImg = this.imgIndices.get(img);
             if(!foundImg){
@@ -181,9 +187,25 @@ export class RwsStructPool {
             }
             img = foundImg;
         }
+        return await img.parseEntryAsRws(entryname, expectedSectionType);
+    }
 
-        const rws = await img.parseEntryAsRws(entryname, expectedSectionType);
-        this.setRwsSlot(this.fileIndex.normalizePath(img.imgFile.path) + '/' + entryname, rws);
+    async loadRws(path: string, expectedSectionType: number): Promise<void> {
+        const normalizedPath = this.fileIndex.normalizePath(path);
+        if(this.hasRwsSlot(normalizedPath)){
+            return;
+        }
+        const rws = await this.parseRws(normalizedPath, expectedSectionType);
+        this.setRwsSlot(normalizedPath, rws);
+    }
+
+    async loadRwsFromImg(img: string | ImgIndex, entryname: string, expectedSectionType: number): Promise<void> {
+        if(this.hasRwsSlot(entryname)){
+            return;
+        }
+
+        const rws = await this.parseRwsFromImg(img, entryname, expectedSectionType);
+        this.setRwsSlot(this.fileIndex.normalizePath(typeof img === 'string' ? img : img.imgFile.name) + '/' + entryname, rws);
     }
 
     private setRwsSlot(name: string, rws: RwsRootSection): void {
@@ -193,5 +215,9 @@ export class RwsStructPool {
         }
 
         this.rwsTextureDictionaryIndex.set(name, rws);
+    }
+
+    private hasRwsSlot(name: string): boolean {
+        return this.rwsClumpIndex.has(name) || this.rwsTextureDictionaryIndex.has(name);
     }
 }

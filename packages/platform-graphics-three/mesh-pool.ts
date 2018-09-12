@@ -2,25 +2,21 @@ import { RwsStructPool } from '@rws/library/rws-struct-pool';
 import {
     RwsSectionType,
     RwsAtomic,
-    RwsGeometryTexture,
-    RwsTextureDictionary,
-    RwsTextureAddressMode,
-    RwsTextureFilterMode,
     RwsMaterial
 } from "@rws/library/type/rws";
 
-import { IMeshProvider } from "@rws/platform/graphic";
+import { IMeshPool } from "@rws/platform/graphic";
 
 import * as THREE from 'three';
 import { quat } from 'gl-matrix';
-import { ThreeMesh } from "./mesh";
-import { glVec2ToThreeVector2 } from './converter';
+import { ThreeMesh } from "@rws/platform-graphics-three/mesh";
+import { glVec2ToThreeVector2 } from '@rws/platform-graphics-three/converter';
+import { ThreeTexturePool } from '@rws/platform-graphics-three/texture-pool';
 
-export class ThreeMeshProvider implements IMeshProvider {
+export class ThreeMeshPool implements IMeshPool {
     rwsPool: RwsStructPool;
-    textureCache: Map<string, THREE.Texture> = new Map();
 
-    setRwsStructPool(rwsPool: RwsStructPool){
+    constructor(rwsPool: RwsStructPool){
         this.rwsPool = rwsPool;
     }
 
@@ -30,11 +26,10 @@ export class ThreeMeshProvider implements IMeshProvider {
         }
 
         await this.rwsPool.loadRwsFromImg('models/gta3.img', name + '.dff', RwsSectionType.RW_CLUMP);
-        await this.rwsPool.loadRwsFromImg('models/gta3.img', name + '.txd', RwsSectionType.RW_TEXTURE_DICTIONARY);
+        await this.rwsPool.texturePool.loadFromImg('models/gta3.img', name + '.txd');
         const dff = this.rwsPool.rwsClumpIndex.get('models/gta3.img/' + name + '.dff');
-        const txd = this.rwsPool.rwsTextureDictionaryIndex.get('models/gta3.img/' + name + '.txd');
-        if(!dff || !txd){
-            throw new Error(`Couldn't load DFF ${name}.dff or TXD ${name}.txd`);
+        if(!dff){
+            throw new Error(`Couldn't load DFF ${name}.dff`);
         }
 
         const rootMesh = new THREE.Mesh();
@@ -42,7 +37,7 @@ export class ThreeMeshProvider implements IMeshProvider {
 
         const threeMeshes = dff.atomics.map(atomic => {
             const mesh = this.atomicToMesh(atomic, dff.frameList.extensions[atomic.frameIndex].sections[0].name);
-            const materials = this.atomicToMaterials(atomic, txd);
+            const materials = this.atomicToMaterials(atomic);
 
             // Typings bug - Mesh.prototype.material accepts THREE.Material[]
             mesh.material = materials as any;
@@ -71,7 +66,6 @@ export class ThreeMeshProvider implements IMeshProvider {
         const vertexNormals = morphTarget.normals;
         const faceUVCoordinates = rwGeometry.textureCoordinates[0];
         const faces = rwGeometry.triangles;
-        const rotation = atomic.frame.rotation;
 
         if(vertices){
             vertices.forEach(vertex => {
@@ -126,7 +120,7 @@ export class ThreeMeshProvider implements IMeshProvider {
         return mesh;
     }
 
-    atomicToMaterials(atomic: RwsAtomic, dictionary: RwsTextureDictionary): THREE.Material[] {
+    atomicToMaterials(atomic: RwsAtomic): THREE.Material[] {
         const { materialList } = atomic.geometry;
 
         let currentIndex = 0;
@@ -134,106 +128,40 @@ export class ThreeMeshProvider implements IMeshProvider {
             if(index !== -1){
                 return null;
             }
-            return this.materialToThreeMaterial(materialList.materials[currentIndex++], dictionary, true);
+            return this.materialToThreeMaterial(materialList.materials[currentIndex++], atomic.geometry.flags.prelit);
         });
 
         const materials = materialList.materialIndices.map((index, i) => {
             const instanceIndex = index === -1 ? i : index;
-            const material = instancedMaterials[i];
+            const material = instancedMaterials[instanceIndex];
             if(!material){
-                throw new Error(`Material with index ${i} not found.`);
+                throw new Error(`Material with index ${instanceIndex} not found.`);
             }
             return material;
         });
         return materials;
     }
 
-    materialToThreeMaterial(material: RwsMaterial, dictionary: RwsTextureDictionary, isPrelit: boolean): THREE.Material {
+    materialToThreeMaterial(material: RwsMaterial, isPrelit: boolean): THREE.Material {
         const [r, g, b, a] = material.color;
-        const color = (r << 16) + (g << 8) + b;
+        const color = new THREE.Color(r / 255, g / 255, b / 255);
 
         const threeMaterial = new THREE.MeshLambertMaterial({
             color,
-            flatShading: false,
+            flatShading: true,
             vertexColors: isPrelit ? THREE.VertexColors : THREE.NoColors,
         });
 
         if(material.isTextured){
-            threeMaterial.map = this.txdToTexture(material.texture, dictionary);
+            // force ITexturePool to ThreeTexturePool
+            const texturePool = <ThreeTexturePool><any>this.rwsPool.texturePool;
+            threeMaterial.map = texturePool.get(material.texture.name).src;
+            if(material.texture.maskName){
+                console.log('MASK!', material.texture.maskName);
+                //threeMaterial.alphaMap = this.txtToTexture(material.texture.maskName, dictionary);
+            }
         }
 
         return threeMaterial;
-    }
-
-    txdToTexture(texture: RwsGeometryTexture, dictionary: RwsTextureDictionary): THREE.Texture {
-        const textureNative = dictionary.textures.find(texture => texture.name === texture.name);
-        if(!textureNative){
-            throw new Error(`TextureNative ${texture.name} not found`);
-        }
-
-        /*const canvas = document.createElement('canvas');
-        canvas.width = textureNative.width;
-        canvas.height = textureNative.height;
-        document.body.appendChild(canvas);
-
-        const ctx = canvas.getContext('2d');
-        if(!ctx){
-            throw new Error('No context');
-        }
-
-        for(let i = 0; i < textureNative.width * textureNative.height; i++){
-            const tx = textureNative.mipLevels[0];
-            const x = i % textureNative.width;
-            const y = Math.floor(i / textureNative.height);
-            const ci = i * 4;
-            ctx.fillStyle = `rgba(${tx[ci]}, ${tx[ci + 1]}, ${tx[ci + 2]}, ${tx[ci + 3] / 255})`;
-            ctx.fillRect(x, y, 1, 1);
-        }*/
-
-        const threeTexture = new THREE.Texture(
-            undefined,
-            THREE.UVMapping,
-            this.wrapToThreeWrap(textureNative.uAddressing),
-            this.wrapToThreeWrap(textureNative.vAddressing),
-            this.filterToThreeFilter(textureNative.filterMode),
-            this.filterToThreeFilter(textureNative.filterMode),
-            THREE.RGBAFormat,
-            THREE.UnsignedByteType
-        );
-        threeTexture.mipmaps = textureNative.mipLevels.map((level, i) => new ImageData(
-            new Uint8ClampedArray(level),
-            textureNative.width / (2 ** i),
-            textureNative.height / (2 ** i)
-        ));
-        threeTexture.image = threeTexture.mipmaps[0];
-
-        threeTexture.generateMipmaps = false;
-        threeTexture.flipY = false;
-        threeTexture.unpackAlignment = 1;
-        threeTexture.needsUpdate = true;
-
-        return threeTexture;
-    }
-
-    wrapToThreeWrap(addressMode: RwsTextureAddressMode): THREE.Wrapping {
-        return {
-            [RwsTextureAddressMode.BORDER]: THREE.ClampToEdgeWrapping,
-            [RwsTextureAddressMode.CLAMP]: THREE.ClampToEdgeWrapping,
-            [RwsTextureAddressMode.MIRROR]: THREE.MirroredRepeatWrapping,
-            [RwsTextureAddressMode.NONE]: THREE.ClampToEdgeWrapping,
-            [RwsTextureAddressMode.REPEAT]: THREE.RepeatWrapping
-        }[addressMode];
-    }
-
-    filterToThreeFilter(filterMode: RwsTextureFilterMode): THREE.TextureFilter {
-        return {
-            [RwsTextureFilterMode.NONE]: THREE.LinearFilter,
-            [RwsTextureFilterMode.NEAREST]: THREE.NearestFilter,
-            [RwsTextureFilterMode.LINEAR]: THREE.LinearFilter,
-            [RwsTextureFilterMode.MIP_NEAREST]: THREE.NearestMipMapNearestFilter,
-            [RwsTextureFilterMode.MIP_LINEAR]: THREE.NearestMipMapLinearFilter,
-            [RwsTextureFilterMode.LINEAR_MIP_NEAREST]: THREE.LinearMipMapNearestFilter,
-            [RwsTextureFilterMode.LINEAR_MIP_LINEAR]: THREE.LinearMipMapLinearFilter,
-        }[filterMode];
     }
 }

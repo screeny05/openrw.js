@@ -1,7 +1,7 @@
 import 'setimmediate';
 import "regenerator-runtime/runtime";
-import { getBrowserPlatformAdapter } from '@rws/game-browser/adapter';
-import { Game } from '@rws/game/index';
+import { getBrowserPlatformAdapter } from './adapter';
+import { Game } from '@rws/game';
 
 const $select = <HTMLInputElement>document.querySelector('.js--folder-select');
 const $reload = <HTMLButtonElement>document.querySelector('.js--reload');
@@ -16,6 +16,7 @@ const setupPlatform = async () => {
     $select.style.display = 'none';
     const adapter = getBrowserPlatformAdapter($select.files, document.documentElement);
     game = new Game(adapter);
+    await game.load();
     game.platform.loop.start();
 };
 

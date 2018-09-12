@@ -14,8 +14,8 @@ export class Game {
         this.platform = platform;
         this.platform.loop.setTickCallback(this.tick);
         this.stateGlobal = new GlobalState();
-        this.scene = new Scene(this.platform);
-        this.cameraControls = new CameraControlFree(this.scene.camera, this.platform.control);
+        this.scene = new Scene(this.stateGlobal, this.platform);
+        //this.cameraControls = new CameraControlFree(this.scene.camera, this.platform.control);
     }
 
     async load(): Promise<void> {
@@ -32,5 +32,6 @@ export class Game {
     tick(delta: number): void {
         this.platform.control.update(delta);
         this.stateGlobal.update(delta);
+        this.scene.update(delta);
     }
 }

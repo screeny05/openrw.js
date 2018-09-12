@@ -1,4 +1,4 @@
-import { IMeshProvider, IScene, IConstructor } from "../graphic";
+import { IMeshPool, IScene, IConstructor, ITexturePool } from "../graphic";
 import { IFileIndex } from "../fs";
 import { IInput, InputControlMapper, defaultMap } from "../control";
 import { ILoop } from "../loop";
@@ -11,18 +11,15 @@ export class PlatformAdapter {
     rwsStructPool: RwsStructPool;
     control: InputControlMapper;
     loop: ILoop;
-    meshProvider: IMeshProvider;
     graphicConstructors: IConstructor;
 
-    constructor(config: IConfig, fileIndex: IFileIndex, input: IInput, loop: ILoop, meshProvider: IMeshProvider, graphicConstructors: IConstructor){
+    constructor(config: IConfig, fileIndex: IFileIndex, input: IInput, loop: ILoop, graphicConstructors: IConstructor){
         this.config = config;
         this.fileIndex = fileIndex;
-        this.rwsStructPool = new RwsStructPool(this.fileIndex, config.language);
         this.control = new InputControlMapper(defaultMap, input);
-        this.meshProvider = meshProvider;
-        this.meshProvider.setRwsStructPool(this.rwsStructPool);
         this.loop = loop;
         this.graphicConstructors = graphicConstructors;
+        this.rwsStructPool = new RwsStructPool(this.fileIndex, config.language, this);
     }
 
     async load(): Promise<void> {

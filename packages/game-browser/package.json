@@ -2,5 +2,10 @@
     "name": "@rws/game-browser",
     "version": "1.0.0",
     "author": "Sebastian Langer <sl@scn.cx>",
-    "license": "MIT"
+    "license": "MIT",
+    "browserslist": "last 2 chrome versions, last 2 firefox versions, last 1 edge version, last 1 safari version",
+    "dependencies": {
+        "regenerator-runtime": "^0.12.1",
+        "setimmediate": "^1.0.5"
+    }
 }

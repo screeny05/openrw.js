@@ -8,7 +8,7 @@ export class ThreeAmbientLight extends ThreeObject3d implements IAmbientLight {
     src: AmbientLight;
 
     constructor(color: ThreeVec3){
-        const src = new AmbientLight(new Color(color[0], color[1], color[2]));
+        const src = new AmbientLight(new Color(color.x, color.y, color.z));
         super(src);
         this.color = color;
     }

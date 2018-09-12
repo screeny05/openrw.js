@@ -2,7 +2,7 @@ const Corrode = require('corrode');
 
 const sectionTypes = require('./section-types');
 
-Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback){
+Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback, options){
     this.vars.__name__ = 'rwsSection';
 
     if(typeof expectedSectionType === 'function' && !dataCallback){
@@ -61,7 +61,7 @@ Corrode.addExtension('rwsSection', function(expectedSectionType, dataCallback){
                 this.ext.rwsTextureDictionary('data', header);
 
             } else if(type === sectionTypes.RW_TEXTURE_NATIVE){
-                this.ext.rwsTextureNative('data', header);
+                this.ext.rwsTextureNative('data', header, options);
 
 
             // PLUGINS

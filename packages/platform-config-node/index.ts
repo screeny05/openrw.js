@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 export const PlatformConfig: IConfig = {
     debug: true,
     fov: 60,
-    language: 'DE',
+    language: 'american',
     level: EngineLevel.GTAIII,
     packageVersion: '0.1.0'
 }

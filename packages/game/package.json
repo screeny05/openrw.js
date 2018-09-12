@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "author": "Sebastian Langer <sl@scn.cx>",
     "license": "MIT",
+    "main": "index.ts",
     "dependencies": {
         "bind-decorator": "^1.0.11"
     }

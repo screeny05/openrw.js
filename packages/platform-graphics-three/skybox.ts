@@ -26,7 +26,7 @@ const fragmentShader = `
     }
 `;
 
-export class Skybox extends ThreeMesh implements ISkybox {
+export class ThreeSkybox extends ThreeMesh implements ISkybox {
     state: GlobalState;
     timecyc: TimecycIndex;
 
@@ -46,6 +46,7 @@ export class Skybox extends ThreeMesh implements ISkybox {
         super(src);
         this.state = state;
         this.timecyc = timecyc;
+        this.src.name = 'skybox';
     }
 
     update(delta: number): void {
