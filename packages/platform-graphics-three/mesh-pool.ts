@@ -2,7 +2,9 @@ import { RwsStructPool } from '@rws/library/rws-struct-pool';
 import {
     RwsSectionType,
     RwsAtomic,
-    RwsMaterial
+    RwsMaterial,
+    RwsGeometryMaterialList,
+    RwsClump
 } from "@rws/library/type/rws";
 
 import { IMeshPool } from "@rws/platform/graphic";
@@ -16,47 +18,86 @@ import { ThreeTexturePool } from '@rws/platform-graphics-three/texture-pool';
 export class ThreeMeshPool implements IMeshPool {
     rwsPool: RwsStructPool;
 
+    meshCache: Map<string, ThreeMesh> = new Map();
+    loadedFiles: string[] = [];
+
     constructor(rwsPool: RwsStructPool){
         this.rwsPool = rwsPool;
     }
 
-    async getMesh(name: string): Promise<ThreeMesh> {
-        if(!this.rwsPool){
-            throw new Error('RwsStructPool has to be provided, before MeshProvider can be used');
+    get(name: string): ThreeMesh {
+        if(!this.meshCache.has(name)){
+            throw new Error(`MeshPool: ${name} is not yet loaded.`);
+        }
+        return this.meshCache.get(name) as ThreeMesh;
+    }
+
+    async loadFromFile(fileName: string): Promise<void> {
+        fileName = this.rwsPool.fileIndex.normalizePath(fileName);
+        if(this.loadedFiles.includes(fileName)){
+            return;
         }
 
-        await this.rwsPool.loadRwsFromImg('models/gta3.img', name + '.dff', RwsSectionType.RW_CLUMP);
-        await this.rwsPool.texturePool.loadFromImg('models/gta3.img', name + '.txd');
-        const dff = this.rwsPool.rwsClumpIndex.get('models/gta3.img/' + name + '.dff');
-        if(!dff){
-            throw new Error(`Couldn't load DFF ${name}.dff`);
+        const clump = await this.rwsPool.parseRws(fileName, RwsSectionType.RW_CLUMP) as RwsClump;
+        if(!clump){
+            throw new Error(`MeshPool: ${fileName} not found.`);
+        }
+        await this.populateFromClump(clump, this.removeFileExtension(fileName));
+        this.loadedFiles.push(fileName);
+    }
+
+    async loadFromImg(imgName: string, fileName: string): Promise<void> {
+        fileName = this.rwsPool.fileIndex.normalizePath(fileName);
+        const combinedPath = `${imgName}/${fileName}`;
+        if(this.loadedFiles.includes(combinedPath)){
+            return;
         }
 
+        const clump = await this.rwsPool.parseRwsFromImg(imgName, fileName, RwsSectionType.RW_CLUMP) as RwsClump;
+        if(!clump){
+            throw new Error(`MeshPool: ${fileName} not found in ${imgName}.`);
+        }
+        await this.populateFromClump(clump, this.removeFileExtension(fileName));
+        this.loadedFiles.push(combinedPath);
+    }
+
+    removeFileExtension(path: string): string {
+        return path.substring(0, path.length - 4);
+    }
+
+    async populateFromClump(clump: RwsClump, name: string): Promise<void> {
+        const mesh = await this.clumpToThreeMesh(clump, name);
+        this.meshCache.set(name, mesh);
+    }
+
+    async clumpToThreeMesh(clump: RwsClump, name: string): Promise<ThreeMesh> {
         const rootMesh = new THREE.Mesh();
-        rootMesh.name = '__root__' + name;
 
-        const threeMeshes = dff.atomics.map(atomic => {
-            const mesh = this.atomicToMesh(atomic, dff.frameList.extensions[atomic.frameIndex].sections[0].name);
-            const materials = this.atomicToMaterials(atomic);
+        const threeMeshes = clump.atomics.map(atomic => {
+            const mesh = this.atomicToThreeMesh(atomic);
+            const materials = this.materialListToThreeMaterials(atomic.geometry.materialList, atomic.geometry.flags.prelit);
 
             // Typings bug - Mesh.prototype.material accepts THREE.Material[]
             mesh.material = materials as any;
+            mesh.name = clump.frameList.extensions[atomic.frameIndex].sections[0].name;
 
             return mesh;
         });
 
         threeMeshes.forEach((mesh, i) => {
-            const parentThree = threeMeshes.find((mesh, j) => dff.atomics[j].frameIndex === dff.atomics[i].frame.parentFrameId);
+            const parentThree = threeMeshes.find((_, j) => clump.atomics[j].frameIndex === clump.atomics[i].frame.parentFrameId);
             if(!parentThree){
                 rootMesh.add(mesh);
             } else {
                 parentThree.add(mesh);
             }
         });
+        rootMesh.name = '__root__' + name;
+
         return new ThreeMesh(rootMesh);
     }
 
-    atomicToMesh(atomic: RwsAtomic, name: string = ''): THREE.Mesh {
+    atomicToThreeMesh(atomic: RwsAtomic): THREE.Mesh {
         const geometry = new THREE.Geometry();
 
         const rwGeometry = atomic.geometry;
@@ -109,7 +150,6 @@ export class ThreeMeshPool implements IMeshPool {
         geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(morphTarget.spherePosition[0], morphTarget.spherePosition[1], morphTarget.spherePosition[2]), morphTarget.sphereRadius);
 
         const mesh = new THREE.Mesh(geometry);
-        mesh.name = name;
 
         const rotationQ = quat.create();
         quat.fromMat3(rotationQ, atomic.frame.rotation);
@@ -120,15 +160,13 @@ export class ThreeMeshPool implements IMeshPool {
         return mesh;
     }
 
-    atomicToMaterials(atomic: RwsAtomic): THREE.Material[] {
-        const { materialList } = atomic.geometry;
-
+    materialListToThreeMaterials(materialList: RwsGeometryMaterialList, isPrelit: boolean): THREE.Material[] {
         let currentIndex = 0;
         const instancedMaterials = materialList.materialIndices.map(index => {
             if(index !== -1){
                 return null;
             }
-            return this.materialToThreeMaterial(materialList.materials[currentIndex++], atomic.geometry.flags.prelit);
+            return this.materialToThreeMaterial(materialList.materials[currentIndex++], isPrelit);
         });
 
         const materials = materialList.materialIndices.map((index, i) => {

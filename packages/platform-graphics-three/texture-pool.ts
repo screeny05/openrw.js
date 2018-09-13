@@ -42,15 +42,17 @@ export class ThreeTexturePool implements ITexturePool {
     }
 
     get(name: string): ThreeTexture {
-        // TODO: Return fallback texture
+        // TODO: Return fallback texture?
         if(!this.textureCache.has(name)){
-            throw new Error(`TexturePool: ${name} is not yet loaded.`);
+            console.error(`TexturePool: ${name} is not yet loaded.`);
+            return this.fallbackTexture;
         }
         return this.textureCache.get(name) as ThreeTexture;
     }
 
     async loadFromFile(fileName: string): Promise<void> {
-        if(this.loadedFiles.indexOf(fileName) !== -1){
+        fileName = this.rwsPool.fileIndex.normalizePath(fileName);
+        if(this.loadedFiles.includes(fileName)){
             return;
         }
 
@@ -58,13 +60,14 @@ export class ThreeTexturePool implements ITexturePool {
         if(!dictionary){
             throw new Error(`TexturePool: ${fileName} not found.`);
         }
-        this.loadedFiles.push(fileName);
         this.populateFromDictionary(dictionary);
+        this.loadedFiles.push(fileName);
     }
 
     async loadFromImg(imgName: string, fileName: string): Promise<void> {
+        fileName = this.rwsPool.fileIndex.normalizePath(fileName);
         const combinedPath = `${imgName}/${fileName}`;
-        if(this.loadedFiles.indexOf(combinedPath) !== -1){
+        if(this.loadedFiles.includes(combinedPath)){
             return;
         }
 
@@ -72,8 +75,8 @@ export class ThreeTexturePool implements ITexturePool {
         if(!dictionary){
             throw new Error(`TexturePool: ${fileName} not found in ${imgName}.`);
         }
-        this.loadedFiles.push(combinedPath);
         this.populateFromDictionary(dictionary);
+        this.loadedFiles.push(combinedPath);
     }
 
     populateFromDictionary(dictionary: RwsTextureDictionary): void {

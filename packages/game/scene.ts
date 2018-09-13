@@ -31,7 +31,9 @@ export class Scene {
     async setup(): Promise<void> {
         this.ambient = new this.AmbientLight(new this.Vec3(64 / 255, 64 / 255, 64 / 255));
         this.skybox = new this.Skybox(this.state, this.platform.rwsStructPool.timecycIndex);
-        const model = await this.platform.rwsStructPool.meshPool.getMesh('asuka');
+        await this.platform.rwsStructPool.texturePool.loadFromImg('models/gta3.img', 'asuka.txd');
+        await this.platform.rwsStructPool.meshPool.loadFromImg('models/gta3.img', 'asuka.dff');
+        const model = this.platform.rwsStructPool.meshPool.get('asuka');
 
         this.graph.add(this.ambient);
         this.graph.add(this.skybox);

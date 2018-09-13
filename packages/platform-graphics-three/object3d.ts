@@ -46,30 +46,30 @@ export class ThreeObject3d implements IObject3d {
         return new ThreeVec3(vec3);
     }
 
-    addChild(...children: IObject3d[]): void {
-        this.src.add(...children.map(c => (<ThreeObject3d>c).src));
+    addChild(...children: ThreeObject3d[]): void {
+        this.src.add(...children.map(c => c.src));
     }
 
-    removeChild(...children: IObject3d[]): void {
-        this.src.remove(...children.map(c => (<ThreeObject3d>c).src));
+    removeChild(...children: ThreeObject3d[]): void {
+        this.src.remove(...children.map(c => c.src));
     }
 
-    addToParent(parent: IObject3d): void {
-        this.src.parent = (<ThreeObject3d>parent).src;
+    addToParent(parent: ThreeObject3d): void {
+        this.src.parent = (parent).src;
     }
 
     removeFromParent(): void {
         this.src.parent = null;
     }
 
-    getParent(): IObject3d | null {
+    getParent(): ThreeObject3d | null {
         if(this.src.parent){
-            return <IObject3d>new ThreeObject3d(this.src.parent);
+            return new ThreeObject3d(this.src.parent);
         }
         return null;
     }
 
-    getChildren(): IObject3d[] {
-        return this.src.children.map(c => <IObject3d>new ThreeObject3d(c));
+    getChildren(): ThreeObject3d[] {
+        return this.src.children.map(c => new ThreeObject3d(c));
     }
 }

@@ -2,7 +2,9 @@ import { IMesh } from '@rws/platform/graphic/mesh';
 import { RwsStructPool } from '@rws/library/rws-struct-pool';
 
 export interface IMeshPool {
-    getMesh(name: string): Promise<IMesh>;
+    get(name: string): IMesh;
+    loadFromFile(fileName: string): Promise<void>;
+    loadFromImg(imgName: string, fileName: string): Promise<void>;
 }
 
 export interface IMeshPoolConstructor {

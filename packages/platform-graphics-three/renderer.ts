@@ -2,9 +2,9 @@ import { ThreeScene } from './scene';
 import { RwsStructPool } from "@rws/library/rws-struct-pool";
 
 import * as THREE from 'three';
-import { Scene, Camera, Renderer, WebGLRenderer, PerspectiveCamera, Vector3 } from "three";
+import { Camera, Renderer, WebGLRenderer, PerspectiveCamera, Vector3 } from "three";
 import { ThreeMeshPool } from "@rws/platform-graphics-three/mesh-pool";
-import { IRenderer, IScene } from "@rws/platform/graphic";
+import { IRenderer } from "@rws/platform/graphic";
 import { ThreeObject3d } from '@rws/platform-graphics-three/object3d';
 
 export class ThreeRenderer implements IRenderer {

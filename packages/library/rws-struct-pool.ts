@@ -82,7 +82,6 @@ export class RwsStructPool {
         commandStream.on('data', (entry: DatCommand) => {
             const [command, ...args] = entry;
 
-            // TODO: migrate model-loading to ModelPool
             // TODO: load splashes into different index?
             // TODO: load mapzone into different index?
             if(command === 'img' || command === 'cdimage'){
@@ -96,7 +95,7 @@ export class RwsStructPool {
             } else if(command === 'texdiction'){
                 tasks.push(this.texturePool.loadFromFile(args[0]));
             } else if(command === 'modelfile'){
-                tasks.push(this.loadRws(args[0], RwsSectionType.RW_CLUMP));
+                tasks.push(this.meshPool.loadFromFile(args[0]));
             } else if(command === 'splash'){
                 tasks.push(this.texturePool.loadFromFile('txd/' + args[0] + '.txd'));
             } else {
