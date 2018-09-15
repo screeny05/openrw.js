@@ -26,6 +26,10 @@ export class ThreeQuat implements IQuat {
     clone(): ThreeQuat {
         return new ThreeQuat(this.src.clone());
     }
+    set(x: number, y: number, z: number, w: number): this {
+        this.src.set(x, y, z, w);
+        return this;
+    }
     mul(a: ThreeQuat): this {
         this.src.multiply(a.src);
         return this;

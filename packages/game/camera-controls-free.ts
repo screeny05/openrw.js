@@ -14,10 +14,11 @@ export class CameraControlFree {
     }
 
     update(delta: number): void {
-        const forward = this.control.getState(ControlId.MoveForwardOnFoot) * delta * 0.01;
-        const backward = this.control.getState(ControlId.MoveBackwardOnFoot) * delta * 0.01;
-        const left = this.control.getState(ControlId.MoveLeft) * delta * 0.01;
-        const right = this.control.getState(ControlId.MoveRight) * delta * 0.01;
+        const moveMultiplier = this.control.getState(ControlId.Sprint) ? 0.1 : 0.03;
+        const forward = this.control.getState(ControlId.MoveForwardOnFoot) * delta * moveMultiplier;
+        const backward = this.control.getState(ControlId.MoveBackwardOnFoot) * delta * moveMultiplier;
+        const left = this.control.getState(ControlId.MoveLeft) * delta * moveMultiplier;
+        const right = this.control.getState(ControlId.MoveRight) * delta * moveMultiplier;
         const direction = this.camera.getWorldDirection();
         const movementSidewards = direction.clone().cross(this.camera.up).scale(right - left);
         this.camera.position.add(direction.scale(forward - backward));

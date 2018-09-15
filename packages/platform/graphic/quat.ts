@@ -7,6 +7,7 @@ export interface IQuat {
     z: number;
 
     clone(): IQuat;
+    set(x: number, y: number, z: number, w: number): this;
     mul(a: IQuat): this;
     dot(a: IQuat): this;
     len(): number;

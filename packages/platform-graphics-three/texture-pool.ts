@@ -94,7 +94,7 @@ export class ThreeTexturePool implements ITexturePool {
             return this.fallbackTexture;
         }
 
-        let format = THREE.RGBFormat;
+        let format = THREE.RGBAFormat;
         if(textureNative.flags.FORMAT_8888){
             format = THREE.RGBAFormat;
         }

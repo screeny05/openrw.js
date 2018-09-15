@@ -120,7 +120,7 @@ Corrode.addExtension('rwsTextureNative', function(){
                     if(flags.PALETTE_8 || flags.PALETTE_4){
                         const data = this.vars.data;
                         const palette = this.varStack.peek().palette;
-                        const pixelSize = flags.FORMAT_8888 ? 4 : 3;
+                        const pixelSize = flags.FORMAT_8888 ? 4 : 4;
                         const rgbaBuffer = Buffer.allocUnsafe(currentWidth * currentHeight * pixelSize);
 
                         for(var i = 0; i < this.vars.size; i++){

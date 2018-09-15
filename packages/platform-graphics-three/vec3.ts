@@ -24,6 +24,10 @@ export class ThreeVec3 implements IVec3 {
     clone(): ThreeVec3 {
         return new ThreeVec3(this.src.clone());
     }
+    set(x: number, y: number, z: number): this {
+        this.src.set(x, y, z);
+        return this;
+    }
     add(a: ThreeVec3): this {
         this.src.add(a.src);
         return this;

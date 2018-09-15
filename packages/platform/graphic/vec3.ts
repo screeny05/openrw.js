@@ -4,6 +4,7 @@ export interface IVec3 {
     z: number;
 
     clone(): IVec3;
+    set(x: number, y: number, z: number): this;
     add(a: IVec3): this;
     sub(a: IVec3): this;
     mul(a: IVec3): this;

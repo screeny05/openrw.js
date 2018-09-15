@@ -3,6 +3,7 @@ import { IScene, IVec3Constructor, ISceneConstructor, IRendererConstructor, IRen
 import { IAmbientLight, IAmbientLightConstructor } from "@rws/platform/graphic/ambient-light";
 import { ISkyboxConstructor, ISkybox } from "@rws/platform/graphic/skybox";
 import { GlobalState } from "@rws/game/global-state";
+import { IplIndex } from "@rws/library/index/ipl";
 
 export class Scene {
     state: GlobalState;
@@ -57,10 +58,40 @@ export class Scene {
         document.body.appendChild(ul);
     }
 
+    setupIplSelector(): void {
+        let added = [];
+        const onSelect = async (ipl: IplIndex) => {
+            added.forEach(el => this.graph.src.remove(el.src));
+            added = [];
+            const tasks = ipl.entriesInst.map(async (placement) => {
+                const mesh = await this.platform.rwsStructPool.definitionPool.loadObjMesh(placement.id);
+                mesh.position.set(placement.position[0], placement.position[1], placement.position[2]);
+                mesh.rotation.set(placement.rotation[0], placement.rotation[1], placement.rotation[2], placement.rotation[3]);
+                this.graph.add(mesh);
+                return mesh;
+            });
+            await Promise.all(tasks);
+        };
+        const ul = document.createElement('ul');
+        Array.from(this.platform.rwsStructPool.iplIndices.entries()).forEach(([file, ipl]) => {
+            const li = document.createElement('li');
+            li.textContent = `${file} (${ipl.entriesInst.length})`;
+            li.addEventListener('click', () => onSelect(ipl));
+            ul.appendChild(li);
+        });
+        ul.style.position = 'absolute';
+        ul.style.top = '0';
+        ul.style.left = '0';
+        ul.style.bottom = '0';
+        ul.style.overflow = 'auto';
+        document.body.appendChild(ul);
+    }
+
     async setup(): Promise<void> {
         this.ambient = new this.AmbientLight(new this.Vec3(0.25, 0.25, 0.25));
         this.skybox = new this.Skybox(this.state, this.platform.rwsStructPool.timecycIndex);
         this.setupIdeSelector();
+        //this.setupIplSelector();
 
         await this.platform.rwsStructPool.texturePool.loadFromImg('models/gta3.img', 'asuka.txd');
 
