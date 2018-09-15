@@ -5,6 +5,7 @@ import { ControlId } from "./control-id";
 
 export interface InputControlMapEntry {
     isToggle?: boolean;
+    multiplier?: number;
     device: DeviceId;
     input: number;
 }
@@ -28,7 +29,8 @@ export class InputControlMapper {
 
     getState(control: ControlId, defaultValue: number = 0): number {
         const mapEntries = this.map[control];
-        let validState: IInputState | null = null;
+        let validState: IInputState | undefined;
+        let validEntry: InputControlMapEntry | undefined;
 
         if(!mapEntries){
             return defaultValue;
@@ -43,12 +45,13 @@ export class InputControlMapper {
 
             if(state.value !== 0){
                 validState = state;
+                validEntry = entry;
             }
         });
 
-        if(validState){
-            // ! is neccessary because typescript somehow thinks `validState: never`
-            return validState!.value;
+        if(validState && validEntry){
+            const multiplier = validEntry.multiplier ? validEntry.multiplier : 1;
+            return validState.value * multiplier;
         }
 
         return defaultValue;

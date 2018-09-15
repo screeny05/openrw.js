@@ -1,6 +1,7 @@
+import { radial, normalise } from 'gamepad-api-mappings';
 import { IInput, IInputState } from '@rws/platform/control';
 import { DeviceId } from '@rws/platform/control';
-import { MouseMove } from '@rws/platform/control/input-source';
+import { MouseMove, GamepadAxis, GamepadButton } from '@rws/platform/control/input-source';
 import { EventManager } from './event-manager';
 
 type InputStateContainer = Map<number, IInputState>;
@@ -77,10 +78,8 @@ export class BrowserInput implements IInput {
 
     pollGamepads(){
         const gamepads = navigator.getGamepads();
-        if(!gamepads){
-            this.gamepads = [];
-        }
-        if(this.gamepads.length > 0){
+        if(gamepads.length > 0){
+            this.gamepads = Array.from(gamepads).filter((v): v is Gamepad => !!v);
             this.stopGamepadPolling();
         }
     }
@@ -121,6 +120,21 @@ export class BrowserInput implements IInput {
         if(this.gamepads.length === 0){
             return;
         }
+
+        // TODO: normalise axes in @rws/platform/control
+        // we have to re-poll, because in chrome the state is only a snapshot
+        const { axes, buttons } = navigator.getGamepads()[0]!;
+        const axisA = radial({ x: axes[GamepadAxis.AX - 100], y: axes[GamepadAxis.AY - 100] }, 0.25, normalise);
+        const axisB = radial({ x: axes[GamepadAxis.BX - 100], y: axes[GamepadAxis.BY - 100] }, 0.25, normalise);
+
+        this.getState(DeviceId.Gamepad1, GamepadAxis.AX).value = axisA.x;
+        this.getState(DeviceId.Gamepad1, GamepadAxis.AY).value = axisA.y;
+        this.getState(DeviceId.Gamepad1, GamepadAxis.BX).value = axisB.x;
+        this.getState(DeviceId.Gamepad1, GamepadAxis.BY).value = axisB.y;
+        this.getState(DeviceId.Gamepad1, GamepadButton.A).value = buttons[GamepadButton.A].value;
+        this.getState(DeviceId.Gamepad1, GamepadButton.B).value = buttons[GamepadButton.B].value;
+        this.getState(DeviceId.Gamepad1, GamepadButton.X).value = buttons[GamepadButton.X].value;
+        this.getState(DeviceId.Gamepad1, GamepadButton.Y).value = buttons[GamepadButton.Y].value;
     }
 
     update(delta: number){

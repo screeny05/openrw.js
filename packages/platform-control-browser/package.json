@@ -3,5 +3,8 @@
     "version": "1.0.0",
     "author": "Sebastian Langer <sl@scn.cx>",
     "license": "MIT",
-    "main": "index.ts"
+    "main": "index.ts",
+    "dependencies": {
+        "gamepad-api-mappings": "^4.1.0"
+    }
 }

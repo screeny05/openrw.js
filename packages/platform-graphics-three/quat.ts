@@ -1,5 +1,5 @@
 import { IQuat } from "@rws/platform/graphic/quat";
-import { Quaternion, Vector3, Matrix4 } from "three";
+import { Quaternion, Vector3, Matrix4, Euler } from "three";
 import { ThreeVec3 } from "./vec3";
 
 const vecX = new Vector3(1, 0, 0);
@@ -44,6 +44,10 @@ export class ThreeQuat implements IQuat {
         this.src.slerp(a.src, t);
         return this;
     }
+    inverse(): this {
+        this.src.inverse();
+        return this;
+    }
 
     rotateX(rad: number): this {
         tmpQuat.setFromAxisAngle(vecX, rad);
@@ -63,10 +67,26 @@ export class ThreeQuat implements IQuat {
         return this;
     }
 
+    rotate(x: number, y: number, z: number): this {
+        const max = Math.max(Math.abs(x), Math.abs(y), Math.abs(z));
+        if(max === 0){
+            return this;
+        }
+        tmpQuat.setFromAxisAngle(new Vector3(x / max, y / max, z / max).normalize(), max);
+        this.src.multiply(tmpQuat);
+        return this;
+    }
+
     lookAt(pos: ThreeVec3, target: ThreeVec3, up: ThreeVec3): this {
         const mat4 = new Matrix4();
         mat4.lookAt(pos.src, target.src, up.src);
         this.src.setFromRotationMatrix(mat4);
         return this;
+    }
+
+    getEulerAngles(): [number, number, number] {
+        const euler = new Euler();
+        euler.setFromQuaternion(this.src);
+        return [euler.x, euler.y, euler.z];
     }
 }

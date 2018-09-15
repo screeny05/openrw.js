@@ -16,3 +16,31 @@ export enum MouseMove {
     WheelX,
     WheelY,
 }
+
+// GamepadAxis maps with an offset of 100 to prevent collisions with buttons
+export enum GamepadAxis {
+    AX = 100,
+    AY = 101,
+    BX = 102,
+    BY = 103
+}
+
+export enum GamepadButton {
+    A,
+    B,
+    X,
+    Y,
+    BumperLeft,
+    BumperRight,
+    TriggerLeft,
+    TriggerRight,
+    Select,
+    Start,
+    JoystickLeft,
+    JoystickRight,
+    Up,
+    Down,
+    Left,
+    Right,
+    Home
+}

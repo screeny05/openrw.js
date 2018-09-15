@@ -24,8 +24,6 @@ export class RwsStructPool {
     carcolsIndex: CarcolsIndex;
     timecycIndex: TimecycIndex;
     handlingIndex: HandlingIndex;
-    rwsClumpIndex: Map<string, RwsClump> = new Map();
-    rwsTextureDictionaryIndex: Map<string, RwsTextureDictionary> = new Map();
     imgIndices: Map<string, ImgIndex> = new Map();
     ideIndices: Map<string, IdeIndex> = new Map();
     iplIndices: Map<string, IplIndex> = new Map();
@@ -172,7 +170,7 @@ export class RwsStructPool {
         this.colIndices.set(this.fileIndex.normalizePath(path), colIndex);
     }
 
-    async parseRws(path: string, expectedSectionType: number): Promise<RwsRootSection> {
+    async parseRwsFromFile(path: string, expectedSectionType: number): Promise<RwsRootSection> {
         const file = this.fileIndex.get(path);
         const parser = new Corrode().ext.rwsSingle('rws', expectedSectionType).map.push('rws');
         return await file.parse<RwsRootSection>(parser);
@@ -189,34 +187,7 @@ export class RwsStructPool {
         return await img.parseEntryAsRws(entryname, expectedSectionType);
     }
 
-    async loadRws(path: string, expectedSectionType: number): Promise<void> {
-        const normalizedPath = this.fileIndex.normalizePath(path);
-        if(this.hasRwsSlot(normalizedPath)){
-            return;
-        }
-        const rws = await this.parseRws(normalizedPath, expectedSectionType);
-        this.setRwsSlot(normalizedPath, rws);
-    }
-
-    async loadRwsFromImg(img: string | ImgIndex, entryname: string, expectedSectionType: number): Promise<void> {
-        if(this.hasRwsSlot(entryname)){
-            return;
-        }
-
-        const rws = await this.parseRwsFromImg(img, entryname, expectedSectionType);
-        this.setRwsSlot(this.fileIndex.normalizePath(typeof img === 'string' ? img : img.imgFile.name) + '/' + entryname, rws);
-    }
-
-    private setRwsSlot(name: string, rws: RwsRootSection): void {
-        if(rws.__name__ === 'rwsClump'){
-            this.rwsClumpIndex.set(name, rws);
-            return;
-        }
-
-        this.rwsTextureDictionaryIndex.set(name, rws);
-    }
-
-    private hasRwsSlot(name: string): boolean {
-        return this.rwsClumpIndex.has(name) || this.rwsTextureDictionaryIndex.has(name);
+    async loadIdeById(id: number){
+        //this.ideIndices.forEach(index => index.)
     }
 }

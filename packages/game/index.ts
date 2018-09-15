@@ -15,7 +15,8 @@ export class Game {
         this.platform.loop.setTickCallback(this.tick);
         this.stateGlobal = new GlobalState();
         this.scene = new Scene(this.stateGlobal, this.platform);
-        //this.cameraControls = new CameraControlFree(this.scene.camera, this.platform.control);
+        this.cameraControls = new CameraControlFree(this.scene.camera, this.platform.control);
+        //this.platform.control.input.startGamepadPolling();
     }
 
     async load(): Promise<void> {
@@ -30,8 +31,9 @@ export class Game {
 
     @bind
     tick(delta: number): void {
-        this.platform.control.update(delta);
         this.stateGlobal.update(delta);
         this.scene.update(delta);
+        this.cameraControls.update(delta);
+        this.platform.control.update(delta);
     }
 }

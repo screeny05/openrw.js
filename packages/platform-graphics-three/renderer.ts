@@ -6,20 +6,21 @@ import { Camera, Renderer, WebGLRenderer, PerspectiveCamera, Vector3 } from "thr
 import { ThreeMeshPool } from "@rws/platform-graphics-three/mesh-pool";
 import { IRenderer } from "@rws/platform/graphic";
 import { ThreeObject3d } from '@rws/platform-graphics-three/object3d';
+import { ThreeCamera } from '@rws/platform-graphics-three/camera';
 
 export class ThreeRenderer implements IRenderer {
     rwsPool: RwsStructPool;
     meshProvider: ThreeMeshPool;
 
     scene: ThreeScene;
-    camera: Camera;
+    camera: ThreeCamera;
     renderer: Renderer;
 
-    constructor(rwsPool: RwsStructPool, scene: ThreeScene){
+    constructor(rwsPool: RwsStructPool, scene: ThreeScene, camera: ThreeCamera){
         this.scene = scene;
         this.rwsPool = rwsPool;
 
-        this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 10000);
+        this.camera = camera;
         this.renderer = new WebGLRenderer({ antialias: true });
 
         this.setRendererSize();
@@ -42,12 +43,6 @@ export class ThreeRenderer implements IRenderer {
         light2.position.set(100, 200, 100);
         light3.position.set(-100, -200, -100);
 
-        this.camera.rotation.order = 'ZXY';
-        this.camera.up = new Vector3(0, 0, 1);
-        this.camera.position.y = 3;
-        this.camera.position.z = 2;
-        this.camera.lookAt(0, 0, 0);
-
         this.scene.add(new ThreeObject3d(gridHelper));
         this.scene.add(new ThreeObject3d(light1));
         //this.scene.add(new ThreeObject3d(axesHelper), new ThreeObject3d(light1), new ThreeObject3d(light2), new ThreeObject3d(light3));
@@ -58,6 +53,6 @@ export class ThreeRenderer implements IRenderer {
     }
 
     render(delta: number): void {
-        this.renderer.render(this.scene.src, this.camera);
+        this.renderer.render(this.scene.src, this.camera.src);
     }
 }

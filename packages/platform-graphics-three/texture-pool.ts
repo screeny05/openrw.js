@@ -56,7 +56,7 @@ export class ThreeTexturePool implements ITexturePool {
             return;
         }
 
-        const dictionary = await this.rwsPool.parseRws(fileName, RwsSectionType.RW_TEXTURE_DICTIONARY) as RwsTextureDictionary;
+        const dictionary = await this.rwsPool.parseRwsFromFile(fileName, RwsSectionType.RW_TEXTURE_DICTIONARY) as RwsTextureDictionary;
         if(!dictionary){
             throw new Error(`TexturePool: ${fileName} not found.`);
         }

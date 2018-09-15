@@ -8,7 +8,7 @@ import { IRendererConstructor } from './renderer';
 import { ICameraConstructor } from './camera';
 
 export interface IConstructor {
-    //Camera: ICameraConstructor;
+    Camera: ICameraConstructor;
     Skybox: ISkyboxConstructor;
     Scene: ISceneConstructor;
     AmbientLight: IAmbientLightConstructor;

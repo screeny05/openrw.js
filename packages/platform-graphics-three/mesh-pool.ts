@@ -38,12 +38,17 @@ export class ThreeMeshPool implements IMeshPool {
             return;
         }
 
-        const clump = await this.rwsPool.parseRws(fileName, RwsSectionType.RW_CLUMP) as RwsClump;
+        const clump = await this.rwsPool.parseRwsFromFile(fileName, RwsSectionType.RW_CLUMP) as RwsClump;
         if(!clump){
             throw new Error(`MeshPool: ${fileName} not found.`);
         }
-        await this.populateFromClump(clump, this.removeFileExtension(fileName));
-        this.loadedFiles.push(fileName);
+        const index = this.loadedFiles.push(fileName) - 1;
+        try {
+            await this.populateFromClump(clump, this.removeFileExtension(fileName));
+        } catch(e) {
+            this.loadedFiles.splice(index, 1);
+            throw e;
+        }
     }
 
     async loadFromImg(imgName: string, fileName: string): Promise<void> {
@@ -57,8 +62,13 @@ export class ThreeMeshPool implements IMeshPool {
         if(!clump){
             throw new Error(`MeshPool: ${fileName} not found in ${imgName}.`);
         }
-        await this.populateFromClump(clump, this.removeFileExtension(fileName));
-        this.loadedFiles.push(combinedPath);
+        const index = this.loadedFiles.push(combinedPath) - 1;
+        try {
+            await this.populateFromClump(clump, this.removeFileExtension(fileName));
+        } catch(e) {
+            this.loadedFiles.splice(index, 1);
+            throw e;
+        }
     }
 
     removeFileExtension(path: string): string {
