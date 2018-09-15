@@ -12,7 +12,7 @@ import { IMeshPool } from "@rws/platform/graphic";
 import * as THREE from 'three';
 import { quat } from 'gl-matrix';
 import { ThreeMesh } from "@rws/platform-graphics-three/mesh";
-import { glVec2ToThreeVector2 } from '@rws/platform-graphics-three/converter';
+import { glVec2ToThreeVector2, glVec3ToThreeVector3 } from '@rws/platform-graphics-three/converter';
 import { ThreeTexturePool } from '@rws/platform-graphics-three/texture-pool';
 
 export class ThreeMeshPool implements IMeshPool {
@@ -118,6 +118,9 @@ export class ThreeMeshPool implements IMeshPool {
         const faceUVCoordinates = rwGeometry.textureCoordinates[0];
         const faces = rwGeometry.triangles;
 
+        // TODO?
+        const prelitBump = 128 / 256;
+
         if(vertices){
             vertices.forEach(vertex => {
                 geometry.vertices.push(new THREE.Vector3(vertex[0], vertex[1], vertex[2]));
@@ -127,14 +130,15 @@ export class ThreeMeshPool implements IMeshPool {
         faces.forEach(face => {
             const normals: any[] = [];
             const colors: any[] = [];
+
             if(vertexNormals){
                 const normal1 = vertexNormals[face.vertex1];
                 const normal2 = vertexNormals[face.vertex2];
                 const normal3 = vertexNormals[face.vertex3];
                 normals.push(
-                    new THREE.Vector3(normal1[0], normal1[1], normal1[2]),
-                    new THREE.Vector3(normal2[0], normal2[1], normal2[2]),
-                    new THREE.Vector3(normal3[0], normal3[1], normal3[2]),
+                    glVec3ToThreeVector3(normal1),
+                    glVec3ToThreeVector3(normal2),
+                    glVec3ToThreeVector3(normal3),
                 );
             }
             if(vertexColors){
@@ -142,9 +146,9 @@ export class ThreeMeshPool implements IMeshPool {
                 const color2 = vertexColors[face.vertex2];
                 const color3 = vertexColors[face.vertex3];
                 colors.push(
-                    new THREE.Vector3(color1[0], color1[1], color1[2]),
-                    new THREE.Vector3(color2[0], color2[1], color2[2]),
-                    new THREE.Vector3(color3[0], color3[1], color3[2]),
+                    new THREE.Color(color1[0] / 255 + prelitBump, color1[1] / 255 + prelitBump, color1[2] / 255 + prelitBump),
+                    new THREE.Color(color2[0] / 255 + prelitBump, color2[1] / 255 + prelitBump, color2[2] / 255 + prelitBump),
+                    new THREE.Color(color3[0] / 255 + prelitBump, color3[1] / 255 + prelitBump, color3[2] / 255 + prelitBump),
                 );
             }
             geometry.faces.push(new THREE.Face3(face.vertex1, face.vertex2, face.vertex3, normals, colors, face.materialId));
@@ -157,7 +161,7 @@ export class ThreeMeshPool implements IMeshPool {
         geometry.uvsNeedUpdate = true;
         geometry.computeFaceNormals();
 
-        geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(morphTarget.spherePosition[0], morphTarget.spherePosition[1], morphTarget.spherePosition[2]), morphTarget.sphereRadius);
+        geometry.boundingSphere = new THREE.Sphere(glVec3ToThreeVector3(morphTarget.spherePosition), morphTarget.sphereRadius);
 
         const mesh = new THREE.Mesh(geometry);
 
@@ -166,7 +170,6 @@ export class ThreeMeshPool implements IMeshPool {
 
         mesh.position.set(atomic.frame.position[0], atomic.frame.position[1], atomic.frame.position[2]);
         mesh.quaternion.set(rotationQ[0], rotationQ[1], rotationQ[2], rotationQ[3]);
-        mesh.visible = faces.length > 0;
         return mesh;
     }
 
@@ -194,7 +197,7 @@ export class ThreeMeshPool implements IMeshPool {
         const [r, g, b, a] = material.color;
         const color = new THREE.Color(r / 255, g / 255, b / 255);
 
-        const threeMaterial = new THREE.MeshLambertMaterial({
+        const threeMaterial = new THREE.MeshBasicMaterial({
             color,
             flatShading: true,
             vertexColors: isPrelit ? THREE.VertexColors : THREE.NoColors,

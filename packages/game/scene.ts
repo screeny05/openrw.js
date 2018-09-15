@@ -32,16 +32,40 @@ export class Scene {
         this.renderer = new this.Renderer(this.platform.rwsStructPool, this.graph, this.camera);
     }
 
+    setupIdeSelector(): void {
+        let lastAdd;
+        const onSelect = async (id: number) => {
+            if(lastAdd){
+                this.graph.src.remove(lastAdd.src);
+            }
+            const model = await this.platform.rwsStructPool.definitionPool.loadObjMesh(id);
+            lastAdd = model;
+            this.graph.add(model);
+        }
+        const ul = document.createElement('ul');
+        Array.from(this.platform.rwsStructPool.definitionPool.defObj.values()).forEach(def => {
+            const li = document.createElement('li');
+            li.textContent = def.modelName;
+            li.addEventListener('click', () => onSelect(def.id));
+            ul.appendChild(li);
+        });
+        ul.style.position = 'absolute';
+        ul.style.top = '0';
+        ul.style.left = '0';
+        ul.style.bottom = '0';
+        ul.style.overflow = 'auto';
+        document.body.appendChild(ul);
+    }
+
     async setup(): Promise<void> {
         this.ambient = new this.AmbientLight(new this.Vec3(0.25, 0.25, 0.25));
         this.skybox = new this.Skybox(this.state, this.platform.rwsStructPool.timecycIndex);
+        this.setupIdeSelector();
+
         await this.platform.rwsStructPool.texturePool.loadFromImg('models/gta3.img', 'asuka.txd');
-        await this.platform.rwsStructPool.meshPool.loadFromImg('models/gta3.img', 'asuka.dff');
-        const model = this.platform.rwsStructPool.meshPool.get('asuka');
 
         this.graph.add(this.ambient);
         this.graph.add(this.skybox);
-        this.graph.add(model);
     }
 
     update(delta: number): void {

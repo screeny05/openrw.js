@@ -19,7 +19,7 @@ export enum IdeSections {
     txdp
 }
 
-export interface IdeEntryObjs {
+export interface IdeEntryObj {
     id: number;
     modelName: string;
     txdName: string;
@@ -28,7 +28,7 @@ export interface IdeEntryObjs {
     flags?: IdeEntryObjsFlags;
 }
 
-export interface IdeEntryTobj extends IdeEntryObjs {
+export interface IdeEntryTobj extends IdeEntryObj {
     timeOn?: number;
     timeOff?: number;
 }
@@ -39,7 +39,7 @@ export interface IdeEntryHier {
     txdName: string;
 }
 
-export interface IdeEntryCars {
+export interface IdeEntryCar {
     id: number;
     modelName: string;
     txdName: string;
@@ -54,7 +54,7 @@ export interface IdeEntryCars {
     wheelScale?: number;
 }
 
-export interface IdeEntryPeds {
+export interface IdeEntryPed {
     id: number;
     modelName: string;
     txdName: string;
@@ -146,6 +146,8 @@ export enum IdeEntry2dfxParticleType {
     waterFountainHoriz = 6
 }
 
+export type IdeEntry2dfxAny = IdeEntry2dfx | IdeEntry2dfxLight | IdeEntry2dfxParticle;
+
 const IdeEntryObjsFlagsValues = {
     all: 0xffff,
     wet: 1<<0,
@@ -186,35 +188,37 @@ const IdeEntryPedsCarsValues = {
 
 export type IdeEntryPedsCars = Bitmask<typeof IdeEntryPedsCarsValues>;
 
+// TODO: Implement weap, anim, txdp
 export class IdeIndex {
     file: IFile;
-
-    entriesObjs: Array<IdeEntryObjs> = [];
-    entriesTobj: Array<IdeEntryTobj> = [];
-    entriesHier: Array<IdeEntryHier> = [];
-    entriesCars: Array<IdeEntryCars> = [];
-    entriesPeds: Array<IdeEntryPeds> = [];
-    entriesPath: Array<IdeEntryPath> = [];
-    entries2dfx: Array<IdeEntry2dfx> = [];
 
     constructor(file: IFile){
         this.file = file;
     }
 
-    async load(){
+    async load(
+        onEntryObj: (entry: IdeEntryObj) => void,
+        onEntryTobj: (entry: IdeEntryTobj) => void,
+        onEntryHier: (entry: IdeEntryHier) => void,
+        onEntryCar: (entry: IdeEntryCar) => void,
+        onEntryPed: (entry: IdeEntryPed) => void,
+        onEntryPath: (entry: IdeEntryPath) => void,
+        onEntry2dfx: (entry: IdeEntry2dfxAny) => void
+    ){
         return new Promise<never>((resolve, reject) => {
             const ideTransform = streamTextDat(this.file, { lowercase: true });
 
             let section: IdeSections|null = null;
-            let isInPath = false;
+            let path: IdeEntryPath | undefined;
 
             ideTransform.on('data', (ideEntry: DatCommand) => {
                 const trySection = IdeSections[ideEntry[0]];
                 if(ideEntry.length === 1 && typeof trySection !== 'undefined'){
                     section = trySection;
 
-                    if(section !== IdeSections.path){
-                        isInPath = false;
+                    if(path && section !== IdeSections.path){
+                        onEntryPath(path);
+                        path = undefined;
                     }
                     return;
                 }
@@ -225,13 +229,13 @@ export class IdeIndex {
                 }
 
                 if(section === IdeSections.objs && ideEntry.length === 4){
-                    return this.entriesObjs.push({
+                    return onEntryObj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2]
                     });
                 } else if(section === IdeSections.objs && ideEntry.length === 5){
-                    return this.entriesObjs.push({
+                    return onEntryObj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -239,7 +243,7 @@ export class IdeIndex {
                         flags: bitmaskFromString<IdeEntryObjsFlags>(ideEntry[4], IdeEntryObjsFlagsValues)
                     });
                 } else if(section === IdeSections.objs && ideEntry.length === 6){
-                    return this.entriesObjs.push({
+                    return onEntryObj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -248,7 +252,7 @@ export class IdeIndex {
                         flags: bitmaskFromString<IdeEntryObjsFlags>(ideEntry[5], IdeEntryObjsFlagsValues)
                     });
                 } else if(section === IdeSections.objs && ideEntry.length === 7){
-                    return this.entriesObjs.push({
+                    return onEntryObj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -257,7 +261,7 @@ export class IdeIndex {
                         flags: bitmaskFromString<IdeEntryObjsFlags>(ideEntry[6], IdeEntryObjsFlagsValues)
                     });
                 } else if(section === IdeSections.objs && ideEntry.length === 8){
-                    return this.entriesObjs.push({
+                    return onEntryObj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -270,13 +274,13 @@ export class IdeIndex {
 
 
                 } else if(section === IdeSections.tobj && ideEntry.length === 4){
-                    return this.entriesTobj.push({
+                    return onEntryTobj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2]
                     });
                 } else if(section === IdeSections.tobj && ideEntry.length === 7){
-                    return this.entriesTobj.push({
+                    return onEntryTobj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -286,7 +290,7 @@ export class IdeIndex {
                         timeOff: Number.parseInt(ideEntry[3])
                     });
                 } else if(section === IdeSections.tobj && ideEntry.length === 8){
-                    return this.entriesTobj.push({
+                    return onEntryTobj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -297,7 +301,7 @@ export class IdeIndex {
                         timeOff: Number.parseInt(ideEntry[7])
                     });
                 } else if(section === IdeSections.tobj && ideEntry.length === 9){
-                    return this.entriesTobj.push({
+                    return onEntryTobj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -308,7 +312,7 @@ export class IdeIndex {
                         timeOff: Number.parseInt(ideEntry[8])
                     });
                 } else if(section === IdeSections.tobj && ideEntry.length === 10){
-                    return this.entriesTobj.push({
+                    return onEntryTobj({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -327,7 +331,7 @@ export class IdeIndex {
                         throw new TypeError(`IDE Section HIER entry must have 3 arguments, has ${ideEntry.length}`);
                     }
 
-                    return this.entriesHier.push({
+                    return onEntryHier({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2]
@@ -339,7 +343,7 @@ export class IdeIndex {
                         throw new TypeError(`IDE Section CARS entry must have at least 10 and at most 12 arguments, has ${ideEntry.length}`);
                     }
 
-                    return this.entriesCars.push({
+                    return onEntryCar({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -360,7 +364,7 @@ export class IdeIndex {
                         throw new TypeError(`IDE Section PEDS entry must have 7 arguments, has ${ideEntry.length}`);
                     }
 
-                    return this.entriesPeds.push({
+                    return onEntryPed({
                         id: Number.parseInt(ideEntry[0]),
                         modelName: ideEntry[1],
                         txdName: ideEntry[2],
@@ -372,16 +376,19 @@ export class IdeIndex {
 
 
                 } else if(section === IdeSections.path && ideEntry.length === 3){
-                    isInPath = true;
+                    // push previous
+                    if(path){
+                        onEntryPath(path);
+                    }
 
-                    return this.entriesPath.push({
+                    return path = {
                         groupType: ideEntry[0],
                         id: Number.parseInt(ideEntry[1]),
                         modelName: ideEntry[2],
                         nodes: []
-                    });
-                } else if(section === IdeSections.path && ideEntry.length === 9 && isInPath){
-                    return this.entriesPath[this.entriesPath.length - 1].nodes.push({
+                    };
+                } else if(section === IdeSections.path && ideEntry.length === 9 && path){
+                    return path.nodes.push({
                         nodeType: Number.parseInt(ideEntry[0]),
                         nextNode: Number.parseInt(ideEntry[1]),
                         isCrossRoad: !!Number.parseInt(ideEntry[2]),
@@ -394,7 +401,7 @@ export class IdeIndex {
 
 
                 } else if(section === IdeSections['2dfx'] && ideEntry.length === 20){
-                    return this.entries2dfx.push(<IdeEntry2dfxLight>{
+                    return onEntry2dfx({
                         id: Number.parseInt(ideEntry[0]),
                         position: vec3FromString(ideEntry[1], ideEntry[2], ideEntry[3]),
                         color: rgbFromString(ideEntry[4], ideEntry[5], ideEntry[6]),
@@ -412,7 +419,7 @@ export class IdeIndex {
                         flags: Number.parseInt(ideEntry[19])
                     });
                 } else if(section === IdeSections['2dfx'] && ideEntry.length === 14){
-                    return this.entries2dfx.push(<IdeEntry2dfxParticle>{
+                    return onEntry2dfx({
                         id: Number.parseInt(ideEntry[0]),
                         position: vec3FromString(ideEntry[1], ideEntry[2], ideEntry[3]),
                         color: rgbFromString(ideEntry[4], ideEntry[5], ideEntry[6]),
@@ -422,7 +429,7 @@ export class IdeIndex {
                         scale: Number.parseFloat(ideEntry[13])
                     });
                 } else if(section === IdeSections['2dfx'] && ideEntry.length === 13){
-                    return this.entries2dfx.push(<IdeEntry2dfx>{
+                    return onEntry2dfx({
                         id: Number.parseInt(ideEntry[0]),
                         position: vec3FromString(ideEntry[1], ideEntry[2], ideEntry[3]),
                         color: rgbFromString(ideEntry[4], ideEntry[5], ideEntry[6]),

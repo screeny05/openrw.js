@@ -21,7 +21,10 @@ export class ThreeRenderer implements IRenderer {
         this.rwsPool = rwsPool;
 
         this.camera = camera;
-        this.renderer = new WebGLRenderer({ antialias: true });
+        this.renderer = new WebGLRenderer({
+            antialias: true,
+            canvas: document.querySelector('.js--canvas') as HTMLCanvasElement
+        });
 
         this.setRendererSize();
         document.body.appendChild(this.renderer.domElement);
@@ -44,7 +47,7 @@ export class ThreeRenderer implements IRenderer {
         light3.position.set(-100, -200, -100);
 
         this.scene.add(new ThreeObject3d(gridHelper));
-        this.scene.add(new ThreeObject3d(light1));
+        //this.scene.add(new ThreeObject3d(light1));
         //this.scene.add(new ThreeObject3d(axesHelper), new ThreeObject3d(light1), new ThreeObject3d(light2), new ThreeObject3d(light3));
     }
 

@@ -15,6 +15,10 @@ export const glVec2ToThreeVector2 = (from: vec2): Vector2 => {
     return new Vector2(from[0], from[1]);
 }
 
+export const glVec3ToThreeVector3 = (from: vec3): Vector3 => {
+    return new Vector3(from[0], from[1], from[2]);
+}
+
 export const threeEulerToGlQuat = (e: Euler): quat => {
     const q = quat.create();
     quat.fromEuler(q, e.x, e.y, e.z);

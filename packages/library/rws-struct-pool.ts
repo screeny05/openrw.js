@@ -2,18 +2,18 @@ import { IFileIndex } from "@rws/platform/fs";
 import streamTextDat, { DatCommand } from "./parser-text/text-dat";
 import { ImgIndex } from "./index/img";
 import { GxtIndex } from "./index/gxt";
-import { IdeIndex } from "./index/ide";
 import { IplIndex } from "./index/ipl";
 
 import Corrode from 'corrode';
 import './parser-bin';
-import { RwsSectionType, RwsRootSection, RwsClump, RwsTextureDictionary } from "./type/rws";
+import { RwsRootSection } from "./type/rws";
 import { ColIndex } from "./index/col";
 import { CarcolsIndex } from "./index/carcols";
 import { TimecycIndex } from "./index/timecyc";
 import { HandlingIndex } from "./index/handling";
 import { ITexturePool, IMeshPool } from "@rws/platform/graphic";
 import { PlatformAdapter } from "@rws/platform/adapter";
+import { DefinitionPool } from "./definition-pool";
 
 export class RwsStructPool {
     fileIndex: IFileIndex;
@@ -25,17 +25,18 @@ export class RwsStructPool {
     timecycIndex: TimecycIndex;
     handlingIndex: HandlingIndex;
     imgIndices: Map<string, ImgIndex> = new Map();
-    ideIndices: Map<string, IdeIndex> = new Map();
     iplIndices: Map<string, IplIndex> = new Map();
     colIndices: Map<string, ColIndex> = new Map();
     texturePool: ITexturePool;
     meshPool: IMeshPool;
+    definitionPool: DefinitionPool;
 
     constructor(fileIndex: IFileIndex, language: string = 'american', adapter: PlatformAdapter){
         this.fileIndex = fileIndex;
         this.language = language;
         this.texturePool = new adapter.graphicConstructors.TexturePool(this);
         this.meshPool = new adapter.graphicConstructors.MeshPool(this);
+        this.definitionPool = new DefinitionPool(this);
     }
 
     isValidPath(): boolean {
@@ -85,7 +86,7 @@ export class RwsStructPool {
             if(command === 'img' || command === 'cdimage'){
                 tasks.push(this.loadImg(args[0]));
             } else if(command === 'ide'){
-                tasks.push(this.loadIde(args[0]));
+                tasks.push(this.definitionPool.loadIdeFile(args[0]));
             } else if(command === 'colfile'){
                 tasks.push(this.loadColfile(args[1], Number.parseInt(args[0])));
             } else if(command === 'ipl' || command === 'mapzone'){
@@ -117,14 +118,6 @@ export class RwsStructPool {
         await imgIndex.load();
 
         this.imgIndices.set(this.fileIndex.normalizePath(path), imgIndex);
-    }
-
-    async loadIde(path: string): Promise<void> {
-        const file = this.fileIndex.get(path);
-        const loader = new IdeIndex(file);
-        await loader.load();
-
-        this.ideIndices.set(this.fileIndex.normalizePath(path), loader);
     }
 
     async loadIpl(path: string): Promise<void> {
@@ -185,9 +178,5 @@ export class RwsStructPool {
             img = foundImg;
         }
         return await img.parseEntryAsRws(entryname, expectedSectionType);
-    }
-
-    async loadIdeById(id: number){
-        //this.ideIndices.forEach(index => index.)
     }
 }

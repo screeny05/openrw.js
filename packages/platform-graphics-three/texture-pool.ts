@@ -16,10 +16,10 @@ const FilterMap = {
     [RwsTextureFilterMode.NONE]: THREE.LinearFilter,
     [RwsTextureFilterMode.NEAREST]: THREE.NearestFilter,
     [RwsTextureFilterMode.LINEAR]: THREE.LinearFilter,
-    [RwsTextureFilterMode.MIP_NEAREST]: THREE.NearestMipMapNearestFilter,
-    [RwsTextureFilterMode.MIP_LINEAR]: THREE.NearestMipMapLinearFilter,
-    [RwsTextureFilterMode.LINEAR_MIP_NEAREST]: THREE.LinearMipMapNearestFilter,
-    [RwsTextureFilterMode.LINEAR_MIP_LINEAR]: THREE.LinearMipMapLinearFilter,
+    [RwsTextureFilterMode.MIP_NEAREST]: THREE.NearestFilter,
+    [RwsTextureFilterMode.MIP_LINEAR]: THREE.LinearFilter,
+    [RwsTextureFilterMode.LINEAR_MIP_NEAREST]: THREE.NearestFilter,
+    [RwsTextureFilterMode.LINEAR_MIP_LINEAR]: THREE.LinearFilter,
 };
 
 export class ThreeTexturePool implements ITexturePool {
@@ -39,6 +39,7 @@ export class ThreeTexturePool implements ITexturePool {
         ]);
         this.fallbackTexture = new ThreeTexture(new THREE.DataTexture(fallbackData, 2, 2, THREE.RGBAFormat, THREE.UnsignedByteType));
         this.fallbackTexture.src.name = 'fallback';
+        this.fallbackTexture.src.repeat.set(.05, .05);
     }
 
     get(name: string): ThreeTexture {
@@ -86,33 +87,39 @@ export class ThreeTexturePool implements ITexturePool {
     }
 
     textureNativeToThreeTexture(textureNative: RwsTextureNative): ThreeTexture {
-        if(!textureNative.flags.FORMAT_888 || !textureNative.flags.PALETTE_8){
+        const usesPalette = textureNative.flags.PALETTE_4 || textureNative.flags.PALETTE_8;
+
+        if(!(usesPalette && (textureNative.flags.FORMAT_888 || textureNative.flags.FORMAT_8888))){
             console.warn('TexturePool: not implemented', textureNative.name);
             return this.fallbackTexture;
         }
 
-        const threeTexture = new THREE.Texture(
-            undefined,
+        let format = THREE.RGBFormat;
+        if(textureNative.flags.FORMAT_8888){
+            format = THREE.RGBAFormat;
+        }
+
+        const miplevels = textureNative.mipLevels.map((level, i) => ({
+            data: new Uint8Array(level),
+            width: textureNative.width / (2 ** i),
+            height: textureNative.height / (2 ** i)
+        }));
+
+        const threeTexture = new THREE.DataTexture(
+            miplevels[0].data,
+            textureNative.width,
+            textureNative.height,
+            format,
+            THREE.UnsignedByteType,
             THREE.UVMapping,
             this.mapWrapToThreeWrap(textureNative.uAddressing),
             this.mapWrapToThreeWrap(textureNative.vAddressing),
             this.mapFilterToThreeFilter(textureNative.filterMode),
-            this.mapFilterToThreeFilter(textureNative.filterMode),
-            THREE.RGBAFormat,
-            THREE.UnsignedByteType
+            this.mapFilterToThreeFilter(textureNative.filterMode)
         );
-        threeTexture.mipmaps = textureNative.mipLevels.map((level, i) => new ImageData(
-            new Uint8ClampedArray(level),
-            textureNative.width / (2 ** i),
-            textureNative.height / (2 ** i)
-        ));
-        threeTexture.image = threeTexture.mipmaps[0];
 
-        threeTexture.generateMipmaps = false;
-        threeTexture.flipY = false;
-        threeTexture.unpackAlignment = 1;
+        threeTexture.mipmaps = miplevels as any;
         threeTexture.needsUpdate = true;
-
         threeTexture.name = textureNative.name;
 
         return new ThreeTexture(threeTexture);

@@ -69,10 +69,11 @@ Corrode.addExtension('rwsTextureNative', function(){
 
                 this.vars.usesPalette = this.vars.flags.PALETTE_8 || this.vars.flags.PALETTE_4;
 
+                // palette colors are always RGBA
                 if(this.vars.usesPalette){
-                    let paletteSize = 1024;
+                    let paletteSize = 256 * 4;
                     if(this.vars.flags.PALETTE_4){
-                        paletteSize = 64;
+                        paletteSize = 16 * 4;
                     }
 
                     this.buffer('palette', paletteSize);
@@ -114,13 +115,16 @@ Corrode.addExtension('rwsTextureNative', function(){
                 .buffer('data', 'size')
 
                 .tap(function(){
-                    if(this.varStack.peek().flags.PALETTE_8){
+                    const flags = this.varStack.peek().flags;
+
+                    if(flags.PALETTE_8 || flags.PALETTE_4){
                         const data = this.vars.data;
                         const palette = this.varStack.peek().palette;
-                        const rgbaBuffer = Buffer.allocUnsafe(currentWidth * currentHeight * 4);
+                        const pixelSize = flags.FORMAT_8888 ? 4 : 3;
+                        const rgbaBuffer = Buffer.allocUnsafe(currentWidth * currentHeight * pixelSize);
 
                         for(var i = 0; i < this.vars.size; i++){
-                            palette.copy(rgbaBuffer, i * 4, data[i] * 4, data[i] * 4 + 4);
+                            palette.copy(rgbaBuffer, i * pixelSize, data[i] * 4, data[i] * 4 + pixelSize);
                         }
                         this.vars.data = rgbaBuffer;
                     }
