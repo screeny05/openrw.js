@@ -115,16 +115,16 @@ Corrode.addExtension('rwsTextureNative', function(){
                 .buffer('data', 'size')
 
                 .tap(function(){
-                    const flags = this.varStack.peek().flags;
+                    const { flags } = this.varStack.peek();
 
                     if(flags.PALETTE_8 || flags.PALETTE_4){
-                        const data = this.vars.data;
+                        /** @type {NodeBuffer} */
                         const palette = this.varStack.peek().palette;
-                        const pixelSize = flags.FORMAT_8888 ? 4 : 4;
-                        const rgbaBuffer = Buffer.allocUnsafe(currentWidth * currentHeight * pixelSize);
+                        const data = this.vars.data;
+                        const rgbaBuffer = Buffer.allocUnsafe(currentWidth * currentHeight * 4);
 
                         for(var i = 0; i < this.vars.size; i++){
-                            palette.copy(rgbaBuffer, i * pixelSize, data[i] * 4, data[i] * 4 + pixelSize);
+                            palette.copy(rgbaBuffer, i * 4, data[i] * 4, data[i] * 4 + 4);
                         }
                         this.vars.data = rgbaBuffer;
                     }

@@ -90,14 +90,11 @@ export class ThreeTexturePool implements ITexturePool {
         const usesPalette = textureNative.flags.PALETTE_4 || textureNative.flags.PALETTE_8;
 
         if(!(usesPalette && (textureNative.flags.FORMAT_888 || textureNative.flags.FORMAT_8888))){
-            console.warn('TexturePool: not implemented', textureNative.name);
+            console.warn('TexturePool: not implemented', textureNative.name, textureNative.flags);
             return this.fallbackTexture;
         }
 
         let format = THREE.RGBAFormat;
-        if(textureNative.flags.FORMAT_8888){
-            format = THREE.RGBAFormat;
-        }
 
         const miplevels = textureNative.mipLevels.map((level, i) => ({
             data: new Uint8Array(level),
@@ -122,7 +119,10 @@ export class ThreeTexturePool implements ITexturePool {
         threeTexture.needsUpdate = true;
         threeTexture.name = textureNative.name;
 
-        return new ThreeTexture(threeTexture);
+        const iTex = new ThreeTexture(threeTexture);
+        iTex.hasAlpha = !!textureNative.hasAlpha;
+
+        return iTex;
     }
 
     mapWrapToThreeWrap(addressMode: RwsTextureAddressMode): THREE.Wrapping {

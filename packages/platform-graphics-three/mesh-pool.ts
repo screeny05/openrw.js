@@ -196,6 +196,7 @@ export class ThreeMeshPool implements IMeshPool {
     materialToThreeMaterial(material: RwsMaterial, isPrelit: boolean): THREE.Material {
         const [r, g, b, a] = material.color;
         const color = new THREE.Color(r / 255, g / 255, b / 255);
+        const opacity = a / 255;
 
         const threeMaterial = new THREE.MeshBasicMaterial({
             color,
@@ -203,14 +204,27 @@ export class ThreeMeshPool implements IMeshPool {
             vertexColors: isPrelit ? THREE.VertexColors : THREE.NoColors,
         });
 
+        if(opacity < 1){
+            console.log('MATERIAL with opacity!', material);
+            threeMaterial.transparent = true;
+            threeMaterial.opacity = opacity;
+        }
+
         if(material.isTextured){
             // force ITexturePool to ThreeTexturePool
             const texturePool = <ThreeTexturePool><any>this.rwsPool.texturePool;
-            threeMaterial.map = texturePool.get(material.texture.name).src;
-            if(material.texture.maskName){
-                console.log('MASK!', material.texture.maskName);
-                //threeMaterial.alphaMap = this.txtToTexture(material.texture.maskName, dictionary);
+            const iTex = texturePool.get(material.texture.name);
+            threeMaterial.map = iTex.src;
+            if(iTex.hasAlpha){
+                threeMaterial.alphaTest = opacity * 0.1;
             }
+            /*if(material.texture.maskName){
+                const iTexMask = texturePool.get(material.texture.maskName);
+                if(iTexMask !== texturePool.fallbackTexture){
+                    threeMaterial.alphaMap = iTexMask.src;
+                    console.log('MASK!', material.texture.maskName, iTexMask);
+                }
+            }*/
         }
 
         return threeMaterial;

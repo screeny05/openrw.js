@@ -17,3 +17,6 @@ parcel src/rwsweb/index.html
 ```
 
 <img src="https://raw.githubusercontent.com/screeny05/openrw.js/master/docs/screen-1.jpg" alt="screen-1"/>
+
+## License
+This project is licensed under the GPL v3.

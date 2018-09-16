@@ -4,6 +4,8 @@ import { Texture } from "three";
 export class ThreeTexture implements ITexture {
     src: Texture;
 
+    hasAlpha: boolean = false;
+
     get name(): string {
         return this.src.name;
     }

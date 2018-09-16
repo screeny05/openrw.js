@@ -90,8 +90,8 @@ export class Scene {
     async setup(): Promise<void> {
         this.ambient = new this.AmbientLight(new this.Vec3(0.25, 0.25, 0.25));
         this.skybox = new this.Skybox(this.state, this.platform.rwsStructPool.timecycIndex);
-        this.setupIdeSelector();
-        //this.setupIplSelector();
+        //this.setupIdeSelector();
+        this.setupIplSelector();
 
         await this.platform.rwsStructPool.texturePool.loadFromImg('models/gta3.img', 'asuka.txd');
 

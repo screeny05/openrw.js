@@ -33,6 +33,7 @@ export class DefinitionPool {
     trySet<T extends { id: number }>(map: Map<number, T>, def: T): void {
         if(map.has(def.id)){
             const prevDef = map.get(def.id);
+            // TODO is this ok?
             //console.error(`DefinitionPool: Duplicate entry with ID ${def.id}.`, prevDef, def);
             return;
         }
@@ -52,6 +53,7 @@ export class DefinitionPool {
         if(!obj){
             throw new Error(`DefinitionPool: OBJS-Definition with id ${id} not found`);
         }
-        return await this.loadMesh(obj.modelName, obj.txdName);
+        const mesh = this.loadMesh(obj.modelName, obj.txdName);
+        return mesh;
     }
 }
