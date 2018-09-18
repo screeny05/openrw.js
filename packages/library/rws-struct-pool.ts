@@ -49,8 +49,8 @@ export class RwsStructPool {
         await this.loadImg('models/gta3.img');
         await this.loadImg('anim/cuts.img');
 
-        await this.texturePool.loadFromFile('models/particle.txd');
         await this.texturePool.loadFromImg('models/gta3.img', 'icons.txd');
+        await this.texturePool.loadFromFile('models/particle.txd');
         await this.texturePool.loadFromFile('models/hud.txd');
         await this.texturePool.loadFromFile('models/fonts.txd');
         await this.texturePool.loadFromFile('models/generic.txd');

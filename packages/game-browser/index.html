@@ -1,10 +1,15 @@
 <html>
 <title>🦄</title>
 <body>
-    <input type="file" class="js--folder-select" webkitdirectory/>
-    <button class="js--reload reload">Reload</button>
-    <canvas class="js--canvas" style="display:block;" tabindex="1"></canvas>
+    <div class="js--game">
+        <canvas class="js--canvas on--running canvas" tabindex="1"></canvas>
+        <div class="js--hud canvas on--running hud"></div>
+        <input type="file" class="js--folder-select on--stop" webkitdirectory/>
+        <button class="js--reload on--running reload">Reload</button>
+    </div>
+
     <script src="./index.ts"></script>
+
     <style>
         html,
         body {
@@ -16,6 +21,26 @@
             position: absolute;
             bottom: 5px;
             left: 5px;
+        }
+        .hud {
+            pointer-events: none;
+        }
+        .canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        .on--running {
+            display: none;
+        }
+        .js--game.is--running .on--running {
+            display: block;
+        }
+        .js--game.is--running .on--stop {
+            display: none;
         }
     </style>
 </body>

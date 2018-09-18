@@ -7,17 +7,20 @@ import { ThreeMeshPool } from "@rws/platform-graphics-three/mesh-pool";
 import { IRenderer } from "@rws/platform/graphic";
 import { ThreeObject3d } from '@rws/platform-graphics-three/object3d';
 import { ThreeCamera } from '@rws/platform-graphics-three/camera';
+import { ThreeHud } from '@rws/platform-graphics-three/hud';
 
 export class ThreeRenderer implements IRenderer {
     rwsPool: RwsStructPool;
     meshProvider: ThreeMeshPool;
 
     scene: ThreeScene;
+    hud: ThreeHud;
     camera: ThreeCamera;
-    renderer: Renderer;
+    renderer: WebGLRenderer;
 
-    constructor(rwsPool: RwsStructPool, scene: ThreeScene, camera: ThreeCamera){
+    constructor(rwsPool: RwsStructPool, scene: ThreeScene, hud: ThreeHud, camera: ThreeCamera){
         this.scene = scene;
+        this.hud = hud;
         this.rwsPool = rwsPool;
 
         this.camera = camera;
@@ -25,9 +28,9 @@ export class ThreeRenderer implements IRenderer {
             antialias: true,
             canvas: document.querySelector('.js--canvas') as HTMLCanvasElement
         });
+        this.renderer.autoClear = false;
 
         this.setRendererSize();
-        document.body.appendChild(this.renderer.domElement);
         window.addEventListener('resize', this.setRendererSize.bind(this));
 
         this.setupScene();
@@ -47,6 +50,7 @@ export class ThreeRenderer implements IRenderer {
         light3.position.set(-100, -200, -100);
 
         this.scene.add(new ThreeObject3d(gridHelper));
+
         //this.scene.add(new ThreeObject3d(light1));
         //this.scene.add(new ThreeObject3d(axesHelper), new ThreeObject3d(light1), new ThreeObject3d(light2), new ThreeObject3d(light3));
     }
@@ -57,5 +61,6 @@ export class ThreeRenderer implements IRenderer {
 
     render(delta: number): void {
         this.renderer.render(this.scene.src, this.camera.src);
+        this.renderer.render(this.hud.src, this.hud.camera);
     }
 }

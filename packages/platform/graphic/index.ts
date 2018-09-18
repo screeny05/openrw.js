@@ -8,3 +8,4 @@ export * from './scene';
 export * from './constructor';
 export * from './texture-pool';
 export * from './renderer';
+export * from './hud';

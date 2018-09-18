@@ -1,14 +1,17 @@
 import { PlatformAdapter } from "@rws/platform/adapter";
-import { IScene, IVec3Constructor, ISceneConstructor, IRendererConstructor, IRenderer, ICamera, ICameraConstructor } from "@rws/platform/graphic";
+import { IScene, IVec3Constructor, ISceneConstructor, IRendererConstructor, IRenderer, ICamera, ICameraConstructor, IHud, IHudConstructor } from "@rws/platform/graphic";
 import { IAmbientLight, IAmbientLightConstructor } from "@rws/platform/graphic/ambient-light";
 import { ISkyboxConstructor, ISkybox } from "@rws/platform/graphic/skybox";
 import { GlobalState } from "@rws/game/global-state";
 import { IplIndex } from "@rws/library/index/ipl";
+import { IVec2Constructor } from "@rws/platform/graphic/vec2";
+import { IHudElementConstructor } from "@rws/platform/graphic/hud-element";
 
 export class Scene {
     state: GlobalState;
     platform: PlatformAdapter;
     graph: IScene;
+    hud: IHud;
 
     ambient: IAmbientLight;
     skybox: ISkybox;
@@ -17,8 +20,11 @@ export class Scene {
     camera: ICamera;
 
     private Scene: ISceneConstructor;
+    private Hud: IHudConstructor;
+    private HudElement: IHudElementConstructor;
     private AmbientLight: IAmbientLightConstructor;
     private Vec3: IVec3Constructor;
+    private Vec2: IVec2Constructor;
     private Skybox: ISkyboxConstructor;
     private Renderer: IRendererConstructor;
     private Camera: ICameraConstructor;
@@ -29,8 +35,9 @@ export class Scene {
         Object.assign(this, this.platform.graphicConstructors);
 
         this.graph = new this.Scene();
+        this.hud = new this.Hud();
         this.camera = new this.Camera(75, 0.1, 10000);
-        this.renderer = new this.Renderer(this.platform.rwsStructPool, this.graph, this.camera);
+        this.renderer = new this.Renderer(this.platform.rwsStructPool, this.graph, this.hud, this.camera);
     }
 
     setupIdeSelector(): void {
@@ -94,6 +101,7 @@ export class Scene {
         this.setupIplSelector();
 
         await this.platform.rwsStructPool.texturePool.loadFromImg('models/gta3.img', 'asuka.txd');
+        this.hud.add(new this.HudElement(this.platform.rwsStructPool.texturePool.get('asuka256'), new this.Vec2(0, 0)));
 
         this.graph.add(this.ambient);
         this.graph.add(this.skybox);

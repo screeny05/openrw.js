@@ -13,4 +13,7 @@ export class ThreeTexture implements ITexture {
     constructor(src: Texture){
         this.src = src;
     }
+
+    width: number;
+    height: number;
 }

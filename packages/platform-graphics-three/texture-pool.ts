@@ -121,6 +121,8 @@ export class ThreeTexturePool implements ITexturePool {
 
         const iTex = new ThreeTexture(threeTexture);
         iTex.hasAlpha = !!textureNative.hasAlpha;
+        iTex.width = textureNative.width;
+        iTex.height = textureNative.height;
 
         return iTex;
     }

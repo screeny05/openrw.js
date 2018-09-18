@@ -9,6 +9,7 @@ window.THREE = THREE;
 const $select = <HTMLInputElement>document.querySelector('.js--folder-select');
 const $reload = <HTMLButtonElement>document.querySelector('.js--reload');
 const $canvas = <HTMLCanvasElement>document.querySelector('.js--canvas');
+const $game = <HTMLDivElement>document.querySelector('.js--game');
 
 let game: Game | null = null;
 
@@ -17,7 +18,7 @@ const setupPlatform = async () => {
         return;
     }
 
-    $select.style.display = 'none';
+    $game.classList.add('is--running');
     const adapter = getBrowserPlatformAdapter($select.files, $canvas);
     game = new Game(adapter);
     await game.load();

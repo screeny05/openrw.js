@@ -17,5 +17,4 @@ export interface IVec3 {
 
 export interface IVec3Constructor {
     new(x: number, y: number, z: number);
-    new(IVec3);
 }

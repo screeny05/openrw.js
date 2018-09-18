@@ -16,7 +16,6 @@ export class Game {
         this.stateGlobal = new GlobalState();
         this.scene = new Scene(this.stateGlobal, this.platform);
         this.cameraControls = new CameraControlFree(this.scene.camera, this.platform.control);
-        //this.platform.control.input.startGamepadPolling();
     }
 
     async load(): Promise<void> {

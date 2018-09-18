@@ -6,13 +6,19 @@ import { ITexturePoolConstructor } from './texture-pool';
 import { IMeshPoolConstructor } from './mesh-pool';
 import { IRendererConstructor } from './renderer';
 import { ICameraConstructor } from './camera';
+import { IVec2Constructor } from './vec2';
+import { IHudConstructor } from './hud';
+import { IHudElementConstructor } from '@rws/platform/graphic/hud-element';
 
 export interface IConstructor {
     Camera: ICameraConstructor;
     Skybox: ISkyboxConstructor;
     Scene: ISceneConstructor;
+    Hud: IHudConstructor;
+    HudElement: IHudElementConstructor;
     AmbientLight: IAmbientLightConstructor;
     Vec3: IVec3Constructor;
+    Vec2: IVec2Constructor;
     TexturePool: ITexturePoolConstructor;
     MeshPool: IMeshPoolConstructor;
     Renderer: IRendererConstructor;
