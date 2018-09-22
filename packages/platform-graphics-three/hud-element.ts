@@ -1,46 +1,69 @@
 import { ThreeTexture } from "./texture";
 import { ThreeVec2 } from "./vec2";
 import { IHudElement } from "@rws/platform/graphic/hud-element";
-import { Mesh, MeshBasicMaterial, Color } from "three";
+import { Mesh, MeshBasicMaterial, Color, BackSide } from "three";
 import { PlaneGeometry } from "three";
+import { ThreeObject3d } from "./object3d";
 
-export class ThreeHudElement implements IHudElement {
-    src: Mesh;
+export class ThreeHudElement extends ThreeObject3d implements IHudElement {
+    geometry: PlaneGeometry;
+    material: MeshBasicMaterial;
+
+    private _width: number;
+    private _height: number;
 
     texture: ThreeTexture;
-    position: ThreeVec2;
-    rotation: number;
-    scale: ThreeVec2;
-    name?: string;
-    width: number;
-    height: number;
+    get width(): number { return this._width; };
+    get height(): number { return this._height; };
     offset: ThreeVec2;
 
-    constructor(texture: ThreeTexture, position: ThreeVec2, rotation: number = 0, scale: ThreeVec2 = ThreeVec2.one()){
-        this.texture = texture;
-        this.position = position;
-        this.rotation = rotation;
-        this.scale = scale;
-        this.width = this.texture.width;
-        this.height = this.texture.height;
+    constructor(texture: ThreeTexture){
+        const map = texture.src.clone();
+        map.needsUpdate = true;
 
         const material = new MeshBasicMaterial({
-            color: new Color(1, 0, 1),
-            map: this.texture.src
+            map,
+            side: BackSide,
+            transparent: texture.hasAlpha,
+            alphaTest: texture.hasAlpha ? 0.8 : 0
         });
 
-        const plane = new PlaneGeometry(this.width, this.height);
+        const geometry = new PlaneGeometry(1, 1);
 
-        this.src = new Mesh(
-            plane,
-            material
-        );
-        this.src.userData.adapter = this;
+        // draw textures right side up
+        geometry.rotateX(Math.PI);
+
+        super(new Mesh(geometry, material));
+
+        this.geometry = geometry;
+        this.material = material;
+
+        this.texture = texture;
+        this._width = this.texture.width;
+        this._height = this.texture.height;
+
+        this.src.scale.set(this.width, this.height, 1);
     }
 
-    setSub(x: number, y: number, width: number, height: number): void {
-        this.offset.set(x, y);
-        this.width = width;
-        this.height = height;
+    setPosition(x: number, y: number): void {
+        this.src.position.set(x, y, 0);
+    }
+
+    setSize(width: number, height: number): void {
+        this.src.scale.set(width, height, 1);
+        this._width = width;
+        this._height = height;
+    }
+
+    setRotation(angle: number): void {
+        this.src.rotateZ(angle);
+    }
+
+    setTextureOffset(x: number, y: number): void {
+        this.material.map.offset.set(x / this.texture.width, y / this.texture.height);
+    }
+
+    setTextureSize(width: number, height: number): void {
+        this.material.map.repeat.set(width, height);
     }
 }

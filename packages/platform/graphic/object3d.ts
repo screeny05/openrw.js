@@ -16,6 +16,7 @@ export interface IObject3d {
 
     addChild(...children: IObject3d[]): void;
     removeChild(...children: IObject3d[]): void;
+    removeAllChildren(): void;
     addToParent(parent: IObject3d): void;
     removeFromParent(): void;
 

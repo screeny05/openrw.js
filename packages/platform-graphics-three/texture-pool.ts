@@ -3,6 +3,7 @@ import { RwsStructPool } from "@rws/library/rws-struct-pool";
 import * as THREE from 'three';
 import { RwsTextureAddressMode, RwsTextureFilterMode, RwsTextureNative, RwsTextureDictionary, RwsSectionType } from "@rws/library/type/rws";
 import { ThreeTexture } from "./texture";
+import { Texture } from "three";
 
 const WrapMap = {
     [RwsTextureAddressMode.BORDER]: THREE.ClampToEdgeWrapping,
@@ -28,7 +29,7 @@ export class ThreeTexturePool implements ITexturePool {
     textureCache: Map<string, ThreeTexture> = new Map();
     loadedFiles: string[] = [];
 
-    fallbackTexture: ThreeTexture;
+    fallbackTexture: Texture;
 
     constructor(rwsPool: RwsStructPool){
         this.rwsPool = rwsPool;
@@ -37,16 +38,24 @@ export class ThreeTexturePool implements ITexturePool {
             255, 0, 0, 0, 255, 0,
             0, 255, 0, 255, 0, 0,
         ]);
-        this.fallbackTexture = new ThreeTexture(new THREE.DataTexture(fallbackData, 2, 2, THREE.RGBAFormat, THREE.UnsignedByteType));
-        this.fallbackTexture.src.name = 'fallback';
-        this.fallbackTexture.src.repeat.set(.05, .05);
+        this.fallbackTexture = new THREE.DataTexture(fallbackData, 2, 2, THREE.RGBAFormat, THREE.UnsignedByteType);
+        this.fallbackTexture.name = 'fallback';
+        this.fallbackTexture.repeat.set(.05, .05);
+    }
+
+    cloneFallbackTexture(name: string): ThreeTexture {
+        const fallback = new ThreeTexture(this.fallbackTexture.clone());
+        fallback.src.name = name;
+        fallback.width = 2;
+        fallback.height = 2;
+        return fallback;
     }
 
     get(name: string): ThreeTexture {
         // TODO: Return fallback texture?
         if(!this.textureCache.has(name)){
             console.error(`TexturePool: ${name} is not yet loaded.`);
-            return this.fallbackTexture;
+            return this.cloneFallbackTexture(name);
         }
         return this.textureCache.get(name) as ThreeTexture;
     }
@@ -91,7 +100,7 @@ export class ThreeTexturePool implements ITexturePool {
 
         if(!(usesPalette && (textureNative.flags.FORMAT_888 || textureNative.flags.FORMAT_8888))){
             console.warn('TexturePool: not implemented', textureNative.name, textureNative.flags);
-            return this.fallbackTexture;
+            return this.cloneFallbackTexture(textureNative.name);
         }
 
         let format = THREE.RGBAFormat;
@@ -118,6 +127,7 @@ export class ThreeTexturePool implements ITexturePool {
         threeTexture.mipmaps = miplevels as any;
         threeTexture.needsUpdate = true;
         threeTexture.name = textureNative.name;
+        threeTexture.premultiplyAlpha = true;
 
         const iTex = new ThreeTexture(threeTexture);
         iTex.hasAlpha = !!textureNative.hasAlpha;

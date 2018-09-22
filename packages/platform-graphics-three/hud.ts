@@ -23,8 +23,8 @@ export class ThreeHud implements IHud {
         const height = this.$el.clientHeight;
         this.camera.left = width / -2;
         this.camera.right = width / 2;
-        this.camera.top = height / -2;
-        this.camera.bottom = height / 2;
+        this.camera.bottom = height / -2;
+        this.camera.top = height / 2;
         this.camera.updateProjectionMatrix();
     }
 

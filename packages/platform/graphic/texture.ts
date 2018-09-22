@@ -3,4 +3,5 @@ export interface ITexture {
     hasAlpha: boolean;
     width: number;
     height: number;
+    data: ArrayBuffer;
 }

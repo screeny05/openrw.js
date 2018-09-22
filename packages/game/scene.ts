@@ -6,6 +6,7 @@ import { GlobalState } from "@rws/game/global-state";
 import { IplIndex } from "@rws/library/index/ipl";
 import { IVec2Constructor } from "@rws/platform/graphic/vec2";
 import { IHudElementConstructor } from "@rws/platform/graphic/hud-element";
+import { HudText } from "@rws/platform/graphic/hud-text";
 
 export class Scene {
     state: GlobalState;
@@ -94,17 +95,44 @@ export class Scene {
         document.body.appendChild(ul);
     }
 
+    setupTextureSelector(): void {
+        let lastAdd;
+        const onSelect = async (txd) => {
+            if(lastAdd){
+                this.hud.src.remove(lastAdd.src);
+            }
+            const el = new this.HudElement(txd);
+            window.el = el;
+            this.hud.add(el);
+            lastAdd = el;
+        }
+        const ul = document.createElement('ul');
+        Array.from(this.platform.rwsStructPool.texturePool.textureCache.values()).forEach(txd => {
+            const li = document.createElement('li');
+            li.textContent = `${txd.name} (${txd.width}x${txd.height})`;
+            li.addEventListener('click', () => onSelect(txd));
+            ul.appendChild(li);
+        });
+        ul.style.position = 'absolute';
+        ul.style.top = '0';
+        ul.style.left = '0';
+        ul.style.bottom = '0';
+        ul.style.overflow = 'auto';
+        document.body.appendChild(ul);
+    }
+
     async setup(): Promise<void> {
         this.ambient = new this.AmbientLight(new this.Vec3(0.25, 0.25, 0.25));
         this.skybox = new this.Skybox(this.state, this.platform.rwsStructPool.timecycIndex);
         //this.setupIdeSelector();
-        this.setupIplSelector();
-
-        await this.platform.rwsStructPool.texturePool.loadFromImg('models/gta3.img', 'asuka.txd');
-        this.hud.add(new this.HudElement(this.platform.rwsStructPool.texturePool.get('asuka256'), new this.Vec2(0, 0)));
+        //this.setupIplSelector();
+        this.setupTextureSelector();
 
         this.graph.add(this.ambient);
         this.graph.add(this.skybox);
+
+        const text = new HudText(this.platform, this.hud, 'The quick Brown fox jumps\nover the lazy dog.', 78);
+        window.text = text;
     }
 
     update(delta: number): void {

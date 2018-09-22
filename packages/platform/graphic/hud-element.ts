@@ -1,19 +1,19 @@
 import { ITexture } from './texture';
 import { IVec2 } from './vec2';
+import { IObject3d } from './object3d';
 
-export interface IHudElement {
+export interface IHudElement extends IObject3d {
     texture: ITexture;
-    position: IVec2;
-    rotation: number;
-    scale: IVec2;
-    name?: string;
     width: number;
     height: number;
-    offset: IVec2;
 
-    setSub(x: number, y: number, width: number, height: number): void;
+    setPosition(x: number, y: number): void;
+    setSize(width: number, height: number): void;
+    setTextureOffset(x: number, y: number): void;
+    setTextureSize(x: number, y: number): void;
+    setRotation(angle: number): void;
 }
 
 export interface IHudElementConstructor {
-    new(texture: ITexture, position: IVec2, rotation?: number, scale?: IVec2): IHudElement;
+    new(texture: ITexture): IHudElement;
 }

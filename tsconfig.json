@@ -2,7 +2,7 @@
     "compilerOptions": {
         "module": "commonjs",
         "target": "ES2017",
-        "lib": ["dom", "dom.iterable", "es2015", "es2016", "es2017"],
+        "lib": ["dom", "dom.iterable", "es2015", "es2016", "es2017", "es2018"],
         "noImplicitAny": false,
         "rootDirs": ["src"],
         "typeRoots": ["node_modules/@types"],

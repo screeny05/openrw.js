@@ -54,6 +54,10 @@ export class ThreeObject3d implements IObject3d {
         this.src.remove(...children.map(c => c.src));
     }
 
+    removeAllChildren(): void {
+        this.src.remove(...this.src.children);
+    }
+
     addToParent(parent: ThreeObject3d): void {
         this.src.parent = (parent).src;
     }
@@ -70,6 +74,6 @@ export class ThreeObject3d implements IObject3d {
     }
 
     getChildren(): ThreeObject3d[] {
-        return this.src.children.map(c => new ThreeObject3d(c));
+        return this.src.children.map(c => c.userData.adapter);
     }
 }

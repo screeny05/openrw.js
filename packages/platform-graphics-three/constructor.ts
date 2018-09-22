@@ -10,10 +10,12 @@ import { ThreeCamera } from "./camera";
 import { ThreeMeshPool } from "./mesh-pool";
 import { ThreeHud } from "./hud";
 import { ThreeHudElement } from "./hud-element";
+import { ThreeGroup } from "./group";
 
 export const BrowserConstructor: IConstructor = {
     Skybox: ThreeSkybox,
     Scene: ThreeScene,
+    Group: ThreeGroup,
     AmbientLight: ThreeAmbientLight,
     Vec3: ThreeVec3,
     Vec2: ThreeVec2,
