@@ -1,5 +1,53 @@
-<input type="file" webkitdirectory class="js--input">
-<textarea class="js--output" style="display:block;height:70vh;width:100%;" onclick="this.select()">Lipsum</textarea>
+<div class="form">
+    <form class="form__left js--input">
+        <label class="label">
+            <div class="label__text">Gamefolder:</div>
+            <input type="file" webkitdirectory class="label__input js--input-files">
+        </label>
+
+        <label class="label">
+            <div class="label__text">Texture:</div>
+            <input type="text" class="label__input js--input-texturename" value="font2">
+        </label>
+
+        <label class="label">
+            <div class="label__text">Cols:</div>
+            <input type="number" class="label__input js--input-cols" value="16">
+        </label>
+
+        <label class="label">
+            <div class="label__text">Rows:</div>
+            <input type="number" class="label__input js--input-rows" value="13">
+        </label>
+
+        <button type="submit" style="width:100%;">calc</button>
+    </form>
+
+    <textarea class="form__right js--output" onclick="this.select()" placeholder="JSON output here"></textarea>
+</div>
+
+
 <canvas class="js--canvas" style="display:block;background:#000;"></canvas>
 
 <script src="index.ts"></script>
+
+<style>
+    .form {
+        display: flex;
+        margin-bottom: 10px;
+    }
+    .form__left {
+        padding-right: 10px;
+    }
+    .form__right {
+        flex: 1 1 auto;
+    }
+
+    .label {
+        display: flex;
+        margin-bottom: 5px;
+    }
+    .label__text {
+        flex: 0 0 100px;
+    }
+</style>

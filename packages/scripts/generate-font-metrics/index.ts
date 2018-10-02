@@ -2,24 +2,33 @@ import 'setimmediate';
 import "regenerator-runtime/runtime";
 import { getBrowserPlatformAdapter } from '@rws/game-browser/adapter';
 import { PlatformAdapter } from '@rws/platform/adapter';
+import { GlyphMetric } from '@rws/platform/graphic/hud-text';
 
-const $input = <HTMLInputElement>document.querySelector('.js--input');
+const $files = <HTMLInputElement>document.querySelector('.js--input-files');
+const $texture = <HTMLInputElement>document.querySelector('.js--input-texturename');
+const $cols = <HTMLInputElement>document.querySelector('.js--input-cols');
+const $rows = <HTMLInputElement>document.querySelector('.js--input-rows');
+const $form = <HTMLFormElement>document.querySelector('.js--input');
 const $output = <HTMLTextAreaElement>document.querySelector('.js--output');
 const $canvas = <HTMLCanvasElement>document.querySelector('.js--canvas');
 const ctx = $canvas.getContext('2d') as CanvasRenderingContext2D;
 
-$input.addEventListener('change', async () => {
-    if(!$input.files){
+let adapter: PlatformAdapter | null = null;
+
+$files.addEventListener('change', () => adapter = null);
+
+$form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if(!$files.files){
         return;
     }
 
-    $input.remove();
+    if(!adapter){
+        adapter = getBrowserPlatformAdapter($files.files, document.head);
+        await adapter.load();
+    }
 
-    const adapter = getBrowserPlatformAdapter($input.files, document.documentElement);
-
-    await adapter.load();
-
-    const metrics = getMetrics(adapter, 'font1', 16, 13);
+    const metrics = getMetrics(adapter, $texture.value, $cols.valueAsNumber, $rows.valueAsNumber);
 
     ctx.fillStyle = 'magenta';
     metrics.forEach(glyph => {
@@ -29,15 +38,6 @@ $input.addEventListener('change', async () => {
 
     $output.textContent = JSON.stringify(metrics);
 });
-
-interface GlyphMetric {
-    startX: number;
-    endX: number;
-    y: number;
-    width: number;
-    height: number;
-    isEmpty: boolean;
-}
 
 const getMetrics = (adapter: PlatformAdapter, textureName: string, glyphCols: number, glyphRows: number): GlyphMetric[] => {
     const texture = adapter.rwsStructPool.texturePool.get(textureName);
@@ -54,8 +54,8 @@ const getMetrics = (adapter: PlatformAdapter, textureName: string, glyphCols: nu
 
     const metrics: GlyphMetric[] = [];
 
-    for(let x = 0; x < glyphCols; x++){
-        for(let y = 0; y < glyphRows; y++){
+    for(let y = 0; y < glyphRows; y++){
+        for(let x = 0; x < glyphCols; x++){
             metrics.push(getGlyphMetric(x, y, glyphWidth, glyphHeight));
         }
     }
@@ -77,7 +77,7 @@ const getGlyphMetric = (col: number, row: number, glyphWidth: number, glyphHeigh
     }
 
     const startX = Number.parseInt(glyphStart);
-    const endX = Number.parseInt(glyphEnd);
+    const endX = Number.parseInt(glyphEnd) + 1; // +1 because we `glyphEnd` is the index of the last row
     return { startX, endX, y: y, width: endX - startX, height: glyphHeight, isEmpty: false };
 }
 
@@ -93,7 +93,7 @@ const getAlphaRows = (x: number, y: number, xEnd: number, rowHeight: number): { 
     return isTransparent;
 }
 
-const getRowIsTransparent = (x: number, y: number, rowHeight: number, alphaTest: number = 127): boolean => {
+const getRowIsTransparent = (x: number, y: number, rowHeight: number, alphaTest: number = 0x21): boolean => {
     const row = ctx.getImageData(x, y, 1, rowHeight);
 
     for(let i = 0; i < rowHeight; i++){

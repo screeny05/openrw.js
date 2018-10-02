@@ -131,7 +131,7 @@ export class Scene {
         this.graph.add(this.ambient);
         this.graph.add(this.skybox);
 
-        const text = new HudText(this.platform, this.hud, 'The quick Brown fox jumps\nover the lazy dog.', 78);
+        const text = new HudText(this.platform, this.hud, 'Visit http://scn.cx for more projects!', 32);
         window.text = text;
     }
 

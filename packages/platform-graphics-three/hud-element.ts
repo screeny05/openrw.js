@@ -2,11 +2,11 @@ import { ThreeTexture } from "./texture";
 import { ThreeVec2 } from "./vec2";
 import { IHudElement } from "@rws/platform/graphic/hud-element";
 import { Mesh, MeshBasicMaterial, Color, BackSide } from "three";
-import { PlaneGeometry } from "three";
+import { PlaneBufferGeometry } from "three";
 import { ThreeObject3d } from "./object3d";
 
 export class ThreeHudElement extends ThreeObject3d implements IHudElement {
-    geometry: PlaneGeometry;
+    geometry: PlaneBufferGeometry;
     material: MeshBasicMaterial;
 
     private _width: number;
@@ -28,7 +28,7 @@ export class ThreeHudElement extends ThreeObject3d implements IHudElement {
             alphaTest: texture.hasAlpha ? 0.8 : 0
         });
 
-        const geometry = new PlaneGeometry(1, 1);
+        const geometry = new PlaneBufferGeometry(1, 1);
 
         // draw textures right side up
         geometry.rotateX(Math.PI);
@@ -46,7 +46,7 @@ export class ThreeHudElement extends ThreeObject3d implements IHudElement {
     }
 
     setPosition(x: number, y: number): void {
-        this.src.position.set(x, y, 0);
+        this.src.position.set(x + this.width / 2, y + this.height / 2, 0);
     }
 
     setSize(width: number, height: number): void {
