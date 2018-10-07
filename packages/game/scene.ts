@@ -37,7 +37,7 @@ export class Scene {
 
         this.graph = new this.Scene();
         this.hud = new this.Hud();
-        this.camera = new this.Camera(75, 0.1, 10000);
+        this.camera = new this.Camera(75, 0.1, 2000);
         this.renderer = new this.Renderer(this.platform.rwsStructPool, this.graph, this.hud, this.camera);
     }
 
@@ -124,15 +124,12 @@ export class Scene {
     async setup(): Promise<void> {
         this.ambient = new this.AmbientLight(new this.Vec3(0.25, 0.25, 0.25));
         this.skybox = new this.Skybox(this.state, this.platform.rwsStructPool.timecycIndex);
-        //this.setupIdeSelector();
+        this.setupIdeSelector();
         //this.setupIplSelector();
-        this.setupTextureSelector();
+        //this.setupTextureSelector();
 
         this.graph.add(this.ambient);
         this.graph.add(this.skybox);
-
-        const text = new HudText(this.platform, this.hud, 'Visit http://scn.cx for more projects!', 32);
-        window.text = text;
     }
 
     update(delta: number): void {

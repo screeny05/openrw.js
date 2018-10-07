@@ -205,9 +205,8 @@ export class ThreeMeshPool implements IMeshPool {
         });
 
         if(opacity < 1){
-            console.log('MATERIAL with opacity!', material);
-            threeMaterial.transparent = true;
             threeMaterial.opacity = opacity;
+            threeMaterial.transparent = true;
         }
 
         if(material.isTextured){
@@ -216,7 +215,7 @@ export class ThreeMeshPool implements IMeshPool {
             const iTex = texturePool.get(material.texture.name);
             threeMaterial.map = iTex.src;
             if(iTex.hasAlpha){
-                threeMaterial.alphaTest = opacity * 0.1;
+                threeMaterial.transparent = true;
             }
             /*if(material.texture.maskName){
                 const iTexMask = texturePool.get(material.texture.maskName);

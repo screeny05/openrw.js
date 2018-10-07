@@ -1,0 +1,27 @@
+{
+    "name": "@rws/explorer",
+    "version": "1.0.0",
+    "author": "Sebastian Langer <sl@scn.cx>",
+    "license": "MIT",
+    "dependencies": {
+        "@fortawesome/fontawesome-free": "^5.3.1",
+        "bind-decorator": "^1.0.11",
+        "classnames": "^2.2.6",
+        "foundation-sites": "^6.5.0-rc.3",
+        "golden-layout": "^1.5.9",
+        "jquery": "^3.3.1",
+        "memoize-one": "^4.0.2",
+        "react": "^16.5.2",
+        "react-dom": "^16.5.2",
+        "sass": "^1.14.1"
+    },
+    "devDependencies": {
+        "@types/classnames": "^2.2.6",
+        "@types/memoize-one": "^3.1.1",
+        "@types/react": "^16.4.15",
+        "@types/react-dom": "^16.0.8",
+        "@types/signale": "^1.2.0",
+        "babel-core": "^6.26.3",
+        "node-sass": "^4.9.3"
+    }
+}

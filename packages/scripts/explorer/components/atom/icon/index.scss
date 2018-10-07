@@ -1,0 +1,37 @@
+@import 'icons';
+
+$fa-css-prefix: fa-;
+@import '~@fortawesome/fontawesome-free/scss/_variables';
+@import '~@fortawesome/fontawesome-free/scss/_icons';
+
+@font-face {
+    font-family: file-icons;
+    src: url('./fonts/file-icons.woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: font-awesome;
+    src: url('~/node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: font-awesome-solid;
+    src: url('~/node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+.icon::before {
+    font-weight: normal;
+    font-style: normal;
+    text-align: center;
+    width: 16px;
+    line-height: 1;
+    position: relative;
+    display: inline-block;
+    -webkit-font-smoothing: antialiased;
+}

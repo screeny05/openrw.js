@@ -1,0 +1,29 @@
+.tree-node__expander,
+.tree-node__icon,
+.tree-node__title {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.tree-node__icon {
+    width: 22px;
+}
+
+.tree-node__header {
+    position: relative;
+    user-select: none;
+}
+
+.tree-node__header:hover {
+    background: #333;
+    cursor: pointer;
+}
+
+.tree-node__expander {
+    margin-left: -16px;
+    width: 16px;
+
+    .icon {
+        font-size: 10px;
+    }
+}

@@ -24,8 +24,7 @@ export class ThreeHudElement extends ThreeObject3d implements IHudElement {
         const material = new MeshBasicMaterial({
             map,
             side: BackSide,
-            transparent: texture.hasAlpha,
-            alphaTest: texture.hasAlpha ? 0.8 : 0
+            transparent: texture.hasAlpha
         });
 
         const geometry = new PlaneBufferGeometry(1, 1);

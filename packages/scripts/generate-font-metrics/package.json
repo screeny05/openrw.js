@@ -1,5 +1,5 @@
 {
-    "name": "@rws/scripts",
+    "name": "@rws/generate-font-metrics",
     "version": "1.0.0",
     "author": "Sebastian Langer <sl@scn.cx>",
     "license": "MIT"

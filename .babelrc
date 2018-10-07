@@ -7,6 +7,7 @@
                 "@rws/library": "./packages/library",
                 "@rws/platform": "./packages/platform",
                 "@rws/resources": "./packages/resources",
+                "@rws/logger": "./packages/logger",
                 "@rws/game-browser": "./packages/game-browser",
                 "@rws/game-native": "./packages/game-native",
                 "@rws/platform-config-browser": "./packages/platform-config-browser",

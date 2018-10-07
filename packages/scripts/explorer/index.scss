@@ -1,0 +1,14 @@
+@import '~foundation-sites/scss/foundation';
+
+$global-flexbox: true;
+
+@include foundation-everything(true);
+
+html,
+body {
+    color: #fff;
+}
+
+.lm_content {
+    overflow: auto;
+}

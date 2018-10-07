@@ -99,7 +99,7 @@ export class ThreeTexturePool implements ITexturePool {
         const usesPalette = textureNative.flags.PALETTE_4 || textureNative.flags.PALETTE_8;
 
         if(!(usesPalette && (textureNative.flags.FORMAT_888 || textureNative.flags.FORMAT_8888))){
-            console.warn('TexturePool: not implemented', textureNative.name, textureNative.flags);
+            console.warn('TexturePool: not implemented', textureNative.name, textureNative);
             return this.cloneFallbackTexture(textureNative.name);
         }
 
@@ -128,6 +128,10 @@ export class ThreeTexturePool implements ITexturePool {
         threeTexture.needsUpdate = true;
         threeTexture.name = textureNative.name;
         threeTexture.premultiplyAlpha = true;
+
+        if(textureNative.flags.AUTO_MIPMAP){
+            threeTexture.generateMipmaps = true;
+        }
 
         const iTex = new ThreeTexture(threeTexture);
         iTex.hasAlpha = !!textureNative.hasAlpha;

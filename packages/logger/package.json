@@ -1,0 +1,9 @@
+{
+    "name": "logger",
+    "version": "1.0.0",
+    "author": "Sebastian Langer <sl@scn.cx>",
+    "license": "MIT",
+    "devDependencies": {
+        "babel-core": "^6.26.3"
+    }
+}

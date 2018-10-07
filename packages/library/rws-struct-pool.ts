@@ -55,6 +55,7 @@ export class RwsStructPool {
         await this.texturePool.loadFromFile('models/fonts.txd');
         await this.texturePool.loadFromFile('models/generic.txd');
         await this.texturePool.loadFromFile('models/misc.txd');
+        await this.texturePool.loadFromFile('models/frontend.txd');
 
         await this.loadCarcols('data/carcols.dat');
         await this.loadTimecyc('data/timecyc.dat');
