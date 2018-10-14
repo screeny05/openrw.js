@@ -90,6 +90,31 @@ const DatabaseFiles: TypeDatabase = [
     [/\.dat$/, PathNodeType.FileDat],
 ];
 
+const DatabaseTextTypes = [
+    PathNodeType.FileIni,
+    PathNodeType.FileIde,
+    PathNodeType.FileIpl,
+    PathNodeType.FileIfp,
+    PathNodeType.FileCol,
+    PathNodeType.FileZon,
+    PathNodeType.FileTxt,
+    PathNodeType.FileWater,
+    PathNodeType.FileTimecyc,
+    PathNodeType.FileHandling,
+    PathNodeType.FileCullzone,
+    PathNodeType.FileFistfite,
+    PathNodeType.FileWeapon,
+    PathNodeType.FileCarcols,
+    PathNodeType.FileObject,
+    PathNodeType.FileParticle,
+    PathNodeType.FilePed,
+    PathNodeType.FilePedgrp,
+    PathNodeType.FilePedstats,
+    PathNodeType.FileSurface,
+    PathNodeType.FileTrain,
+    PathNodeType.FileFlight,
+];
+
 const DatabaseFolders: TypeDatabase = [];
 
 const NodeIcons: NodeIconDatabase = {
@@ -147,15 +172,17 @@ const guessByNameDatabase = (name: string, database: TypeDatabase): PathNodeType
     return match[1];
 };
 
-export const guessFileNodeType = (file: File): PathNodeType => {
-    const { name } = file;
-
+export const guessFileNodeType = (name: string): PathNodeType => {
     const dbGuess = guessByNameDatabase(name, DatabaseFiles);
     if(typeof dbGuess !== 'undefined'){
         return dbGuess;
     }
 
     return PathNodeType.File;
+}
+
+export const isTextFileType = (type: PathNodeType): boolean => {
+    return DatabaseTextTypes.includes(type);
 }
 
 export const guessFolderNodeType = (name: string): PathNodeType => {

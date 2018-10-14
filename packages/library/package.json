@@ -14,6 +14,7 @@
     },
     "devDependencies": {
         "@types/gl-matrix": "^2.4.1",
-        "@types/lodash": "^4.14.116"
+        "@types/lodash": "^4.14.116",
+        "babel-core": "^6.26.3"
     }
 }

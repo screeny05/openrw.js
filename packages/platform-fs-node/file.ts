@@ -53,7 +53,7 @@ export class PlatformFile implements IFile {
                 if(err){
                     return reject(err);
                 }
-                resolve(buffer.buffer);
+                resolve(buffer.buffer as ArrayBuffer);
             });
         });
     }

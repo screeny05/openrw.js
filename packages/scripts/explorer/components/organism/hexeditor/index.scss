@@ -1,0 +1,23 @@
+.hexeditor {
+    font-family: 'Courier New', Courier, monospace;
+    display: flex;
+    white-space: nowrap;
+}
+
+.hexeditor__addresses {
+    padding: 0 1ch;
+    background: #313131;
+}
+
+.hexeditor__hex {
+    margin: 0 2ch 0 1ch;
+    position: relative;
+
+    &:before {
+        content: '';
+        border-left: 1px solid #313131;
+        position: absolute;
+        height: 100%;
+        left: 23.5ch;
+    }
+}

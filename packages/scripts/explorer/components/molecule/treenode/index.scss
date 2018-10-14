@@ -1,0 +1,36 @@
+$treenode-icon-width: 22px;
+
+.treenode__expander,
+.treenode__icon,
+.treenode__title {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.treenode__icon {
+    width: $treenode-icon-width;
+}
+
+.treenode__header {
+    position: relative;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.treenode__header:hover {
+    background: #333;
+    cursor: pointer;
+}
+
+.treenode__expander {
+    margin-left: -16px;
+    width: 16px;
+
+    .icon {
+        font-size: 10px;
+    }
+}
+
+.treenode__loader {
+    margin-left: $treenode-icon-width;
+}

@@ -6,5 +6,8 @@
     "dependencies": {
         "filereader-stream": "^2.0.0",
         "readable-stream": "^3.0.2"
+    },
+    "devDependencies": {
+        "babel-core": "^6.26.3"
     }
 }

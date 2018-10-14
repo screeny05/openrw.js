@@ -4,19 +4,19 @@ import { IFileIndex } from '@rws/platform/fs';
 export class BrowserFileIndex implements IFileIndex {
     private index: Map<string, BrowserFile> = new Map();
     private root: string;
-    private files: FileList;
+    private files: File[];
 
-    constructor(files: FileList) {
+    constructor(files: FileList | File[]) {
         if(!files || files.length === 0){
             throw new Error('No Files selected');
         }
 
         this.root = files[0].webkitRelativePath.split('/')[0];
-        this.files = files;
+        this.files = Array.isArray(files) ? files : Array.from(files);
     }
 
     async load(): Promise<void> {
-        Array.from(this.files).forEach(file => {
+        this.files.forEach(file => {
             const normalizedPath = this.normalizePath(file.webkitRelativePath);
             this.index.set(normalizedPath, new BrowserFile(file));
         });
