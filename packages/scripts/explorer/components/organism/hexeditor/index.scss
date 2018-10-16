@@ -1,10 +1,13 @@
 .hexeditor {
     font-family: 'Courier New', Courier, monospace;
-    display: flex;
     white-space: nowrap;
 }
 
-.hexeditor__addresses {
+.hexeditor__row {
+    display: flex;
+}
+
+.hexeditor__address {
     padding: 0 1ch;
     background: #313131;
 }

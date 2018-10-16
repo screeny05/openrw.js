@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { bind } from 'bind-decorator';
 import { TreeviewNode, TreeviewNodeProps, TreeviewNodeCollection } from '../../molecule/treenode';
+import './index.scss';
 
 interface TreeviewProps {
     nodes: TreeviewNodeCollection;

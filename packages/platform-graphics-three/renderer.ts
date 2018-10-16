@@ -57,6 +57,7 @@ export class ThreeRenderer implements IRenderer {
 
     setRendererSize(): void {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.camera.src.aspect = window.innerWidth / window.innerHeight;
     }
 
     render(delta: number): void {

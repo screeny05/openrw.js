@@ -8,6 +8,7 @@
         "three": "^0.92.0"
     },
     "devDependencies": {
-        "@types/three": "^0.92.18"
+        "@types/three": "^0.92.18",
+        "babel-core": "^6.26.3"
     }
 }

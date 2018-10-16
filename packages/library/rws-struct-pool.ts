@@ -11,8 +11,7 @@ import { ColIndex } from "./index/col";
 import { CarcolsIndex } from "./index/carcols";
 import { TimecycIndex } from "./index/timecyc";
 import { HandlingIndex } from "./index/handling";
-import { ITexturePool, IMeshPool } from "@rws/platform/graphic";
-import { PlatformAdapter } from "@rws/platform/adapter";
+import { ITexturePool, IMeshPool, IMeshPoolConstructor, ITexturePoolConstructor } from "@rws/platform/graphic";
 import { DefinitionPool } from "./definition-pool";
 
 export class RwsStructPool {
@@ -31,11 +30,11 @@ export class RwsStructPool {
     meshPool: IMeshPool;
     definitionPool: DefinitionPool;
 
-    constructor(fileIndex: IFileIndex, language: string = 'american', adapter: PlatformAdapter){
+    constructor(fileIndex: IFileIndex, TexturePool: ITexturePoolConstructor, MeshPool: IMeshPoolConstructor, language: string = 'american'){
         this.fileIndex = fileIndex;
         this.language = language;
-        this.texturePool = new adapter.graphicConstructors.TexturePool(this);
-        this.meshPool = new adapter.graphicConstructors.MeshPool(this);
+        this.texturePool = new TexturePool(this);
+        this.meshPool = new MeshPool(this);
         this.definitionPool = new DefinitionPool(this);
     }
 
@@ -43,7 +42,7 @@ export class RwsStructPool {
         return this.fileIndex.has('models/gta3.img');
     }
 
-    async load(): Promise<void> {
+    async loadDefault(): Promise<void> {
         await this.loadGxt(`text/${this.language}.gxt`);
 
         await this.loadImg('models/gta3.img');

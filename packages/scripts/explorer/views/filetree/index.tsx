@@ -17,7 +17,8 @@ interface FiletreeState {
 
 interface FiletreeProps {
     files: File[];
-    openFile: (node: TreeviewNodeProps) => void;
+    openFile: (node: TreeviewNodeProps, index: BrowserFileIndex) => void;
+    glContainer: any;
 }
 
 export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
@@ -36,6 +37,10 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         this.setState({
             isLoaded: true
         });
+    }
+
+    componentDidMount(){
+        setTimeout(() => this.props.glContainer.setSize(window.innerWidth * 0.25, 100), 0);
     }
 
     getFiletreeFromFiles = memoizeOne((files: File[]): TreeviewNodeCollection => {
@@ -90,7 +95,7 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
 
     @bind
     onNodeClick(node: TreeviewNodeProps): void {
-        this.props.openFile(node);
+        this.props.openFile(node, this.state.index);
     }
 
     @bind

@@ -17,6 +17,8 @@
         "react": "^16.5.2",
         "react-codemirror2": "^5.1.0",
         "react-dom": "^16.5.2",
+        "react-inspector": "^2.3.0",
+        "react-tiny-virtual-list": "^2.2.0",
         "regenerator-runtime": "^0.12.1",
         "sass": "^1.14.1",
         "setimmediate": "^1.0.5",
@@ -25,6 +27,7 @@
     "devDependencies": {
         "@types/classnames": "^2.2.6",
         "@types/codemirror": "0.0.63",
+        "@types/jquery": "^3.3.17",
         "@types/memoize-one": "^3.1.1",
         "@types/react": "^16.4.15",
         "@types/react-dom": "^16.0.8",

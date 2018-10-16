@@ -12,6 +12,7 @@
     "@types/p-queue": "^2.3.1",
     "@types/three": "^0.89.11",
     "@types/throttle-debounce": "^1.0.0",
+    "babel-core": "^6.26.3",
     "babel-plugin-module-resolver": "^3.1.1",
     "typescript": "^2.8.3"
   },

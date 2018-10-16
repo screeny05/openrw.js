@@ -91,6 +91,20 @@ export class TreeviewNode extends React.PureComponent<TreeviewNodeProps> {
                 )}
             </div>
         );
+
+        /*const childKeys = Object.keys(this.props.children);
+        return (
+            <div className="treenode__body">
+                <VirtualList width='100%' height={300} overscanCount={20} itemCount={childKeys.length} itemSize={24} renderItem={({index, style}) =>
+                    <TreeviewNode
+                        key={index}
+                        {...this.props.children[childKeys[index]]}
+                        level={this.getLevel() + 1}
+                        onOpenContent={this.props.onOpenContent}
+                        onRequestContent={this.props.onRequestContent}/>
+                }/>
+            </div>
+        );*/
     }
 
     getLevel(): number {

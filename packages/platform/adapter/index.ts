@@ -19,11 +19,16 @@ export class PlatformAdapter {
         this.control = new InputControlMapper(defaultMap, input);
         this.loop = loop;
         this.graphicConstructors = graphicConstructors;
-        this.rwsStructPool = new RwsStructPool(this.fileIndex, config.language, this);
+        this.rwsStructPool = new RwsStructPool(
+            this.fileIndex,
+            this.graphicConstructors.TexturePool,
+            this.graphicConstructors.MeshPool,
+            config.language
+        );
     }
 
     async load(): Promise<void> {
         await this.fileIndex.load();
-        await this.rwsStructPool.load();
+        await this.rwsStructPool.loadDefault();
     }
 }

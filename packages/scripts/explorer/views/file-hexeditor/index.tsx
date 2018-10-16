@@ -8,16 +8,19 @@ import { treeviewnodeToBuffer } from '../../library/treeviewnode-to-buffer';
 
 interface FileHexeditorProps {
     node: TreeviewNodeProps;
+    glContainer: any;
 }
 
 interface FileHexeditorState {
     buffer?: ArrayBuffer;
     isLoaded: boolean;
+    height: number;
 }
 
 export class FileHexeditor extends React.Component<FileHexeditorProps, FileHexeditorState> {
     state: FileHexeditorState = {
-        isLoaded: false
+        isLoaded: false,
+        height: 0,
     }
 
     constructor(props){
@@ -32,17 +35,23 @@ export class FileHexeditor extends React.Component<FileHexeditorProps, FileHexed
         });
     }
 
+    componentWillMount(){
+        this.props.glContainer.on('resize', () => this.setState({
+            height: this.props.glContainer.height
+        }));
+    }
+
     render(){
         if(!this.state.isLoaded){
             return <div>loading</div>;
         }
         if(!this.state.buffer){
-            return <div>unable to loade</div>;
+            return <div>unable to load</div>;
         }
 
         return (
             <div>
-                <Hexeditor buffer={this.state.buffer}/>
+                <Hexeditor buffer={this.state.buffer} height={this.state.height}/>
             </div>
         );
     }

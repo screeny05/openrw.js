@@ -95,7 +95,6 @@ const DatabaseTextTypes = [
     PathNodeType.FileIde,
     PathNodeType.FileIpl,
     PathNodeType.FileIfp,
-    PathNodeType.FileCol,
     PathNodeType.FileZon,
     PathNodeType.FileTxt,
     PathNodeType.FileWater,
