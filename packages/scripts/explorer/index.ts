@@ -41,6 +41,7 @@ import { FileTexteditor } from './views/file-texteditor';
 import { guessFileNodeType, isTextFileType, PathNodeType } from './components/organism/treeview/node-icon';
 import { FileDffViewer } from './views/file-dff-viewer';
 import { FileInspector } from './views/file-inspector';
+import { FileTxdViewer } from './views/file-txd-viewer';
 
 
 const $toolbar = document.querySelector('.js--toolbar');
@@ -80,7 +81,7 @@ const openFile = async (node: TreeviewNodeProps, index: BrowserFileIndex) => {
         component = 'file-dff-viewer';
     }
     if(fileType === PathNodeType.FileTxd){
-        component = 'file-inspector';
+        component = 'file-txd-viewer';
     }
 
     content.root.getItemsById('working-stack')[0].addChild(getComponentConfig(component, node.name, { node, index }, isReact));
@@ -157,6 +158,7 @@ content.registerComponent('filetree', Filetree);
 content.registerComponent('file-picker', FilePicker);
 content.registerComponent('file-hexeditor', FileHexeditor);
 content.registerComponent('file-dff-viewer', FileDffViewer);
+content.registerComponent('file-txd-viewer', FileTxdViewer);
 content.registerComponent('file-texteditor', FileTexteditor);
 content.registerComponent('file-inspector', FileInspector);
 content.registerComponent('console', Console);

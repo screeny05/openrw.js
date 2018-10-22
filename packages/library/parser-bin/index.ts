@@ -14,3 +14,4 @@ import './dir';
 import './gxt';
 import './img';
 import './rws';
+import './sdt';

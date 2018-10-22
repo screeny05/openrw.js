@@ -3,11 +3,15 @@ import { bind } from 'bind-decorator';
 import { Treeview } from '../../components/organism/treeview';
 import { TreeviewNodeProps, TreeviewNodeCollection } from '../../components/molecule/treenode';
 import memoizeOne from 'memoize-one';
-import { guessFolderNodeType, guessFileNodeType, getIconByNodeType, PathNodeType } from '../../components/organism/treeview/node-icon';
+import { guessFolderNodeType, guessFileNodeType, getIconByNodeType, PathNodeType, isExpandableType } from '../../components/organism/treeview/node-icon';
 import { BrowserFile } from '@rws/platform-fs-browser/file';
 import { Icon } from '../../components/atom/icon';
 import { ImgIndex } from '@rws/library/index/img';
 import { BrowserFileIndex } from '@rws/platform-fs-browser/file-index';
+import { RawIndex } from '@rws/library/index/raw';
+import { RwsTextureDictionary } from '@rws/library/type/rws';
+import Corrode from '@rws/library/node_modules/corrode';
+import { DirEntry } from '@rws/library/type/dir-entry';
 
 interface FiletreeState {
     nodes: TreeviewNodeCollection;
@@ -20,6 +24,8 @@ interface FiletreeProps {
     openFile: (node: TreeviewNodeProps, index: BrowserFileIndex) => void;
     glContainer: any;
 }
+
+const splitPath = (path: string): string[] => path.split(/[\\\/]/).slice(1);
 
 export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
     constructor(props: FiletreeProps){
@@ -47,7 +53,7 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         const root: TreeviewNodeCollection = {};
 
         files.forEach(file => {
-            const fullPath = file.webkitRelativePath.split(/[\\\/]/).slice(1);
+            const fullPath = splitPath(file.webkitRelativePath);
             // remove root & filename
             const path = fullPath.slice(0, -1);
 
@@ -67,7 +73,7 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
             });
 
             const fileType = guessFileNodeType(file.name);
-            const isLoadable = fileType === PathNodeType.FileImg;
+            const isLoadable = isExpandableType(fileType);
 
             currentNode.children[file.name] = {
                 name: file.name,
@@ -105,6 +111,12 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         if(nodeType === PathNodeType.FileImg){
             children = await this.requestContentImg(node.data.file);
         }
+        if(nodeType === PathNodeType.FileRaw){
+            children = await this.requestContentRaw(node.data.file);
+        }
+        if(nodeType === PathNodeType.FileTxd){
+            children = await this.requestContentTxdFile(node);
+        }
 
         if(!children){
             return;
@@ -118,15 +130,65 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
     async requestContentImg(file: BrowserFile): Promise<TreeviewNodeProps[]> {
         const index = new ImgIndex(this.state.index, file.path);
         await index.load();
-        return Array.from(index.imgIndex.values()).map(imgEntry => ({
-            name: imgEntry.name,
-            icon: this.getFileIconByNodeType(guessFileNodeType(imgEntry.name)),
+
+        return Array.from(index.imgIndex.values()).map(imgEntry => {
+            const type = guessFileNodeType(imgEntry.name);
+            const isLoadable = isExpandableType(type);
+
+            return {
+                name: imgEntry.name,
+                icon: this.getFileIconByNodeType(type),
+                isExpandable: isLoadable,
+                isLoaded: !isLoadable,
+                children: {},
+                data: {
+                    img: index,
+                    entry: imgEntry,
+                    path: splitPath(index.imgFile.path + '/' + imgEntry.name),
+                }
+            };
+        });
+    }
+
+    async requestContentRaw(file: BrowserFile): Promise<TreeviewNodeProps[]> {
+        const index = new RawIndex(this.state.index, file.path);
+        await index.load();
+        return index.sdtIndex.map((sdtEntry, i) => ({
+            name: i.toString(),
+            icon: this.getFileIconByNodeType(PathNodeType.FileRaw),
             isLoaded: true,
             children: {},
             data: {
-                img: index,
-                entry: imgEntry
+                index,
+                sdtEntry
             }
+        }));
+    }
+
+    async requestContentTxdFile(node: TreeviewNodeProps): Promise<TreeviewNodeProps[]> {
+        const file: BrowserFile|undefined = node.data.file;
+        const entry: DirEntry|undefined = node.data.entry;
+
+        let data: RwsTextureDictionary|null = null;
+        if(file){
+            const parser = new Corrode().ext.rwsSingle('rws').map.push('rws');
+            data = await file.parse<RwsTextureDictionary>(parser);
+        }
+        if(entry){
+            const img: ImgIndex = node.data.img;
+            data = await img.parseEntryAsRws(entry) as RwsTextureDictionary;
+        }
+
+        if(!data){
+            return [];
+        }
+
+        return data.textures.map(texture => ({
+            name: texture.name,
+            icon: this.getFileIconByNodeType(PathNodeType.FileTxd),
+            isLoaded: true,
+            children: {},
+            data: { texture }
         }));
     }
 

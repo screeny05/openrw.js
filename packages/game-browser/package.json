@@ -7,5 +7,8 @@
     "dependencies": {
         "regenerator-runtime": "^0.12.1",
         "setimmediate": "^1.0.5"
+    },
+    "devDependencies": {
+        "babel-core": "^6.26.3"
     }
 }

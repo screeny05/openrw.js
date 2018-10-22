@@ -60,6 +60,10 @@ export class ThreeTexturePool implements ITexturePool {
         return this.textureCache.get(name) as ThreeTexture;
     }
 
+    getLoadedEntries(): ThreeTexture[] {
+        return Array.from(this.textureCache.values());
+    }
+
     async loadFromFile(fileName: string): Promise<void> {
         fileName = this.rwsPool.fileIndex.normalizePath(fileName);
         if(this.loadedFiles.includes(fileName)){

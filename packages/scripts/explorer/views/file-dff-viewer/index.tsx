@@ -7,14 +7,18 @@ import { ThreeMeshPool } from '@rws/platform-graphics-three/mesh-pool';
 import { WebGLRenderer, Scene, PerspectiveCamera, AmbientLight, Color } from '@rws/platform-graphics-three/node_modules/three';
 import { ThreeMesh } from '@rws/platform-graphics-three/mesh';
 import { BrowserLoop } from '@rws/platform-loop-browser';
-import { TreeviewNodeProps } from '../../components/molecule/treenode';
 import { BrowserFile } from '@rws/platform-fs-browser/';
 import { DirEntry } from '@rws/library/type/dir-entry';
 import { ImgIndex } from '@rws/library/index/img';
+import { CameraControlFree } from '@rws/game/camera-controls-free';
+import { ThreeCamera } from '@rws/platform-graphics-three/camera';
+import { BrowserInput } from '@rws/platform-control-browser';
+import { InputControlMapper, defaultMap } from '@rws/platform/control';
 
 export async function FileDffViewer(container: GoldenLayoutType.Container, props: FileComponentProps): Promise<void> {
     const $canvas = $('<canvas>');
     container.getElement().append($canvas);
+    $canvas.get(0).tabIndex = 0;
 
     const pool = new RwsStructPool(props.index, ThreeTexturePool, ThreeMeshPool, 'american');
     const mesh = await getMeshFromTreenode(pool, props);
@@ -23,31 +27,37 @@ export async function FileDffViewer(container: GoldenLayoutType.Container, props
         antialias: true,
         canvas: $canvas.get(0)
     });
-    const camera = new PerspectiveCamera(75, 1, 0.1, 1000);
+    const camera = new ThreeCamera(75, 0.1, 1000);
+    const input = new BrowserInput(container.getElement().get(0));
     const loop = new BrowserLoop();
     const ambient = new AmbientLight(new Color(1, 1, 1));
 
-    camera.up.set(0, 0, 1);
-    camera.position.set(0, 3, 0);
-    camera.lookAt(0, 0, 0);
+    camera.src.up.set(0, 0, 1);
+    camera.src.position.set(0, 3, 0);
+    camera.src.lookAt(0, 0, 0);
 
     const setSize = () => {
         $canvas.width(container.width);
         $canvas.height(container.height);
         renderer.setSize(container.width, container.height);
-        camera.aspect = container.width / container.height;
+        camera.src.aspect = container.width / container.height;
+        camera.src.updateProjectionMatrix();
     };
 
     container.on('destroy', () => loop.stop());
-    container.on('resize', () => setSize);
+    container.on('resize', setSize);
     setSize();
 
     scene.add(mesh.src);
     scene.add(ambient);
     scene.background = new Color(1, 1, 1);
 
-    loop.setTickCallback(() => {
-        renderer.render(scene, camera);
+    const camControls = new CameraControlFree(camera, new InputControlMapper(defaultMap, input));
+
+    loop.setTickCallback(delta => {
+        camControls.update(delta);
+        renderer.render(scene, camera.src);
+        input.update(delta);
     });
     loop.start();
 }

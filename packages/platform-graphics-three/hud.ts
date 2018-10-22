@@ -9,8 +9,7 @@ export class ThreeHud implements IHud {
 
     constructor(){
         this.$el = document.querySelector('.js--hud') as HTMLDivElement;
-        const width = this.$el.clientWidth;
-        const height = this.$el.clientHeight;
+        const [width, height] = this.getCanvasSize();
 
         this.src = new Scene();
         this.camera = new OrthographicCamera(width / -2, width / 2, height / 2, height / -2, 0, 30);
@@ -19,8 +18,7 @@ export class ThreeHud implements IHud {
     }
 
     setCameraFrustum(){
-        const width = this.$el.clientWidth;
-        const height = this.$el.clientHeight;
+        const [width, height] = this.getCanvasSize();
         this.camera.left = width / -2;
         this.camera.right = width / 2;
         this.camera.bottom = height / -2;
@@ -30,5 +28,13 @@ export class ThreeHud implements IHud {
 
     add(element: ThreeHudElement): void {
         this.src.add(element.src);
+    }
+
+    getCanvasSize(): [number, number] {
+        const style = window.getComputedStyle(this.$el);
+        return [
+            Number.parseFloat(style.width ? style.width.replace('px', '') : '0'),
+            Number.parseFloat(style.height ? style.height.replace('px', '') : '0')
+        ];
     }
 }

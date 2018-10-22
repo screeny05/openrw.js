@@ -14,6 +14,8 @@ export enum PathNodeType {
     FileMp3,
     FileGxt,
     FileTxt,
+    FileRaw,
+    FileSdt,
     FileWater,
     FileWaterpro,
     FileTimecyc,
@@ -88,6 +90,8 @@ const DatabaseFiles: TypeDatabase = [
     [/train.?\.dat$/, PathNodeType.FileTrain],
     [/flight.?\.dat$/, PathNodeType.FileFlight],
     [/\.dat$/, PathNodeType.FileDat],
+    [/\.raw$/, PathNodeType.FileRaw],
+    [/\.sdt$/, PathNodeType.FileSdt],
 ];
 
 const DatabaseTextTypes = [
@@ -131,7 +135,7 @@ const NodeIcons: NodeIconDatabase = {
     [PathNodeType.FileIde]: ['fas', 'database', '#fe7600'],
     [PathNodeType.FileIpl]: ['fas', 'map-pin', '#fe7600'],
     [PathNodeType.FileWav]: ['fa', 'file-audio', '#fe7600'],
-    [PathNodeType.FileMp3]: ['fas', 'file-audio', '#fe7600'],
+    [PathNodeType.FileMp3]: ['fa', 'file-audio', '#fe7600'],
     [PathNodeType.FileGxt]: ['fa', 'file-alt', '#fe7600'],
     [PathNodeType.FileTxt]: ['fas', 'file-alt', '#fe7600'],
     [PathNodeType.FileWaterpro]: ['fas', 'tint', '#fe7600'],
@@ -156,6 +160,8 @@ const NodeIcons: NodeIconDatabase = {
     [PathNodeType.FilePedgrp]: ['fas', 'user-friends', '#fe7600'],
     [PathNodeType.FilePedstats]: ['fa', 'chart-bar', '#fe7600'],
     [PathNodeType.FileSurface]: ['fas', 'road', '#fe7600'],
+    [PathNodeType.FileRaw]: ['fas', 'file-audio', '#fe7600'],
+    [PathNodeType.FileSdt]: ['fas', 'list-ul', '#fe7600'],
 };
 
 const guessByNameDatabase = (name: string, database: TypeDatabase): PathNodeType | undefined => {
@@ -199,4 +205,12 @@ export const getIconByNodeType = (type: PathNodeType, isOpen: boolean = false): 
         return icon[isOpen ? 1 : 0];
     }
     return icon;
+}
+
+export const isExpandableType = (type: PathNodeType): boolean => {
+    return [
+        PathNodeType.FileRaw,
+        PathNodeType.FileImg,
+        //PathNodeType.FileTxd
+    ].includes(type);
 }

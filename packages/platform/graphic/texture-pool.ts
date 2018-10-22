@@ -3,6 +3,7 @@ import { RwsStructPool } from "@rws/library/rws-struct-pool";
 
 export interface ITexturePool {
     get(name: string): ITexture;
+    getLoadedEntries(): ITexture[];
     loadFromFile(fileName: string): Promise<void>;
     loadFromImg(imgName: string, fileName: string): Promise<void>;
 }
