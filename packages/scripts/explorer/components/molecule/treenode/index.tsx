@@ -4,6 +4,8 @@ import { Icon } from '../../atom/icon';
 import { Spinner } from '../spinner';
 
 import './index.scss';
+import { Contextmenu } from '../../organism/contextmenu';
+import { ContextmenuProvider } from '../../organism/contextmenu-provider';
 
 export type TreeviewNodeCollection = {
     [key: string]: TreeviewNodeProps;
@@ -19,15 +21,25 @@ export interface TreeviewNodeProps {
     isExpandable?: boolean;
     isLoaded?: boolean;
     onOpenContent?(node: TreeviewNodeProps): void;
-    onRequestContent?(node: TreeviewNodeProps);
+    onRequestContent?(node: TreeviewNodeProps): void;
+    renderContextMenu?(node: TreeviewNodeProps): void;
 }
 
 const TREENODE_INDENT = 15;
 
+const RenderlessContainer: React.StatelessComponent = props => props.children as any;
+
+const OptionalContextProvider: React.StatelessComponent<{ renderContextMenu?(node: TreeviewNodeProps): any, node: TreeviewNodeProps }> = ({ children, renderContextMenu, node }) => typeof renderContextMenu === 'function' ?
+    <ContextmenuProvider render={() => renderContextMenu(node)}>
+        {children}
+    </ContextmenuProvider> :
+    <RenderlessContainer>{children}</RenderlessContainer>
+    ;
+
 export class TreeviewNode extends React.PureComponent<TreeviewNodeProps> {
     state = {
         isExpanded: false,
-        isLoading: false,
+        isLoading: false
     }
 
     constructor(props){
@@ -50,19 +62,25 @@ export class TreeviewNode extends React.PureComponent<TreeviewNodeProps> {
         const paddingLeft = this.getLevel() * TREENODE_INDENT;
 
         return (
-            <div className="treenode__header" onClick={this.onClickHeader} style={{ paddingLeft }}>
-                {this.props.isExpandable ? <div className="treenode__expander">
-                    <Icon font="fas" name={this.state.isExpanded ? 'caret-down' : 'caret-right'}/>
-                </div> : ''}
+            <OptionalContextProvider renderContextMenu={this.props.renderContextMenu} node={this.props}>
+                <div className="treenode__header" onClick={this.onClickHeader} style={{ paddingLeft }}>
+                    {this.props.isExpandable ?
+                        <div className="treenode__expander">
+                            <Icon font="fas" name={this.state.isExpanded ? 'caret-down' : 'caret-right'}/>
+                        </div>
+                    : ''}
 
-                {this.props.icon ? <div className="treenode__icon">
-                    {this.props.icon}
-                </div> : ''}
+                    {this.props.icon ?
+                        <div className="treenode__icon">
+                            {this.props.icon}
+                        </div>
+                    : ''}
 
-                <div className="treenode__title">
-                    {this.props.name}
+                    <div className="treenode__title">
+                        {this.props.name}
+                    </div>
                 </div>
-            </div>
+            </OptionalContextProvider>
         );
     }
 
@@ -87,24 +105,11 @@ export class TreeviewNode extends React.PureComponent<TreeviewNodeProps> {
                         {...this.props.children[key]}
                         level={this.getLevel() + 1}
                         onOpenContent={this.props.onOpenContent}
-                        onRequestContent={this.props.onRequestContent}/>
+                        onRequestContent={this.props.onRequestContent}
+                        renderContextMenu={this.props.renderContextMenu}/>
                 )}
             </div>
         );
-
-        /*const childKeys = Object.keys(this.props.children);
-        return (
-            <div className="treenode__body">
-                <VirtualList width='100%' height={300} overscanCount={20} itemCount={childKeys.length} itemSize={24} renderItem={({index, style}) =>
-                    <TreeviewNode
-                        key={index}
-                        {...this.props.children[childKeys[index]]}
-                        level={this.getLevel() + 1}
-                        onOpenContent={this.props.onOpenContent}
-                        onRequestContent={this.props.onRequestContent}/>
-                }/>
-            </div>
-        );*/
     }
 
     getLevel(): number {

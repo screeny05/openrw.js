@@ -118,6 +118,11 @@ const DatabaseTextTypes = [
     PathNodeType.FileFlight,
 ];
 
+const DatabaseInspectableTypes = [
+    PathNodeType.FileTxd,
+    PathNodeType.FileDff
+];
+
 const DatabaseFolders: TypeDatabase = [];
 
 const NodeIcons: NodeIconDatabase = {
@@ -190,6 +195,10 @@ export const isTextFileType = (type: PathNodeType): boolean => {
     return DatabaseTextTypes.includes(type);
 }
 
+export const isInspectableFileType = (type: PathNodeType): boolean => {
+    return DatabaseInspectableTypes.includes(type);
+}
+
 export const guessFolderNodeType = (name: string): PathNodeType => {
     const dbGuess = guessByNameDatabase(name, DatabaseFolders);
     if(dbGuess){
@@ -211,6 +220,5 @@ export const isExpandableType = (type: PathNodeType): boolean => {
     return [
         PathNodeType.FileRaw,
         PathNodeType.FileImg,
-        //PathNodeType.FileTxd
     ].includes(type);
 }

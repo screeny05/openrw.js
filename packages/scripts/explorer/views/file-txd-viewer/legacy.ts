@@ -24,7 +24,6 @@ export async function FileTxdViewer(container: GoldenLayoutType.Container, props
     const renderer = new WebGLRenderer({
         antialias: true,
         canvas: $canvas.get(0),
-
     });
     const hud = new ThreeHud();
 

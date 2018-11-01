@@ -6,7 +6,8 @@ import './index.scss';
 interface TreeviewProps {
     nodes: TreeviewNodeCollection;
     onNodeOpen?(node: TreeviewNodeProps): void;
-    onNodeRequestContent?(node: TreeviewNodeProps);
+    onNodeRequestContent?(node: TreeviewNodeProps): void;
+    renderContextMenu?(node: TreeviewNodeProps): any;
 }
 
 export class Treeview extends React.PureComponent<TreeviewProps> {
@@ -18,7 +19,8 @@ export class Treeview extends React.PureComponent<TreeviewProps> {
                         key={key}
                         {...this.props.nodes[key]}
                         onOpenContent={this.onNodeClick}
-                        onRequestContent={this.onNodeRequestContent}/>
+                        onRequestContent={this.onNodeRequestContent}
+                        renderContextMenu={this.props.renderContextMenu}/>
                 )}
             </div>
         )

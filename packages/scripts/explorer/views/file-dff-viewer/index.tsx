@@ -4,7 +4,7 @@ import { RwsStructPool } from '@rws/library/rws-struct-pool';
 import { FileComponentProps } from '../..';
 import { ThreeTexturePool } from '@rws/platform-graphics-three/texture-pool';
 import { ThreeMeshPool } from '@rws/platform-graphics-three/mesh-pool';
-import { WebGLRenderer, Scene, PerspectiveCamera, AmbientLight, Color } from '@rws/platform-graphics-three/node_modules/three';
+import { WebGLRenderer, Scene, GridHelper, AmbientLight, Color } from '@rws/platform-graphics-three/node_modules/three';
 import { ThreeMesh } from '@rws/platform-graphics-three/mesh';
 import { BrowserLoop } from '@rws/platform-loop-browser';
 import { BrowserFile } from '@rws/platform-fs-browser/';
@@ -31,6 +31,9 @@ export async function FileDffViewer(container: GoldenLayoutType.Container, props
     const input = new BrowserInput(container.getElement().get(0));
     const loop = new BrowserLoop();
     const ambient = new AmbientLight(new Color(1, 1, 1));
+    const grid = new GridHelper(10, 10);
+
+    grid.rotateX(Math.PI / 2);
 
     camera.src.up.set(0, 0, 1);
     camera.src.position.set(0, 3, 0);
@@ -50,6 +53,7 @@ export async function FileDffViewer(container: GoldenLayoutType.Container, props
 
     scene.add(mesh.src);
     scene.add(ambient);
+    scene.add(grid);
     scene.background = new Color(1, 1, 1);
 
     const camControls = new CameraControlFree(camera, new InputControlMapper(defaultMap, input));

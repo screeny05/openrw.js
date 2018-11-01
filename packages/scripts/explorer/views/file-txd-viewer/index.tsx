@@ -11,22 +11,25 @@ import bind from 'bind-decorator';
 import { BrowserLoop } from '@rws/platform-loop-browser/';
 import { ThreeHudElement } from '@rws/platform-graphics-three/hud-element';
 import { ThreeTexture } from '@rws/platform-graphics-three/texture';
-import { WebGLRenderer } from 'three';
+import { WebGLRenderer } from '@rws/platform-graphics-three/node_modules/three';
+import { ThreeHud } from '@rws/platform-graphics-three/hud';
 
 interface FileTxdViewerProps {
     node: TreeviewNodeProps;
     index: BrowserFileIndex;
+    glContainer: any;
 }
 
 interface FileTxdViewerState {
     isLoaded: boolean;
     pool: RwsStructPool;
     loop: BrowserLoop;
-    selectedIndex: number;
+    selectedTexture: ThreeTexture | null;
 }
 
 export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdViewerState> {
     canvasRef: React.RefObject<HTMLCanvasElement>;
+    currentRenderer: WebGLRenderer | null = null;
 
     constructor(props){
         super(props);
@@ -37,7 +40,7 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
             isLoaded: false,
             pool: new RwsStructPool(props.index, ThreeTexturePool, ThreeMeshPool, 'american'),
             loop: new BrowserLoop(),
-            selectedIndex: 0
+            selectedTexture: null
         };
 
         this.init();
@@ -69,31 +72,42 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
 
         return (
             <div>
-                <ul>
+                <canvas ref={this.canvasRef} className="js--hud" style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: this.props.glContainer.width,
+                    height: this.props.glContainer.height
+                }}/>
+                <ul style={{ position: 'relative' }}>
                     {this.state.pool.texturePool.getLoadedEntries().map(texture =>
-                        <li onClick={this.onSelectTexture}>{texture.name}</li>
+                        <li onClick={this.onSelectTexture.bind(this, texture)}>{texture.name}</li>
                     )}
                 </ul>
-                <canvas ref={this.canvasRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}/>
             </div>
         );
     }
 
     componentDidUpdate(){
-        if(!this.canvasRef.current){
+        if(!this.canvasRef.current || !this.state.selectedTexture){
             return;
         }
+        if(!this.currentRenderer){
+            this.currentRenderer = new WebGLRenderer({
+                antialias: true,
+                canvas: this.canvasRef.current,
+                alpha: true
+            });
+        }
+        const el = new ThreeHudElement(this.state.selectedTexture);
+        const hud = new ThreeHud();
+        hud.src.children.splice(0);
+        hud.add(el);
+        this.currentRenderer.render(hud.src, hud.camera);
     }
 
     @bind
-    onSelectTexture(e): void {
-        console.log(e)
-
-        const el = new ThreeHudElement(this.state.pool.texturePool.getLoadedEntries()[this.state.selectedIndex] as ThreeTexture);
-        const renderer = new WebGLRenderer({
-            antialias: true,
-            canvas: $canvas.get(0),
-        });
-        const hud = new ThreeHud();
+    onSelectTexture(texture: ThreeTexture): void {
+        this.setState({ selectedTexture: texture });
     }
 }

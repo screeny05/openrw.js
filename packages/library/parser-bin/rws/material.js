@@ -14,7 +14,7 @@ Corrode.addExtension('rwsMaterial', function(){
             .uint32('unknown')
             .uint32('isTextured');
 
-        if(header.version.version > SURFACE_PROPERTIES_VERSION){
+        if(header.version.version >= SURFACE_PROPERTIES_VERSION){
             this
                 .float('ambient')
                 .float('specular')

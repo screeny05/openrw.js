@@ -1,0 +1,23 @@
+.contextmenu {
+    position: absolute;
+    background: #222222;
+    border: 1px solid #000;
+    box-shadow: 0px 5px 8px -2px #00000082;
+    z-index: 1;
+}
+
+.contextmenu__item {
+    padding: 3px 5px;
+}
+
+.contextmenu__item--disabled {
+    cursor: default;
+    color: rgba(#fff, .6);
+}
+
+.contextmenu__item:not(.contextmenu__item--disabled) {
+    cursor: pointer;
+    &:hover {
+        background: #1779ba;
+    }
+}

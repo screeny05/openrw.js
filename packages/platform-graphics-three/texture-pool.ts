@@ -38,9 +38,8 @@ export class ThreeTexturePool implements ITexturePool {
             255, 0, 0, 0, 255, 0,
             0, 255, 0, 255, 0, 0,
         ]);
-        this.fallbackTexture = new THREE.DataTexture(fallbackData, 2, 2, THREE.RGBAFormat, THREE.UnsignedByteType);
+        this.fallbackTexture = new THREE.DataTexture(fallbackData, 2, 2, THREE.RGBFormat, THREE.UnsignedByteType);
         this.fallbackTexture.name = 'fallback';
-        this.fallbackTexture.repeat.set(.05, .05);
     }
 
     cloneFallbackTexture(name: string): ThreeTexture {

@@ -3,7 +3,7 @@ import { bind } from 'bind-decorator';
 import { Treeview } from '../../components/organism/treeview';
 import { TreeviewNodeProps, TreeviewNodeCollection } from '../../components/molecule/treenode';
 import memoizeOne from 'memoize-one';
-import { guessFolderNodeType, guessFileNodeType, getIconByNodeType, PathNodeType, isExpandableType } from '../../components/organism/treeview/node-icon';
+import { guessFolderNodeType, guessFileNodeType, getIconByNodeType, PathNodeType, isExpandableType, isTextFileType, isInspectableFileType } from '../../components/organism/treeview/node-icon';
 import { BrowserFile } from '@rws/platform-fs-browser/file';
 import { Icon } from '../../components/atom/icon';
 import { ImgIndex } from '@rws/library/index/img';
@@ -21,7 +21,7 @@ interface FiletreeState {
 
 interface FiletreeProps {
     files: File[];
-    openFile: (node: TreeviewNodeProps, index: BrowserFileIndex) => void;
+    openFile: (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer?: string) => void;
     glContainer: any;
 }
 
@@ -66,7 +66,10 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
                         icon: this.getFileIconByNodeType(guessFolderNodeType(part)),
                         isExpandable: true,
                         isLoaded: true,
-                        data: { path: fullPath.slice(0, i + 1) }
+                        data: {
+                            path: fullPath.slice(0, i + 1),
+                            isFolder: true
+                        }
                     };
                 }
                 currentNode = currentNode.children[part];
@@ -94,7 +97,9 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
     render(){
         return (
             <div className="filetree">
-                {this.state.isLoaded ? <Treeview nodes={this.state.nodes} onNodeOpen={this.onNodeClick} onNodeRequestContent={this.onNodeRequestContent}/> : ''}
+                {this.state.isLoaded ?
+                    <Treeview nodes={this.state.nodes} onNodeOpen={this.onNodeClick} onNodeRequestContent={this.onNodeRequestContent} renderContextMenu={this.renderContextMenu}/>
+                : ''}
             </div>
         )
     }
@@ -102,6 +107,39 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
     @bind
     onNodeClick(node: TreeviewNodeProps): void {
         this.props.openFile(node, this.state.index);
+    }
+
+    @bind
+    renderContextMenu(node: TreeviewNodeProps): any {
+        const type = guessFileNodeType(node.name);
+        const availableViewers: [string, string][] = [];
+
+        if(!node.data.isFolder){
+            availableViewers.push(['file-hexeditor', 'Hex Editor']);
+        }
+        if(isTextFileType(type)){
+            availableViewers.push(['file-texteditor', 'Text Editor']);
+        }
+        if(isInspectableFileType(type)){
+            availableViewers.push(['file-inspector', 'Object Inspector']);
+        }
+        if(type === PathNodeType.FileTxd){
+            availableViewers.push(['file-txd-viewer', 'Texture Viewer']);
+        }
+        if(type === PathNodeType.FileDff){
+            availableViewers.push(['file-dff-viewer', 'Model Viewer']);
+        }
+
+        return (
+            <div>
+                {node.data.isFolder ?
+                    <div className="contextmenu__item contextmenu__item--disabled" key="expand" onClick={() => {}}>{node.name}</div>
+                : ''}
+                {availableViewers.map(([viewer, title]) =>
+                    <div className="contextmenu__item" key={viewer} onClick={() => this.props.openFile(node, this.state.index, viewer)}>{title}</div>
+                )}
+            </div>
+        );
     }
 
     @bind

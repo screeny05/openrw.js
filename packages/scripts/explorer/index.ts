@@ -69,18 +69,31 @@ const getComponentConfig = (component: string, title: string, props: FileCompone
     };
 };
 
-const openFile = async (node: TreeviewNodeProps, index: BrowserFileIndex) => {
+const openFile = async (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer?: string) => {
     let component = 'file-hexeditor';
     let isReact = true;
     const fileType = guessFileNodeType(node.name);
-    if(isTextFileType(fileType)){
+
+    if(preferViewer === 'file-hexeditor'){
+        component = 'file-hexeditor';
+    }
+
+    if(preferViewer === 'file-texteditor'){
         component = 'file-texteditor';
     }
-    if(fileType === PathNodeType.FileDff){
+
+    if(preferViewer === 'file-inspector'){
+        component = 'file-inspector';
+    }
+
+    if(!preferViewer && isTextFileType(fileType)){
+        component = 'file-texteditor';
+    }
+    if(!preferViewer && fileType === PathNodeType.FileDff){
         isReact = false;
         component = 'file-dff-viewer';
     }
-    if(fileType === PathNodeType.FileTxd){
+    if(!preferViewer && fileType === PathNodeType.FileTxd){
         component = 'file-txd-viewer';
     }
 

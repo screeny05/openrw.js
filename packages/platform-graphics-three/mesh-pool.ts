@@ -152,14 +152,20 @@ export class ThreeMeshPool implements IMeshPool {
                 );
             }
             geometry.faces.push(new THREE.Face3(face.vertex1, face.vertex2, face.vertex3, normals, colors, face.materialId));
-            geometry.faceVertexUvs[0].push([
-                glVec2ToThreeVector2(faceUVCoordinates[face.vertex1]),
-                glVec2ToThreeVector2(faceUVCoordinates[face.vertex2]),
-                glVec2ToThreeVector2(faceUVCoordinates[face.vertex3]),
-            ]);
+
+            if(faceUVCoordinates){
+                geometry.faceVertexUvs[0].push([
+                    glVec2ToThreeVector2(faceUVCoordinates[face.vertex1]),
+                    glVec2ToThreeVector2(faceUVCoordinates[face.vertex2]),
+                    glVec2ToThreeVector2(faceUVCoordinates[face.vertex3]),
+                ]);
+            }
         });
         geometry.uvsNeedUpdate = true;
         geometry.computeFaceNormals();
+        if(!faceUVCoordinates){
+            geometry.computeVertexNormals();
+        }
 
         geometry.boundingSphere = new THREE.Sphere(glVec3ToThreeVector3(morphTarget.spherePosition), morphTarget.sphereRadius);
 
