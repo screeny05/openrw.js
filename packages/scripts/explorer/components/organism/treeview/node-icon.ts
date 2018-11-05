@@ -120,7 +120,9 @@ const DatabaseTextTypes = [
 
 const DatabaseInspectableTypes = [
     PathNodeType.FileTxd,
-    PathNodeType.FileDff
+    PathNodeType.FileDff,
+    PathNodeType.FileDir,
+    PathNodeType.FileGxt,
 ];
 
 const DatabaseFolders: TypeDatabase = [];

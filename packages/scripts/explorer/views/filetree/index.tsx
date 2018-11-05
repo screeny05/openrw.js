@@ -129,6 +129,9 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         if(type === PathNodeType.FileDff){
             availableViewers.push(['file-dff-viewer', 'Model Viewer']);
         }
+        if(type === PathNodeType.FileGxt){
+            availableViewers.push(['file-gxt-viewer', 'GXT Viewer']);
+        }
 
         return (
             <div>

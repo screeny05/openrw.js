@@ -14,6 +14,8 @@ import { ThreeTexture } from '@rws/platform-graphics-three/texture';
 import { WebGLRenderer } from '@rws/platform-graphics-three/node_modules/three';
 import { ThreeHud } from '@rws/platform-graphics-three/hud';
 
+import './index.scss';
+
 interface FileTxdViewerProps {
     node: TreeviewNodeProps;
     index: BrowserFileIndex;
@@ -62,12 +64,23 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
             await this.state.pool.texturePool.loadFromImg(imgPath, this.props.node.name);
         }
 
-        this.setState({ isLoaded: true });
+        const entries = this.state.pool.texturePool.getLoadedEntries() as ThreeTexture[];
+
+        this.setState({
+            isLoaded: true,
+            selectedTexture: entries[0]
+        });
     }
 
     render(){
         if(!this.state.isLoaded){
             return <div>loading...</div>;
+        }
+
+        const entries = this.state.pool.texturePool.getLoadedEntries();
+
+        if(entries.length === 0){
+            return <div>TXD empty?!</div>;
         }
 
         return (
@@ -79,11 +92,20 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
                     width: this.props.glContainer.width,
                     height: this.props.glContainer.height
                 }}/>
-                <ul style={{ position: 'relative' }}>
-                    {this.state.pool.texturePool.getLoadedEntries().map(texture =>
-                        <li onClick={this.onSelectTexture.bind(this, texture)}>{texture.name}</li>
-                    )}
-                </ul>
+                {entries.length > 1 ?
+                    <ul className="file-txd-viewer__list">
+                        {entries.map(texture =>
+                            <li key={texture.name} onClick={this.onSelectTexture.bind(this, texture)}>{texture.name}</li>
+                        )}
+                    </ul>
+                : ''}
+                {this.state.selectedTexture ?
+                    <div className="file-txd-viewer__info">
+                        {this.state.selectedTexture.name + ' '}
+                        {`${this.state.selectedTexture.width}x${this.state.selectedTexture.height} `}
+                        {this.state.selectedTexture.hasAlpha ? 'alpha' : ''}
+                    </div>
+                : ''}
             </div>
         );
     }

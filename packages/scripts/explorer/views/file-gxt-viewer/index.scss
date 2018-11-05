@@ -1,0 +1,18 @@
+.file-gxt-viewer {
+    font-size: 12px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.file-gxt-viewer__row {
+    display: flex;
+}
+
+.file-gxt-viewer__key {
+    width: 12ch;
+    flex: 0 0 auto;
+}
+
+.file-gxt-viewer__value {
+    flex: 1 1 0;
+    white-space: nowrap;
+}

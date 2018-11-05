@@ -4,12 +4,13 @@ export enum ParserState {
 }
 
 export enum ExpressionType {
-    text,
-    constant,
-    key,
-    style,
-    variableNumber,
-    variableText
+    Text,
+    Constant,
+    KeyboardKey,
+    Style,
+    VariableNumber,
+    VariableText,
+    Root
 }
 
 export interface Expression {
@@ -66,20 +67,20 @@ export const parse = (s: string): Expression[] => {
     };
 
     const pushCurrentState = () => {
-        let type = ExpressionType.text;
+        let type = ExpressionType.Text;
         if(state === ParserState.STYLE_OPEN){
-            type = ExpressionType.style;
-            if(expressions.length > 0 && expressions[expressions.length - 1].type === ExpressionType.key){
-                type = ExpressionType.constant;
+            type = ExpressionType.Style;
+            if(expressions.length > 0 && expressions[expressions.length - 1].type === ExpressionType.KeyboardKey){
+                type = ExpressionType.Constant;
             }
             if(content === '1'){
-                type = ExpressionType.variableNumber;
+                type = ExpressionType.VariableNumber;
             }
             if(content === 'a'){
-                type = ExpressionType.variableText;
+                type = ExpressionType.VariableText;
             }
             if(content === 'k'){
-                type = ExpressionType.key;
+                type = ExpressionType.KeyboardKey;
             }
         }
         if(content){
@@ -114,3 +115,43 @@ export const parse = (s: string): Expression[] => {
     pushCurrentState();
     return expressions;
 };
+
+export interface AstNode extends Expression {
+    index: number;
+    children?: AstNode[];
+    parent?: AstNode;
+}
+
+export const buildAst = (expressions: Expression[]): AstNode => {
+    const ast: AstNode = { index: -1, type: ExpressionType.Root, content: '', children: [] };
+    let node = ast;
+    let i = 0;
+
+    const consume = (): Expression|undefined => {
+        i++;
+        return expressions.splice(0, 1)[0];
+    };
+
+    while(true){
+        const exp = consume();
+        if(!exp){
+            break;
+        }
+
+        if(exp.type === ExpressionType.Style && node.parent && (exp.content === 'w' || exp.content === 'B')){
+            const parent = node.parent;
+            delete node.parent;
+            node = parent;
+        } else if(exp.type === ExpressionType.KeyboardKey){
+            node.children!.push({ ...exp, index: i, children: [{ ...consume()!, index: i }]});
+        } else if(exp.type === ExpressionType.Style){
+            const subnode = { ...exp, index: i, children: [], parent: node };
+            node.children!.push(subnode)
+            node = subnode;
+        } else {
+            node.children!.push({ ...exp, index: i });
+        }
+    }
+
+    return ast;
+}

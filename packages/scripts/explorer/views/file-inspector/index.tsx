@@ -1,16 +1,16 @@
 import * as React from 'react';
-import { ObjectInspector } from 'react-inspector';
+import { ObjectInspector, TableInspector } from 'react-inspector';
 import Corrode from '@rws/library/node_modules/corrode';
-import { treeviewnodeToBuffer } from '../../library/treeviewnode-to-buffer';
 import { TreeviewNodeProps } from '../../components/molecule/treenode';
 import { guessFileNodeType, PathNodeType } from '../../components/organism/treeview/node-icon';
 import './index.scss';
-import { BrowserFile } from '@rws/platform-fs-browser/';
+import { BrowserFile } from '@rws/platform-fs-browser/file';
 import { DirEntry } from '@rws/library/type/dir-entry';
 import { ImgIndex } from '@rws/library/index/img';
 
 interface FileInspectorState {
     isLoaded: boolean;
+    useTable: boolean;
     data?: any;
 }
 
@@ -21,6 +21,7 @@ interface FileInspectorProps {
 export class FileInspector extends React.Component<FileInspectorProps, FileInspectorState> {
     state: FileInspectorState = {
         isLoaded: false,
+        useTable: false,
     }
 
     constructor(props){
@@ -32,6 +33,7 @@ export class FileInspector extends React.Component<FileInspectorProps, FileInspe
         const file: BrowserFile|undefined = this.props.node.data.file;
         const entry: DirEntry|undefined = this.props.node.data.entry;
 
+        let useTable = false;
         let data: any = null;
         const type = guessFileNodeType(this.props.node.name);
         const isRws = type === PathNodeType.FileTxd || type === PathNodeType.FileDff;
@@ -44,10 +46,26 @@ export class FileInspector extends React.Component<FileInspectorProps, FileInspe
             const img: ImgIndex = this.props.node.data.img;
             data = await img.parseEntryAsRws(entry);
         }
+        if(file && type === PathNodeType.FileDir){
+            const parser = new Corrode().ext.dir('rws').map.push('rws');
+            data = await file.parse(parser);
+            useTable = true;
+        }
+        if(file && type === PathNodeType.FileDir){
+            const parser = new Corrode().ext.dir('dir').map.push('dir');
+            data = await file.parse(parser);
+            useTable = true;
+        }
+        if(file && type === PathNodeType.FileGxt){
+            const parser = new Corrode().ext.gxt('gxt').map.push('gxt');
+            data = await file.parse(parser);
+            useTable = true;
+        }
 
         this.setState({
             isLoaded: true,
-            data
+            data,
+            useTable
         });
     }
 
@@ -56,12 +74,16 @@ export class FileInspector extends React.Component<FileInspectorProps, FileInspe
             return <div>loading...</div>;
         }
         if(!this.state.data){
-            return <div>unsupported data</div>;
+            return <div>unsupported type <code>{PathNodeType[guessFileNodeType(this.props.node.name)]}</code></div>;
         }
 
         return (
             <div className="file-inspector">
-                <ObjectInspector data={this.state.data} theme="chromeDark" expandLevel={1}/>
+                {this.state.useTable ?
+                    <TableInspector data={this.state.data} theme="chromeDark" expandLevel={1}/>
+                    :
+                    <ObjectInspector data={this.state.data} theme="chromeDark" expandLevel={1}/>
+                }
             </div>
         );
     }

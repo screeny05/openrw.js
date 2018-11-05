@@ -38,10 +38,11 @@ import { Filetree } from './views/filetree';
 import { TreeviewNodeProps } from './components/molecule/treenode';
 import { FileHexeditor } from './views/file-hexeditor';
 import { FileTexteditor } from './views/file-texteditor';
-import { guessFileNodeType, isTextFileType, PathNodeType } from './components/organism/treeview/node-icon';
+import { guessFileNodeType, isTextFileType, PathNodeType, isInspectableFileType } from './components/organism/treeview/node-icon';
 import { FileDffViewer } from './views/file-dff-viewer';
 import { FileInspector } from './views/file-inspector';
 import { FileTxdViewer } from './views/file-txd-viewer';
+import { FileGxtViewer } from './views/file-gxt-viewer';
 
 
 const $toolbar = document.querySelector('.js--toolbar');
@@ -74,27 +75,28 @@ const openFile = async (node: TreeviewNodeProps, index: BrowserFileIndex, prefer
     let isReact = true;
     const fileType = guessFileNodeType(node.name);
 
-    if(preferViewer === 'file-hexeditor'){
-        component = 'file-hexeditor';
+    if(preferViewer){
+        component = preferViewer;
     }
 
-    if(preferViewer === 'file-texteditor'){
-        component = 'file-texteditor';
-    }
-
-    if(preferViewer === 'file-inspector'){
+    if(!preferViewer && isInspectableFileType(fileType)){
         component = 'file-inspector';
     }
-
     if(!preferViewer && isTextFileType(fileType)){
         component = 'file-texteditor';
     }
     if(!preferViewer && fileType === PathNodeType.FileDff){
-        isReact = false;
         component = 'file-dff-viewer';
     }
     if(!preferViewer && fileType === PathNodeType.FileTxd){
         component = 'file-txd-viewer';
+    }
+    if(!preferViewer && fileType === PathNodeType.FileGxt){
+        component = 'file-gxt-viewer';
+    }
+
+    if(component === 'file-dff-viewer'){
+        isReact = false;
     }
 
     content.root.getItemsById('working-stack')[0].addChild(getComponentConfig(component, node.name, { node, index }, isReact));
@@ -172,6 +174,7 @@ content.registerComponent('file-picker', FilePicker);
 content.registerComponent('file-hexeditor', FileHexeditor);
 content.registerComponent('file-dff-viewer', FileDffViewer);
 content.registerComponent('file-txd-viewer', FileTxdViewer);
+content.registerComponent('file-gxt-viewer', FileGxtViewer);
 content.registerComponent('file-texteditor', FileTexteditor);
 content.registerComponent('file-inspector', FileInspector);
 content.registerComponent('console', Console);
