@@ -32,6 +32,7 @@ interface FileTxdViewerState {
 export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdViewerState> {
     canvasRef: React.RefObject<HTMLCanvasElement>;
     currentRenderer: WebGLRenderer | null = null;
+    hud: ThreeHud;
 
     constructor(props){
         super(props);
@@ -114,18 +115,23 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
         if(!this.canvasRef.current || !this.state.selectedTexture){
             return;
         }
+        const el = new ThreeHudElement(this.state.selectedTexture);
         if(!this.currentRenderer){
+            this.hud = new ThreeHud();
             this.currentRenderer = new WebGLRenderer({
                 antialias: true,
                 canvas: this.canvasRef.current,
                 alpha: true
             });
+            const render = () => {
+                this.currentRenderer.render(this.hud.src, this.hud.camera);
+                requestAnimationFrame(render);
+            };
+            render();
         }
-        const el = new ThreeHudElement(this.state.selectedTexture);
-        const hud = new ThreeHud();
-        hud.src.children.splice(0);
-        hud.add(el);
-        this.currentRenderer.render(hud.src, hud.camera);
+        console.log(this.hud);
+        this.hud.src.children.splice(0);
+        this.hud.add(el);
     }
 
     @bind

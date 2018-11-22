@@ -1,7 +1,7 @@
 import { ITexturePool } from "@rws/platform/graphic";
 import { RwsStructPool } from "@rws/library/rws-struct-pool";
 import * as THREE from 'three';
-import { RwsTextureAddressMode, RwsTextureFilterMode, RwsTextureNative, RwsTextureDictionary, RwsSectionType } from "@rws/library/type/rws";
+import { RwsTextureAddressMode, RwsTextureFilterMode, RwsTextureNative, RwsTextureDictionary, RwsSectionType, RwsTextureNativeRasterFormat } from "@rws/library/type/rws";
 import { ThreeTexture } from "./texture";
 import { Texture } from "three";
 
@@ -9,7 +9,7 @@ const WrapMap = {
     [RwsTextureAddressMode.BORDER]: THREE.ClampToEdgeWrapping,
     [RwsTextureAddressMode.CLAMP]: THREE.ClampToEdgeWrapping,
     [RwsTextureAddressMode.MIRROR]: THREE.MirroredRepeatWrapping,
-    [RwsTextureAddressMode.NONE]: THREE.ClampToEdgeWrapping,
+    [RwsTextureAddressMode.NONE]: THREE.RepeatWrapping,
     [RwsTextureAddressMode.REPEAT]: THREE.RepeatWrapping,
 };
 
@@ -17,11 +17,15 @@ const FilterMap = {
     [RwsTextureFilterMode.NONE]: THREE.LinearFilter,
     [RwsTextureFilterMode.NEAREST]: THREE.NearestFilter,
     [RwsTextureFilterMode.LINEAR]: THREE.LinearFilter,
-    [RwsTextureFilterMode.MIP_NEAREST]: THREE.NearestFilter,
+    [RwsTextureFilterMode.MIP_NEAREST]: THREE.LinearFilter,
     [RwsTextureFilterMode.MIP_LINEAR]: THREE.LinearFilter,
-    [RwsTextureFilterMode.LINEAR_MIP_NEAREST]: THREE.NearestFilter,
+    [RwsTextureFilterMode.LINEAR_MIP_NEAREST]: THREE.LinearFilter,
     [RwsTextureFilterMode.LINEAR_MIP_LINEAR]: THREE.LinearFilter,
 };
+
+const SWIZZLE_RGBA_BGRA = [2, 1, 0, 3];
+const SWIZZLE_RGBA_BGRX = [2, 1, 0, -1];
+const SWIZZLE_5551_1555 = '1555';
 
 export class ThreeTexturePool implements ITexturePool {
     rwsPool: RwsStructPool;
@@ -99,27 +103,59 @@ export class ThreeTexturePool implements ITexturePool {
     }
 
     textureNativeToThreeTexture(textureNative: RwsTextureNative): ThreeTexture {
-        const usesPalette = textureNative.flags.PALETTE_4 || textureNative.flags.PALETTE_8;
+        const { isPal8, isPal4, isFormat888, isFormat8888, usesPalette } = textureNative.flags;
+        const isFormat1555 = textureNative.format === RwsTextureNativeRasterFormat.FORMAT_1555;
 
-        if(!(usesPalette && (textureNative.flags.FORMAT_888 || textureNative.flags.FORMAT_8888))){
+        if(!(isPal8 || isPal4 || isFormat888 || isFormat8888 || isFormat1555)){
             console.warn('TexturePool: not implemented', textureNative.name, textureNative);
             return this.cloneFallbackTexture(textureNative.name);
         }
 
+        let swizzle: null | number[] | string = null;
         let format = THREE.RGBAFormat;
+        let type: THREE.TextureDataType | THREE.PixelType = THREE.UnsignedByteType;
 
-        const miplevels = textureNative.mipLevels.map((level, i) => ({
-            data: new Uint8Array(level),
-            width: textureNative.width / (2 ** i),
-            height: textureNative.height / (2 ** i)
-        }));
+        if(isFormat8888 && !usesPalette){
+            swizzle = SWIZZLE_RGBA_BGRA;
+        }
+
+        if(isFormat888 && !usesPalette){
+            swizzle = SWIZZLE_RGBA_BGRX;
+        }
+
+        if(isFormat1555){
+            type = THREE.UnsignedShort5551Type;
+            swizzle = SWIZZLE_5551_1555;
+        }
+
+        const miplevels = textureNative.mipLevels.map((level, i) => {
+            let data: null | Uint16Array | Uint8Array = null;
+
+            if(typeof swizzle === 'string'){
+                if(swizzle === SWIZZLE_5551_1555){
+                    data = this.swizzle5551To1555(new Uint16Array(level.buffer, level.byteOffset, level.length / 2));
+                } else {
+                    throw new Error(`Unsupported texture swizzle '${swizzle}'`);
+                }
+            } else if(swizzle) {
+                data = this.swizzle(level, swizzle);
+            } else {
+                data = new Uint8Array(level);
+            }
+
+            return {
+                data,
+                width: textureNative.width / (2 ** i),
+                height: textureNative.height / (2 ** i)
+            }
+        });
 
         const threeTexture = new THREE.DataTexture(
             miplevels[0].data,
             textureNative.width,
             textureNative.height,
             format,
-            THREE.UnsignedByteType,
+            type as THREE.TextureDataType,
             THREE.UVMapping,
             this.mapWrapToThreeWrap(textureNative.uAddressing),
             this.mapWrapToThreeWrap(textureNative.vAddressing),
@@ -132,7 +168,7 @@ export class ThreeTexturePool implements ITexturePool {
         threeTexture.name = textureNative.name;
         threeTexture.premultiplyAlpha = true;
 
-        if(textureNative.flags.AUTO_MIPMAP){
+        if((textureNative.format & RwsTextureNativeRasterFormat.AUTO_MIPMAP) === RwsTextureNativeRasterFormat.AUTO_MIPMAP){
             threeTexture.generateMipmaps = true;
         }
 
@@ -158,6 +194,36 @@ export class ThreeTexturePool implements ITexturePool {
             throw new TypeError(`Invalid RwsTextureFilterMode ${filterMode}.`);
         }
         return val;
+    }
+
+    swizzle(data: Uint8Array, order: number[]): Uint8Array {
+        for (let i = 0; i < data.length / order.length; i++) {
+            const org = data.subarray(i * order.length, i * order.length + order.length);
+            const swizzled: number[] = [];
+            order.forEach((newPos, oldPos) => {
+                // -1 = throw channel away
+                swizzled[newPos] = newPos === -1 ? 0 : org[oldPos];
+            });
+            data.set(swizzled, i * order.length);
+        }
+        return data;
+    }
+
+    swizzle5551To1555(data: Uint16Array): Uint16Array {
+        const maskA = 0b0000000000000001;
+        const maskR = 0b0000000000111110;
+        const maskG = 0b0000011111000000;
+        const maskB = 0b1111100000000000;
+
+        for (let i = 0; i < data.length; i++) {
+            const a = (data[i] & maskA) >> 15;
+            const b = (data[i] & maskB) >> 10;
+            const g = (data[i] & maskG) >> 5;
+            const r = data[i] & maskR;
+
+            data[i] = a | (b << 1) | (g << 6) | (r << 11);
+        }
+        return data;
     }
 
 

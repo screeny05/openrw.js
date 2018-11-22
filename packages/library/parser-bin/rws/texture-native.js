@@ -3,7 +3,7 @@ const Buffer = require('buffer').Buffer;
 
 const sectionTypes = require('./section-types');
 
-const rasterFlags = {
+export const RasterFormat = {
     DEFAULT: 0x0000,
     FORMAT_1555: 0x0100,
     FORMAT_565: 0x0200,
@@ -19,11 +19,12 @@ const rasterFlags = {
     MIPMAPPED: 0x8000
 };
 
-const compression = {
+const Compression = {
     none: 0,
     dxt1: 1,
     dxt3: 3
 };
+module.exports.compression = Compression;
 
 const platformIds = {
     pc3VC: 8,
@@ -31,6 +32,8 @@ const platformIds = {
     ps2: 0x50533200,
     xbox: 5
 };
+
+const hasBits = (bits, mask) => (bits & mask) === mask;
 
 Corrode.addExtension('rwsTextureNative', function(){
     this.ext.rwsSection('section', sectionTypes.RW_DATA, function(header){
@@ -49,8 +52,7 @@ Corrode.addExtension('rwsTextureNative', function(){
             .map.trimNull('name')
             .string('mask', 32)
             .map.trimNull('mask')
-            .uint32('flags')
-            .map.bitmask('flags', rasterFlags)
+            .uint32('format')
             .uint32('hasAlpha')
             .uint16('width')
             .uint16('height')
@@ -67,12 +69,20 @@ Corrode.addExtension('rwsTextureNative', function(){
                 this.vars.uAddressing = this.vars.uvAddressing & 0x0f;
                 this.vars.vAddressing = this.vars.uvAddressing >> 4;
 
-                this.vars.usesPalette = this.vars.flags.PALETTE_8 || this.vars.flags.PALETTE_4;
+                this.vars.flags = {
+                    isPal8: hasBits(this.vars.format, RasterFormat.PALETTE_8),
+                    isPal4: hasBits(this.vars.format, RasterFormat.PALETTE_4),
+                    isFormat8888: hasBits(this.vars.format, RasterFormat.FORMAT_8888),
+                    isFormat888: hasBits(this.vars.format, RasterFormat.FORMAT_888),
+                };
+
+                this.vars.flags.isTransparent = !this.vars.flags.isFormat888;
+                this.vars.flags.usesPalette = (this.vars.flags.isPal4 || this.vars.flags.isPal8) && (this.vars.flags.isFormat888 || this.vars.flags.isFormat8888);
 
                 // palette colors are always RGBA
-                if(this.vars.usesPalette){
+                if(this.vars.flags.usesPalette){
                     let paletteSize = 256 * 4;
-                    if(this.vars.flags.PALETTE_4){
+                    if(this.vars.flags.isPal4){
                         paletteSize = 16 * 4;
                     }
 
@@ -92,13 +102,13 @@ Corrode.addExtension('rwsTextureNative', function(){
                         return;
                     }
 
-                    if(this.varStack.peek().usesPalette){
+                    if(this.varStack.peek().flags.usesPalette){
                         this.vars.size = currentHeight * currentHeight;
 
-                        if(this.varStack.peek().flags.PALETTE_4){
+                        if(this.varStack.peek().flags.isPal4){
                             this.vars.size /= 2;
                         }
-                    } else if(this.varStack.peek().scanCompression !== compression.none) {
+                    } else if(this.varStack.peek().scanCompression !== Compression.none) {
                         let ttw = currentHeight;
                         let tth = currentHeight;
                         if(ttw < 4){
@@ -108,7 +118,7 @@ Corrode.addExtension('rwsTextureNative', function(){
                             tth = 4;
                         }
 
-                        this.vars.size = (ttw / 4) * (tth / 4) * this.varStack.peek().scanCompression === compression.dxt3 ? 16 : 8;
+                        this.vars.size = (ttw / 4) * (tth / 4) * this.varStack.peek().scanCompression === Compression.dxt3 ? 16 : 8;
                     }
                 })
 
@@ -117,14 +127,16 @@ Corrode.addExtension('rwsTextureNative', function(){
                 .tap(function(){
                     const { flags } = this.varStack.peek();
 
-                    if(flags.PALETTE_8 || flags.PALETTE_4){
+                    if(flags.isPal8 || flags.isPal4){
                         /** @type {NodeBuffer} */
                         const palette = this.varStack.peek().palette;
-                        const data = this.vars.data;
+                        const indices = this.vars.data;
+                        // allocate unsafe assuming all bytes will be filled
                         const rgbaBuffer = Buffer.allocUnsafe(currentWidth * currentHeight * 4);
 
                         for(var i = 0; i < this.vars.size; i++){
-                            palette.copy(rgbaBuffer, i * 4, data[i] * 4, data[i] * 4 + 4);
+                            const index = indices[i];
+                            palette.copy(rgbaBuffer, i * 4, index * 4, index * 4 + 4);
                         }
                         this.vars.data = rgbaBuffer;
                     }

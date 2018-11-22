@@ -9,20 +9,29 @@ export enum RwsTextureDictionaryDeviceIds {
     xbox = 8
 }
 
-export interface RwsTextureNativeRasterFlags {
-    DEFAULT: boolean;
-    FORMAT_1555: boolean;
-    FORMAT_565: boolean;
-    FORMAT_4444: boolean;
-    FORMAT_LUM_8: boolean;
-    FORMAT_8888: boolean;
-    FORMAT_888: boolean;
-    FORMAT_555: boolean;
+export enum RwsTextureNativeRasterFormat {
+    DEFAULT = 0x0000,
+    FORMAT_1555 = 0x0100,
+    FORMAT_565 = 0x0200,
+    FORMAT_4444 = 0x0300,
+    FORMAT_LUM_8 = 0x0400,
+    FORMAT_8888 = 0x0500,
+    FORMAT_888 = 0x0600,
+    FORMAT_555 = 0x0A00,
 
-    AUTO_MIPMAP: boolean;
-    PALETTE_8: boolean;
-    PALETTE_4: boolean;
-    MIPMAPPED: boolean;
+    AUTO_MIPMAP = 0x1000,
+    PALETTE_8 = 0x2000,
+    PALETTE_4 = 0x4000,
+    MIPMAPPED = 0x8000,
+}
+
+export interface RwsTextureNativeRasterFlags {
+    isPal8: boolean;
+    isPal4: boolean;
+    isFormat8888: boolean;
+    isFormat888: boolean;
+    isTransparent: boolean;
+    usesPalette: boolean;
 }
 
 export enum RwsTextureNativeCompression {
@@ -52,6 +61,7 @@ export interface RwsTextureNative extends RwsSection {
     vAddressing: RwsTextureAddressMode;
     name: string;
     mask: string;
+    format: RwsTextureNativeRasterFormat;
     flags: RwsTextureNativeRasterFlags;
     hasAlpha: number;
     width: number;
