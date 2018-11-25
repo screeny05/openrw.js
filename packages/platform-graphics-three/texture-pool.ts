@@ -114,7 +114,7 @@ export class ThreeTexturePool implements ITexturePool {
         const isFormat565 = maybeFormat565 && textureNative.scanCompression === RwsTextureNativeCompression.NONE;
         const isFormatDXT1 = maybeFormat565 && textureNative.scanCompression === RwsTextureNativeCompression.DXT1;
 
-        if(!(isPal8 || isPal4 || isFormat888 || isFormat8888 || isFormat1555 || isFormatDXT3 || isFormatDXT1)){
+        if(!(isFormat888 || isFormat8888 || isFormat1555 || isFormatDXT3 || isFormatDXT1)){
             console.warn('TexturePool: not implemented', textureNative.name, textureNative);
             return this.cloneFallbackTexture(textureNative.name);
         }

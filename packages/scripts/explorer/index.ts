@@ -43,6 +43,7 @@ import { FileDffViewer } from './views/file-dff-viewer';
 import { FileInspector } from './views/file-inspector';
 import { FileTxdViewer } from './views/file-txd-viewer';
 import { FileGxtViewer } from './views/file-gxt-viewer';
+import { FileAudioPlayer } from './views/file-audio-player';
 import { ImgIndex } from '@rws/library/index/img';
 import { DirEntry } from '@rws/library/type/dir-entry';
 
@@ -115,6 +116,9 @@ const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer
     }
     if(!preferViewer && fileType === PathNodeType.FileGxt){
         component = 'file-gxt-viewer';
+    }
+    if(!preferViewer && (fileType === PathNodeType.FileWav || fileType === PathNodeType.FileMp3 || fileType === PathNodeType.FileRaw)){
+        component = 'file-audio-player';
     }
 
     if(component === 'file-dff-viewer'){
@@ -201,6 +205,7 @@ content.registerComponent('file-hexeditor', FileHexeditor);
 content.registerComponent('file-dff-viewer', FileDffViewer);
 content.registerComponent('file-txd-viewer', FileTxdViewer);
 content.registerComponent('file-gxt-viewer', FileGxtViewer);
+content.registerComponent('file-audio-player', FileAudioPlayer);
 content.registerComponent('file-texteditor', FileTexteditor);
 content.registerComponent('file-inspector', FileInspector);
 content.registerComponent('console', Console);

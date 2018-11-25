@@ -132,6 +132,9 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         if(type === PathNodeType.FileGxt){
             availableViewers.push(['file-gxt-viewer', 'GXT Viewer']);
         }
+        if(type === PathNodeType.FileWav || type === PathNodeType.FileMp3 || type === PathNodeType.FileRaw){
+            availableViewers.push(['file-audio-player', 'Audio Player']);
+        }
         if(node.data.img){
             availableViewers.push(['file-img-extract', 'Extract from IMG']);
         }
@@ -195,15 +198,15 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
     }
 
     async requestContentRaw(file: BrowserFile): Promise<TreeviewNodeProps[]> {
-        const index = new RawIndex(this.state.index, file.path);
-        await index.load();
-        return index.sdtIndex.map((sdtEntry, i) => ({
-            name: i.toString(),
+        const raw = new RawIndex(this.state.index, file.path);
+        await raw.load();
+        return raw.sdtIndex.map((sdtEntry, i) => ({
+            name: `${i}.rawentry`,
             icon: this.getFileIconByNodeType(PathNodeType.FileRaw),
             isLoaded: true,
             children: {},
             data: {
-                index,
+                raw,
                 sdtEntry
             }
         }));

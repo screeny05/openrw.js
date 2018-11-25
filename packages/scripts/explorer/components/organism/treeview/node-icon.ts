@@ -15,6 +15,7 @@ export enum PathNodeType {
     FileGxt,
     FileTxt,
     FileRaw,
+    FileRawEntry,
     FileSdt,
     FileWater,
     FileWaterpro,
@@ -91,6 +92,7 @@ const DatabaseFiles: TypeDatabase = [
     [/flight.?\.dat$/, PathNodeType.FileFlight],
     [/\.dat$/, PathNodeType.FileDat],
     [/\.raw$/, PathNodeType.FileRaw],
+    [/\.rawentry$/, PathNodeType.FileRawEntry],
     [/\.sdt$/, PathNodeType.FileSdt],
 ];
 
@@ -168,6 +170,7 @@ const NodeIcons: NodeIconDatabase = {
     [PathNodeType.FilePedstats]: ['fa', 'chart-bar', '#fe7600'],
     [PathNodeType.FileSurface]: ['fas', 'road', '#fe7600'],
     [PathNodeType.FileRaw]: ['fas', 'file-audio', '#fe7600'],
+    [PathNodeType.FileRawEntry]: ['fas', 'file-audio', '#fe7600'],
     [PathNodeType.FileSdt]: ['fas', 'list-ul', '#fe7600'],
 };
 
