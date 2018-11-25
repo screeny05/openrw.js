@@ -8,10 +8,10 @@ Corrode.addExtension('rwsTexture', function(){
 
         this
             .uint8('filterMode')
-            .uint8('addressMode')
+            .uint8('uvAddressing')
             .tap(function(){
-                this.vars.addressModeU = (this.vars.addressMode & 0x0f);
-                this.vars.addressModeV = (this.vars.addressMode >> 0x04);
+                this.vars.uAddressing = (this.vars.addressMode & 0x0f);
+                this.vars.vAddressing = (this.vars.addressMode >> 0x04);
             })
             .uint16('useMipLevels')
             .ext.rwsSection('name', sectionTypes.RW_STRING)

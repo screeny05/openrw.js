@@ -72,3 +72,14 @@ export interface RwsTextureNative extends RwsSection {
     mipLevels: Array<Buffer>;
     extension: RwsExtension;
 }
+
+export interface RwsTexture extends RwsSection {
+    __name__: 'rwsTexture';
+    filterMode: RwsTextureFilterMode;
+    uAddressing: RwsTextureAddressMode;
+    vAddressing: RwsTextureAddressMode;
+    useMipLevels: number;
+    name: string;
+    mask: string;
+    extension: RwsExtension;
+}

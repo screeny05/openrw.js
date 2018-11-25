@@ -1,5 +1,6 @@
 import { ITexture } from "@rws/platform/graphic/texture";
 import { Texture } from "three";
+import { RwsTextureNativeRasterFormat, RwsTextureNativeCompression, RwsTextureNativePlatformIds } from "@rws/library/type/rws";
 
 export class ThreeTexture implements ITexture {
     src: Texture;
@@ -8,6 +9,9 @@ export class ThreeTexture implements ITexture {
 
     width: number;
     height: number;
+    format: RwsTextureNativeRasterFormat;
+    compression: RwsTextureNativeCompression;
+    platform: RwsTextureNativePlatformIds;
 
     get name(): string {
         return this.src.name;

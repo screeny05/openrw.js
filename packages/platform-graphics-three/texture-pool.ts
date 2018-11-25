@@ -56,11 +56,15 @@ export class ThreeTexturePool implements ITexturePool {
 
     get(name: string): ThreeTexture {
         // TODO: Return fallback texture?
-        if(!this.textureCache.has(name)){
+        if(!this.has(name)){
             console.error(`TexturePool: ${name} is not yet loaded.`);
             return this.cloneFallbackTexture(name);
         }
         return this.textureCache.get(name) as ThreeTexture;
+    }
+
+    has(name: string): boolean {
+        return this.textureCache.has(name);
     }
 
     getLoadedEntries(): ThreeTexture[] {
@@ -176,6 +180,9 @@ export class ThreeTexturePool implements ITexturePool {
         iTex.hasAlpha = !!textureNative.hasAlpha;
         iTex.width = textureNative.width;
         iTex.height = textureNative.height;
+        iTex.format = textureNative.format;
+        iTex.compression = textureNative.scanCompression;
+        iTex.platform = textureNative.platformId;
 
         return iTex;
     }
@@ -210,10 +217,10 @@ export class ThreeTexturePool implements ITexturePool {
     }
 
     swizzle5551To1555(data: Uint16Array): Uint16Array {
-        const maskA = 0b0000000000000001;
-        const maskR = 0b0000000000111110;
-        const maskG = 0b0000011111000000;
-        const maskB = 0b1111100000000000;
+        const maskA = 0b1000000000000000;
+        const maskB = 0b0111110000000000;
+        const maskG = 0b0000001111100000;
+        const maskR = 0b0000000000011111;
 
         for (let i = 0; i < data.length; i++) {
             const a = (data[i] & maskA) >> 15;
@@ -221,12 +228,10 @@ export class ThreeTexturePool implements ITexturePool {
             const g = (data[i] & maskG) >> 5;
             const r = data[i] & maskR;
 
-            data[i] = a | (b << 1) | (g << 6) | (r << 11);
+            data[i] = 1 | (b << 1) | (g << 6) | (r << 11);
         }
         return data;
     }
-
-
 
     debug(textureNative: RwsTextureNative): void {
         const canvas = document.createElement('canvas');

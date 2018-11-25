@@ -9,7 +9,7 @@ export interface RwsSection {
     __name__: string;
 }
 
-export interface RwsExtension<T = any> extends RwsSection {
+export interface RwsExtension<T = RwsSection> extends RwsSection {
     __name__: 'rwsSection';
     sections: T[];
 }

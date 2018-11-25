@@ -132,6 +132,9 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         if(type === PathNodeType.FileGxt){
             availableViewers.push(['file-gxt-viewer', 'GXT Viewer']);
         }
+        if(node.data.img){
+            availableViewers.push(['file-img-extract', 'Extract from IMG']);
+        }
 
         return (
             <div>

@@ -12,52 +12,47 @@ const materialEffectTypes = {
     DUAL_UV_TRANSFORM: 0x06
 };
 
-const blendModes = {
-    NO: 0x00,
-    ZERO: 0x01,
-    ONE: 0x02,
-    SRC_COLOR: 0x03,
-    INV_SRC_COLOR: 0x04,
-    SRC_ALPHA: 0x05,
-    INV_SRC_ALPHA: 0x06,
-    DEST_ALPHA: 0x07,
-    INV_DEST_ALPHA: 0x08,
-    DEST_COLOR: 0x09,
-    INV_DEST_COLOR: 0x0A,
-    SRC_ALPHA_SAT: 0x0B,
-};
-
 Corrode.addExtension('rwsMaterialEffectsPlg', function(header){
     this.vars.__name__ = 'rwsMaterialEffectsPlg';
 
     this.uint32('type');
 
+    // RwsAtom may contain this plg as extension, but it'll only indicate
+    // the type of the used extensions, not contain them.
+    if(header.size === 4){
+        return;
+    }
+
     this.tap(function(){
         if(this.vars.type === materialEffectTypes.BUMP_MAP){
-            this.ext.rwsMaterialEffectsPlgBumpMap('effect');
+            this.ext.rwsMaterialEffectsPlgEffectBumpMap('effectBumpMap');
+            this.ext.rwsMaterialEffectsPlgEffectNull('effectNull');
 
         } else if(this.vars.type === materialEffectTypes.ENV_MAP){
-            this.ext.rwsMaterialEffectsPlgEnvMap('effect');
+            this.ext.rwsMaterialEffectsPlgEffectEnvMap('effectEnvMap');
+            this.ext.rwsMaterialEffectsPlgEffectNull('effectNull');
 
         } else if(this.vars.type === materialEffectTypes.DUAL){
-            this.ext.rwsMaterialEffectsPlgDual('effect');
+            this.ext.rwsMaterialEffectsPlgEffectDual('effectDual');
+            this.ext.rwsMaterialEffectsPlgEffectNull('effectNull');
 
         } else if(this.vars.type === materialEffectTypes.UV_TRANSFORM){
-            this.ext.rwsMaterialEffectsPlgUvTransform('effect');
+            this.ext.rwsMaterialEffectsPlgEffectUvTransform('effectUvTransform');
+            this.ext.rwsMaterialEffectsPlgEffectNull('effectNull');
 
         } else if(this.vars.type === materialEffectTypes.BUMP_ENV_MAP){
-            this.ext.rwsMaterialEffectsPlgBumpMap('effect');
-            this.ext.rwsMaterialEffectsPlgEnvMap('effect');
+            this.ext.rwsMaterialEffectsPlgEffectBumpMap('effectBumpMap');
+            this.ext.rwsMaterialEffectsPlgEffectEnvMap('effectEnvMap');
 
         } else if(this.vars.type === materialEffectTypes.DUAL_UV_TRANSFORM){
-            this.ext.rwsMaterialEffectsPlgDual('effect');
-            this.ext.rwsMaterialEffectsPlgUvTransform('effect');
+            this.ext.rwsMaterialEffectsPlgEffectDual('effectDual');
+            this.ext.rwsMaterialEffectsPlgEffectUvTransform('effectUvTransform');
         }
     });
 });
 
-Corrode.addExtension('rwsMaterialEffectsPlgBumpMap', function(){
-    this.vars.__name__ = 'rwsMaterialEffectsPlgBumpMap';
+Corrode.addExtension('rwsMaterialEffectsPlgEffectBumpMap', function(){
+    this.vars.__name__ = 'rwsMaterialEffectsPlgEffectBumpMap';
 
     this
         .uint32('identifier')
@@ -67,7 +62,7 @@ Corrode.addExtension('rwsMaterialEffectsPlgBumpMap', function(){
 
     this.tap(function(){
         if(this.vars.containsBumpMap){
-            this.ext.rwsTexture('bumpMap');
+            this.ext.rwsSection('bumpMap', sectionTypes.RW_TEXTURE);
         }
     });
 
@@ -75,13 +70,13 @@ Corrode.addExtension('rwsMaterialEffectsPlgBumpMap', function(){
 
     this.tap(function(){
         if(this.vars.containsHeightMap){
-            this.ext.rwsTexture('heightMap');
+            this.ext.rwsSection('heightMap', sectionTypes.RW_TEXTURE);
         }
     });
 });
 
-Corrode.addExtension('rwsMaterialEffectsPlgEnvMap', function(){
-    this.vars.__name__ = 'rwsMaterialEffectsPlgEnvMap';
+Corrode.addExtension('rwsMaterialEffectsPlgEffectEnvMap', function(){
+    this.vars.__name__ = 'rwsMaterialEffectsPlgEffectEnvMap';
 
     this
         .uint32('identifier')
@@ -92,13 +87,13 @@ Corrode.addExtension('rwsMaterialEffectsPlgEnvMap', function(){
 
     this.tap(function(){
         if(this.vars.containsEnvironmentMap){
-            this.ext.rwsTexture('environmentMap');
+            this.ext.rwsSection('environmentMap', sectionTypes.RW_TEXTURE);
         }
     });
 });
 
-Corrode.addExtension('rwsMaterialEffectsPlgDual', function(){
-    this.vars.__name__ = 'rwsMaterialEffectsPlgDual';
+Corrode.addExtension('rwsMaterialEffectsPlgEffectDual', function(){
+    this.vars.__name__ = 'rwsMaterialEffectsPlgEffectDual';
 
     this
         .uint32('identifier')
@@ -109,15 +104,23 @@ Corrode.addExtension('rwsMaterialEffectsPlgDual', function(){
 
     this.tap(function(){
         if(this.vars.containsTexture){
-            this.ext.rwsTexture('texture');
+            this.ext.rwsSection('texture', sectionTypes.RW_TEXTURE);
         }
     });
 });
 
-Corrode.addExtension('rwsMaterialEffectsPlgUvTransform', function(){
-    this.vars.__name__ = 'rwsMaterialEffectsPlgUvTransform';
+Corrode.addExtension('rwsMaterialEffectsPlgEffectUvTransform', function(){
+    this.vars.__name__ = 'rwsMaterialEffectsPlgEffectUvTransform';
 
     this
         .uint32('identifier')
         .assert.equal('identifier', materialEffectTypes.UV_TRANSFORM);
+});
+
+Corrode.addExtension('rwsMaterialEffectsPlgEffectNull', function(){
+    this.vars.__name__ = 'rwsMaterialEffectsPlgEffectNull';
+
+    this
+        .uint32('identifier')
+        .assert.equal('identifier', materialEffectTypes.NULL);
 });

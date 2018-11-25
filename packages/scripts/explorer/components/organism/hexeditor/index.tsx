@@ -23,7 +23,7 @@ export class Hexeditor extends React.PureComponent<HexeditorProps> {
         const slice = Array.from(new Uint8Array(subBuffer));
 
         return {
-            address: i.toString(16).padStart(highestAddress.length, '0'),
+            address: (i * ROW_SIZE).toString(16).padStart(highestAddress.length, '0'),
             hex: slice.map(byte => byte.toString(16).padStart(2, '0')).join(' '),
             ascii: this.getAscii(slice)
         };

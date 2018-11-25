@@ -15,6 +15,7 @@ import { WebGLRenderer } from '@rws/platform-graphics-three/node_modules/three';
 import { ThreeHud } from '@rws/platform-graphics-three/hud';
 
 import './index.scss';
+import { RwsTextureNativePlatformIds, RwsTextureNativeRasterFormat, RwsTextureNativeCompression } from '@rws/library/type/rws';
 
 interface FileTxdViewerProps {
     node: TreeviewNodeProps;
@@ -32,6 +33,7 @@ interface FileTxdViewerState {
 export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdViewerState> {
     canvasRef: React.RefObject<HTMLCanvasElement>;
     currentRenderer: WebGLRenderer | null = null;
+    rafId: number | null = null;
     hud: ThreeHud;
 
     constructor(props){
@@ -81,7 +83,7 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
         const entries = this.state.pool.texturePool.getLoadedEntries();
 
         if(entries.length === 0){
-            return <div>TXD empty?!</div>;
+            return <div>TXD empty</div>;
         }
 
         return (
@@ -90,23 +92,73 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
                     position: 'absolute',
                     top: 0,
                     left: 0,
+                }}
+                {...{
                     width: this.props.glContainer.width,
                     height: this.props.glContainer.height
                 }}/>
                 {entries.length > 1 ?
                     <ul className="file-txd-viewer__list">
                         {entries.map(texture =>
-                            <li key={texture.name} onClick={this.onSelectTexture.bind(this, texture)}>{texture.name}</li>
+                            <li key={texture.name} onClick={this.onSelectTexture.bind(this, texture)}>
+                                {texture.name}
+                            </li>
                         )}
                     </ul>
                 : ''}
-                {this.state.selectedTexture ?
-                    <div className="file-txd-viewer__info">
-                        {this.state.selectedTexture.name + ' '}
-                        {`${this.state.selectedTexture.width}x${this.state.selectedTexture.height} `}
-                        {this.state.selectedTexture.hasAlpha ? 'alpha' : ''}
-                    </div>
-                : ''}
+                {this.renderTxdInfo()}
+            </div>
+        );
+    }
+
+    renderTxdInfo(): React.ReactFragment {
+        if(!this.state.selectedTexture){
+            return '';
+        }
+
+        const { name, width, height, hasAlpha, format, compression, platform } = this.state.selectedTexture;
+        const hasBits = (data: number, mask: number): boolean => (data & mask) === mask;
+        let formatString = '';
+        const isPal8 = hasBits(format, RwsTextureNativeRasterFormat.PALETTE_8);
+        const isPal4 = hasBits(format, RwsTextureNativeRasterFormat.PALETTE_4);
+        const isFormat8888 = hasBits(format, RwsTextureNativeRasterFormat.FORMAT_8888);
+        const isFormat888 = hasBits(format, RwsTextureNativeRasterFormat.FORMAT_888);
+        const usesPalette = (isPal4 || isPal8) && (isFormat888 || isFormat8888);
+
+        if(isFormat8888){
+            formatString = '8888 ';
+        }
+        if(isFormat888){
+            formatString = '888 ';
+        }
+        if(format === RwsTextureNativeRasterFormat.FORMAT_1555){
+            formatString = '1555 ';
+        }
+        if(usesPalette && isPal4){
+            formatString += 'PAL4 ';
+        }
+        if(usesPalette && isPal8){
+            formatString += 'PAL8 ';
+        }
+        if(compression === RwsTextureNativeCompression.DXT1){
+            formatString += 'DXT1 ';
+        }
+        if(compression === RwsTextureNativeCompression.DXT3){
+            formatString += 'DXT3 ';
+        }
+
+        const mipmapCount = this.state.selectedTexture.src.mipmaps.length;
+
+        const platformString = {
+            [RwsTextureNativePlatformIds.PC_3_VC]: 'PC 3/VC',
+            [RwsTextureNativePlatformIds.PC_SA]: 'PC SA',
+            [RwsTextureNativePlatformIds.PS2]: 'PS2',
+            [RwsTextureNativePlatformIds.XBOX]: 'XBOX'
+        }[platform];
+
+        return (
+            <div className="file-txd-viewer__info">
+                {`${name} ${width}x${height} ${hasAlpha ? 'alpha' : ''} ${formatString} ${platformString} ${mipmapCount} Level`}
             </div>
         );
     }
@@ -118,6 +170,9 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
         const el = new ThreeHudElement(this.state.selectedTexture);
         if(!this.currentRenderer){
             this.hud = new ThreeHud();
+            this.hud.$el = this.canvasRef.current;
+            this.hud.setCameraFrustum();
+
             this.currentRenderer = new WebGLRenderer({
                 antialias: true,
                 canvas: this.canvasRef.current,
@@ -125,13 +180,18 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
             });
             const render = () => {
                 this.currentRenderer.render(this.hud.src, this.hud.camera);
-                requestAnimationFrame(render);
+                this.rafId = requestAnimationFrame(render);
             };
             render();
         }
-        console.log(this.hud);
         this.hud.src.children.splice(0);
         this.hud.add(el);
+    }
+
+    componentWillUnmount(){
+        if(this.rafId){
+            cancelAnimationFrame(this.rafId);
+        }
     }
 
     @bind

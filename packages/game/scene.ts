@@ -75,6 +75,7 @@ export class Scene {
                 const mesh = await this.platform.rwsStructPool.definitionPool.loadObjMesh(placement.id);
                 mesh.position.set(placement.position[0], placement.position[1], placement.position[2]);
                 mesh.rotation.set(placement.rotation[0], placement.rotation[1], placement.rotation[2], placement.rotation[3]);
+                mesh.scale.set(placement.scale[0], placement.scale[1], placement.scale[2]);
                 this.graph.add(mesh);
                 return mesh;
             });
@@ -124,8 +125,8 @@ export class Scene {
     async setup(): Promise<void> {
         this.ambient = new this.AmbientLight(new this.Vec3(0.25, 0.25, 0.25));
         this.skybox = new this.Skybox(this.state, this.platform.rwsStructPool.timecycIndex);
-        this.setupIdeSelector();
-        //this.setupIplSelector();
+        //this.setupIdeSelector();
+        this.setupIplSelector();
         //this.setupTextureSelector();
 
         this.graph.add(this.ambient);

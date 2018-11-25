@@ -14,6 +14,6 @@ export interface RwsFrameExtension extends RwsSection {
 }
 
 export interface RwsFrameList extends RwsSection {
-    extensions: Array<RwsExtension<RwsFrameExtension>>;
-    frames: Array<RwsFrame>;
+    extensions: RwsExtension<RwsFrameExtension>[];
+    frames: RwsFrame[];
 }

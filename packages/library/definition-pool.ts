@@ -41,11 +41,35 @@ export class DefinitionPool {
     }
 
     async loadMesh(dff: string, txd: string): Promise<IMesh> {
-        if(txd !== 'generic'){
+        // generic is already loaded
+        // maybe we've already loaded the a texture with the name of the txd
+        if(txd !== 'generic' && !this.rwsPool.texturePool.has(txd)){
             await this.rwsPool.texturePool.loadFromImg('models/gta3.img', txd + '.txd');
         }
-        await this.rwsPool.meshPool.loadFromImg('models/gta3.img', dff + '.dff');
-        return this.rwsPool.meshPool.get(dff);
+
+        const img = this.rwsPool.imgIndices.get('models/gta3.img')!;
+        if(img.imgIndex.has(dff + '.dff')){
+            await this.rwsPool.meshPool.loadFromImg('models/gta3.img', dff + '.dff');
+        }
+
+        // modelname === dff-name
+        if(this.rwsPool.meshPool.has(dff)){
+            return this.rwsPool.meshPool.get(dff);
+        }
+
+        // FALLBACK mechanism:
+        // model is not a dff, but a child of an already loaded mesh
+        // name can be $name, $name_l0
+        let found = this.rwsPool.meshPool.findMeshChild(dff + '_l0');
+        if(found){
+            return found;
+        }
+        found = this.rwsPool.meshPool.findMeshChild(dff);
+        if(found){
+            return found;
+        }
+
+        throw new Error(`DefinitionPool: Unable to find dff/mesh ${dff}.`);
     }
 
     async loadObjMesh(id: number | IdeEntryObj): Promise<IMesh> {
@@ -53,7 +77,8 @@ export class DefinitionPool {
         if(!obj){
             throw new Error(`DefinitionPool: OBJS-Definition with id ${id} not found`);
         }
-        const mesh = this.loadMesh(obj.modelName, obj.txdName);
+        const mesh = await this.loadMesh(obj.modelName, obj.txdName);
+
         return mesh;
     }
 }

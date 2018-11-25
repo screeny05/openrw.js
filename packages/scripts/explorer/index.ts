@@ -43,6 +43,8 @@ import { FileDffViewer } from './views/file-dff-viewer';
 import { FileInspector } from './views/file-inspector';
 import { FileTxdViewer } from './views/file-txd-viewer';
 import { FileGxtViewer } from './views/file-gxt-viewer';
+import { ImgIndex } from '@rws/library/index/img';
+import { DirEntry } from '@rws/library/type/dir-entry';
 
 
 const $toolbar = document.querySelector('.js--toolbar');
@@ -70,7 +72,27 @@ const getComponentConfig = (component: string, title: string, props: FileCompone
     };
 };
 
-const openFile = async (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer?: string) => {
+const downloadBuffer = (name: string, buffer: ArrayBuffer): void => {
+    const blob = new Blob([buffer]);
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = name;
+    link.click();
+}
+
+const downloadNode = async (node: TreeviewNodeProps): Promise<void> => {
+    if(!node.data.img){
+        return;
+    }
+
+    const img: ImgIndex = node.data.img;
+    const entry: DirEntry = node.data.entry;
+    const buffer = await img.imgFile.getData(entry.offset, entry.offset + entry.size);
+    downloadBuffer(node.name, buffer);
+};
+
+const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer?: string) => {
     let component = 'file-hexeditor';
     let isReact = true;
     const fileType = guessFileNodeType(node.name);
@@ -97,6 +119,10 @@ const openFile = async (node: TreeviewNodeProps, index: BrowserFileIndex, prefer
 
     if(component === 'file-dff-viewer'){
         isReact = false;
+    }
+
+    if(component === 'file-img-extract'){
+        return downloadNode(node);
     }
 
     content.root.getItemsById('working-stack')[0].addChild(getComponentConfig(component, node.name, { node, index }, isReact));

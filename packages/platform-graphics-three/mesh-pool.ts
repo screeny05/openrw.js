@@ -14,6 +14,7 @@ import { quat } from 'gl-matrix';
 import { ThreeMesh } from "@rws/platform-graphics-three/mesh";
 import { glVec2ToThreeVector2, glVec3ToThreeVector3 } from '@rws/platform-graphics-three/converter';
 import { ThreeTexturePool } from '@rws/platform-graphics-three/texture-pool';
+import { Object3D } from 'three';
 
 export class ThreeMeshPool implements IMeshPool {
     rwsPool: RwsStructPool;
@@ -26,10 +27,46 @@ export class ThreeMeshPool implements IMeshPool {
     }
 
     get(name: string): ThreeMesh {
-        if(!this.meshCache.has(name)){
+        if(!this.has(name)){
             throw new Error(`MeshPool: ${name} is not yet loaded.`);
         }
         return this.meshCache.get(name) as ThreeMesh;
+    }
+
+    has(name: string): boolean {
+        return this.meshCache.has(name);
+    }
+
+    findMeshChild(name: string): ThreeMesh | null {
+        // first try to retrieve from stored
+        if(this.has(name)){
+            return this.get(name);
+        }
+
+        // walk through _all_ loaded meshes to find ours
+        let found: Object3D | null = null;
+        this.meshCache.forEach(mesh => {
+            if(found){
+                return;
+            }
+            const child = mesh.src.getObjectByName(name);
+            if(child){
+                found = child;
+            }
+        });
+
+        if(!found){
+            return null;
+        }
+
+        // wrap mesh in root-mesh
+        const newRoot = new THREE.Mesh();
+        newRoot.name = '__root__' + name;
+        newRoot.add(found);
+        const threeMesh = new ThreeMesh(newRoot);
+        this.meshCache.set(name, threeMesh);
+
+        return threeMesh;
     }
 
     async loadFromFile(fileName: string): Promise<void> {
