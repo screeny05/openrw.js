@@ -31,7 +31,7 @@ export class ThreeSkybox extends ThreeMesh implements ISkybox {
     timecyc: TimecycIndex;
 
     constructor(state: GlobalState, timecyc: TimecycIndex){
-        const geom = new SphereBufferGeometry(1000, 8, 10);
+        const geom = new SphereBufferGeometry(2000, 8, 10);
         const mat = new ShaderMaterial({
             uniforms: {
                 topColor: { type: 'c', value: new Color(0x0077ff) },

@@ -30,6 +30,8 @@ export interface RwsTextureNativeRasterFlags {
     isPal4: boolean;
     isFormat8888: boolean;
     isFormat888: boolean;
+    maybeFormat565: boolean;
+    maybeFormat4444: boolean;
     isTransparent: boolean;
     usesPalette: boolean;
 }

@@ -74,6 +74,8 @@ Corrode.addExtension('rwsTextureNative', function(){
                     isPal4: hasBits(this.vars.format, RasterFormat.PALETTE_4),
                     isFormat8888: hasBits(this.vars.format, RasterFormat.FORMAT_8888),
                     isFormat888: hasBits(this.vars.format, RasterFormat.FORMAT_888),
+                    maybeFormat565: hasBits(this.vars.format, RasterFormat.FORMAT_565),
+                    maybeFormat4444: hasBits(this.vars.format, RasterFormat.FORMAT_4444),
                 };
 
                 this.vars.flags.isTransparent = !this.vars.flags.isFormat888;

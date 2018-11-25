@@ -213,6 +213,7 @@ export class ThreeMeshPool implements IMeshPool {
 
         mesh.position.set(atomic.frame.position[0], atomic.frame.position[1], atomic.frame.position[2]);
         mesh.quaternion.set(rotationQ[0], rotationQ[1], rotationQ[2], rotationQ[3]);
+
         return mesh;
     }
 
@@ -268,6 +269,9 @@ export class ThreeMeshPool implements IMeshPool {
                 }
             }*/
         }
+
+        // disable backface-culling
+        threeMaterial.side = THREE.DoubleSide;
 
         return threeMaterial;
     }

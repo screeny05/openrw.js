@@ -1,7 +1,7 @@
 import { ITexturePool } from "@rws/platform/graphic";
 import { RwsStructPool } from "@rws/library/rws-struct-pool";
 import * as THREE from 'three';
-import { RwsTextureAddressMode, RwsTextureFilterMode, RwsTextureNative, RwsTextureDictionary, RwsSectionType, RwsTextureNativeRasterFormat } from "@rws/library/type/rws";
+import { RwsTextureAddressMode, RwsTextureFilterMode, RwsTextureNative, RwsTextureDictionary, RwsSectionType, RwsTextureNativeRasterFormat, RwsTextureNativeCompression } from "@rws/library/type/rws";
 import { ThreeTexture } from "./texture";
 import { Texture } from "three";
 
@@ -107,17 +107,22 @@ export class ThreeTexturePool implements ITexturePool {
     }
 
     textureNativeToThreeTexture(textureNative: RwsTextureNative): ThreeTexture {
-        const { isPal8, isPal4, isFormat888, isFormat8888, usesPalette } = textureNative.flags;
+        const { isPal8, isPal4, isFormat888, isFormat8888, maybeFormat565, maybeFormat4444, usesPalette } = textureNative.flags;
         const isFormat1555 = textureNative.format === RwsTextureNativeRasterFormat.FORMAT_1555;
+        const isFormat4444 = maybeFormat4444 && textureNative.scanCompression === RwsTextureNativeCompression.NONE;
+        const isFormatDXT3 = maybeFormat4444 && textureNative.scanCompression === RwsTextureNativeCompression.DXT3;
+        const isFormat565 = maybeFormat565 && textureNative.scanCompression === RwsTextureNativeCompression.NONE;
+        const isFormatDXT1 = maybeFormat565 && textureNative.scanCompression === RwsTextureNativeCompression.DXT1;
 
-        if(!(isPal8 || isPal4 || isFormat888 || isFormat8888 || isFormat1555)){
+        if(!(isPal8 || isPal4 || isFormat888 || isFormat8888 || isFormat1555 || isFormatDXT3 || isFormatDXT1)){
             console.warn('TexturePool: not implemented', textureNative.name, textureNative);
             return this.cloneFallbackTexture(textureNative.name);
         }
 
         let swizzle: null | number[] | string = null;
-        let format = THREE.RGBAFormat;
-        let type: THREE.TextureDataType | THREE.PixelType = THREE.UnsignedByteType;
+        let format: THREE.PixelFormat = THREE.RGBAFormat;
+        let type: THREE.TextureDataType = THREE.UnsignedByteType;
+        let isCompressed = false;
 
         if(isFormat8888 && !usesPalette){
             swizzle = SWIZZLE_RGBA_BGRA;
@@ -128,8 +133,18 @@ export class ThreeTexturePool implements ITexturePool {
         }
 
         if(isFormat1555){
-            type = THREE.UnsignedShort5551Type;
+            type = THREE.UnsignedShort5551Type as any as THREE.TextureDataType;
             swizzle = SWIZZLE_5551_1555;
+        }
+
+        if(isFormatDXT3){
+            format = THREE.RGBA_S3TC_DXT3_Format as any as THREE.PixelFormat;
+            isCompressed = true;
+        }
+
+        if(isFormatDXT1){
+            format = THREE.RGB_S3TC_DXT1_Format as any as THREE.PixelFormat;
+            isCompressed = true;
         }
 
         const miplevels = textureNative.mipLevels.map((level, i) => {
@@ -148,18 +163,29 @@ export class ThreeTexturePool implements ITexturePool {
             }
 
             return {
-                data,
+                data: data as ArrayBufferView,
                 width: textureNative.width / (2 ** i),
                 height: textureNative.height / (2 ** i)
             }
         });
 
-        const threeTexture = new THREE.DataTexture(
-            miplevels[0].data,
+        const threeTexture: THREE.Texture = !isCompressed ? new THREE.DataTexture(
+            miplevels[0].data as Uint8Array,
             textureNative.width,
             textureNative.height,
             format,
-            type as THREE.TextureDataType,
+            type,
+            THREE.UVMapping,
+            this.mapWrapToThreeWrap(textureNative.uAddressing),
+            this.mapWrapToThreeWrap(textureNative.vAddressing),
+            this.mapFilterToThreeFilter(textureNative.filterMode),
+            this.mapFilterToThreeFilter(textureNative.filterMode)
+        ) : new THREE.CompressedTexture(
+            miplevels as ImageData[],
+            textureNative.width,
+            textureNative.height,
+            format,
+            type,
             THREE.UVMapping,
             this.mapWrapToThreeWrap(textureNative.uAddressing),
             this.mapWrapToThreeWrap(textureNative.vAddressing),

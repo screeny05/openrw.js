@@ -3,6 +3,9 @@ import { IFile } from '@rws/platform/fs';
 
 import fileReadStream from 'filereader-stream';
 
+// file size needs to be over this limit for the file to get buffered
+const BUFFER_SIZE_LIMIT = 5 * 1024 * 1024;
+
 export class BrowserFile implements IFile {
     file: File;
     buffer?: ArrayBuffer;
@@ -56,8 +59,11 @@ export class BrowserFile implements IFile {
                 }
 
                 // result is guaranteed to be ArrayBuffer
-                this.buffer = reader.result as ArrayBuffer;
-                return resolve(getSlice(this.buffer));
+                const buffer = reader.result as ArrayBuffer;
+                if(this.size > BUFFER_SIZE_LIMIT){
+                    this.buffer = buffer;
+                }
+                return resolve(getSlice(buffer));
             };
 
             reader.onabort = reject;

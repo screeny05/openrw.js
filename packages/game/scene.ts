@@ -37,17 +37,19 @@ export class Scene {
 
         this.graph = new this.Scene();
         this.hud = new this.Hud();
-        this.camera = new this.Camera(75, 0.1, 2000);
+        this.camera = new this.Camera(75, 0.1, 4000);
         this.renderer = new this.Renderer(this.platform.rwsStructPool, this.graph, this.hud, this.camera);
     }
 
     setupIdeSelector(): void {
         let lastAdd;
-        const onSelect = async (id: number) => {
+        const onSelect = async (id: number, li: HTMLLIElement) => {
             if(lastAdd){
                 this.graph.src.remove(lastAdd.src);
             }
+            li.textContent += ' - loading...';
             const model = await this.platform.rwsStructPool.definitionPool.loadObjMesh(id);
+            li.remove();
             lastAdd = model;
             this.graph.add(model);
         }
@@ -55,7 +57,7 @@ export class Scene {
         Array.from(this.platform.rwsStructPool.definitionPool.defObj.values()).forEach(def => {
             const li = document.createElement('li');
             li.textContent = def.modelName;
-            li.addEventListener('click', () => onSelect(def.id));
+            li.addEventListener('click', () => onSelect(def.id, li));
             ul.appendChild(li);
         });
         ul.style.position = 'absolute';
@@ -68,24 +70,29 @@ export class Scene {
 
     setupIplSelector(): void {
         let added = [];
-        const onSelect = async (ipl: IplIndex) => {
+        const onSelect = async (ipl: IplIndex, li: HTMLLIElement) => {
             added.forEach(el => this.graph.src.remove(el.src));
             added = [];
+            let loadedIpls = 0;
+
             const tasks = ipl.entriesInst.map(async (placement) => {
                 const mesh = await this.platform.rwsStructPool.definitionPool.loadObjMesh(placement.id);
                 mesh.position.set(placement.position[0], placement.position[1], placement.position[2]);
                 mesh.rotation.set(placement.rotation[0], placement.rotation[1], placement.rotation[2], placement.rotation[3]);
                 mesh.scale.set(placement.scale[0], placement.scale[1], placement.scale[2]);
                 this.graph.add(mesh);
+                loadedIpls++;
+                li.textContent = `${ipl.file.name}... ${loadedIpls}/${ipl.entriesInst.length}`;
                 return mesh;
             });
             await Promise.all(tasks);
+            li.remove();
         };
         const ul = document.createElement('ul');
         Array.from(this.platform.rwsStructPool.iplIndices.entries()).forEach(([file, ipl]) => {
             const li = document.createElement('li');
             li.textContent = `${file} (${ipl.entriesInst.length})`;
-            li.addEventListener('click', () => onSelect(ipl));
+            li.addEventListener('click', () => onSelect(ipl, li));
             ul.appendChild(li);
         });
         ul.style.position = 'absolute';
