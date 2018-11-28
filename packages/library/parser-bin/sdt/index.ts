@@ -1,14 +1,15 @@
 const Corrode = require('corrode');
 
-const ENTRY_SIZE = 16;
+const ENTRY_SIZE = 20;
 
 Corrode.addExtension('sdt', function(){
     this.loop('entries', function(){
         this
-            .uint32('offset')
-            .uint32('size')
-            .uint32('loopStart')
-            .uint32('loopEnd')
+            .int32('offset')
+            .int32('size')
+            .int32('samples')
+            .int32('loopStart')
+            .int32('loopEnd')
             .tap(function(){
                 this.emit('entry', this.vars);
             });

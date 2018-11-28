@@ -170,7 +170,7 @@ const NodeIcons: NodeIconDatabase = {
     [PathNodeType.FilePedstats]: ['fa', 'chart-bar', '#fe7600'],
     [PathNodeType.FileSurface]: ['fas', 'road', '#fe7600'],
     [PathNodeType.FileRaw]: ['fas', 'file-audio', '#fe7600'],
-    [PathNodeType.FileRawEntry]: ['fas', 'file-audio', '#fe7600'],
+    [PathNodeType.FileRawEntry]: ['fa', 'file-audio', '#fe7600'],
     [PathNodeType.FileSdt]: ['fas', 'list-ul', '#fe7600'],
 };
 

@@ -11,6 +11,7 @@
         "deepmerge": "^2.2.1",
         "foundation-sites": "^6.5.0-rc.3",
         "golden-layout": "^1.5.9",
+        "imaadpcm": "^4.0.1",
         "jquery": "^3.3.1",
         "memoize-one": "^4.0.2",
         "mobx": "^5.5.0",
@@ -22,7 +23,8 @@
         "regenerator-runtime": "^0.12.1",
         "sass": "^1.14.1",
         "setimmediate": "^1.0.5",
-        "unicoderegexp": "^0.4.1"
+        "unicoderegexp": "^0.4.1",
+        "wavefile": "^8.4.4"
     },
     "devDependencies": {
         "@types/classnames": "^2.2.6",

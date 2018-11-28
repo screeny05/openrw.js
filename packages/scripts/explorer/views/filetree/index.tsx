@@ -132,11 +132,15 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         if(type === PathNodeType.FileGxt){
             availableViewers.push(['file-gxt-viewer', 'GXT Viewer']);
         }
-        if(type === PathNodeType.FileWav || type === PathNodeType.FileMp3 || type === PathNodeType.FileRaw){
+        if(type === PathNodeType.FileWav || type === PathNodeType.FileMp3 || type === PathNodeType.FileRawEntry){
             availableViewers.push(['file-audio-player', 'Audio Player']);
         }
         if(node.data.img){
             availableViewers.push(['file-img-extract', 'Extract from IMG']);
+        }
+
+        if(node.data.sdtEntry){
+            availableViewers.push(['file-raw-extract', 'Extract from RAW']);
         }
 
         return (

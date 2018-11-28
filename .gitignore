@@ -3,6 +3,7 @@ dist
 debug
 .cache
 
+.idea
 .vscode
 openrw
 

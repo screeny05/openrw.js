@@ -46,6 +46,9 @@ import { FileGxtViewer } from './views/file-gxt-viewer';
 import { FileAudioPlayer } from './views/file-audio-player';
 import { ImgIndex } from '@rws/library/index/img';
 import { DirEntry } from '@rws/library/type/dir-entry';
+import { RawIndex } from '@rws/library/index/raw';
+import { SdtEntry } from '@rws/library/type/sdt-entry';
+import { BufferBuilder } from './library/buffer-builder';
 
 
 const $toolbar = document.querySelector('.js--toolbar');
@@ -82,7 +85,7 @@ const downloadBuffer = (name: string, buffer: ArrayBuffer): void => {
     link.click();
 }
 
-const downloadNode = async (node: TreeviewNodeProps): Promise<void> => {
+const downloadNodeImg = async (node: TreeviewNodeProps): Promise<void> => {
     if(!node.data.img){
         return;
     }
@@ -91,6 +94,35 @@ const downloadNode = async (node: TreeviewNodeProps): Promise<void> => {
     const entry: DirEntry = node.data.entry;
     const buffer = await img.imgFile.getData(entry.offset, entry.offset + entry.size);
     downloadBuffer(node.name, buffer);
+};
+
+const downloadNodeRaw = async (node: TreeviewNodeProps): Promise<void> => {
+    if(!node.data.raw){
+        return;
+    }
+
+    const raw: RawIndex = node.data.raw;
+    const entry: SdtEntry = node.data.sdtEntry;
+    const data = await raw.rawFile.getData(entry.offset, entry.offset + entry.size);
+    const bb = new BufferBuilder(entry.size + 44);
+
+    bb
+        .writeString('RIFF')
+        .writeUInt32(entry.size + 36)
+        .writeString('WAVE')
+        .writeString('fmt ')
+        .writeUInt32(16)
+        .writeUInt16(1)
+        .writeUInt16(1)
+        .writeUInt32(entry.samples)
+        .writeUInt32(entry.samples * 2)
+        .writeUInt16(2)
+        .writeUInt16(16)
+        .writeString('data')
+        .writeUInt32(entry.size)
+        .writeBuffer(data);
+
+    downloadBuffer(node.name + '.wav', bb.buffer.buffer as ArrayBuffer);
 };
 
 const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer?: string) => {
@@ -117,7 +149,7 @@ const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer
     if(!preferViewer && fileType === PathNodeType.FileGxt){
         component = 'file-gxt-viewer';
     }
-    if(!preferViewer && (fileType === PathNodeType.FileWav || fileType === PathNodeType.FileMp3 || fileType === PathNodeType.FileRaw)){
+    if(!preferViewer && (fileType === PathNodeType.FileWav || fileType === PathNodeType.FileMp3 || fileType === PathNodeType.FileRawEntry)){
         component = 'file-audio-player';
     }
 
@@ -126,7 +158,11 @@ const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer
     }
 
     if(component === 'file-img-extract'){
-        return downloadNode(node);
+        return downloadNodeImg(node);
+    }
+
+    if(component === 'file-raw-extract'){
+        return downloadNodeRaw(node);
     }
 
     content.root.getItemsById('working-stack')[0].addChild(getComponentConfig(component, node.name, { node, index }, isReact));
