@@ -13,6 +13,7 @@ import { TimecycIndex } from "./index/timecyc";
 import { HandlingIndex } from "./index/handling";
 import { ITexturePool, IMeshPool, IMeshPoolConstructor, ITexturePoolConstructor } from "@rws/platform/graphic";
 import { DefinitionPool } from "./definition-pool";
+import { Waterpro } from "./type/waterpro";
 
 export class RwsStructPool {
     fileIndex: IFileIndex;
@@ -23,6 +24,7 @@ export class RwsStructPool {
     carcolsIndex: CarcolsIndex;
     timecycIndex: TimecycIndex;
     handlingIndex: HandlingIndex;
+    waterpro: Waterpro;
     imgIndices: Map<string, ImgIndex> = new Map();
     iplIndices: Map<string, IplIndex> = new Map();
     colIndices: Map<string, ColIndex> = new Map();
@@ -59,7 +61,7 @@ export class RwsStructPool {
         await this.loadCarcols('data/carcols.dat');
         await this.loadTimecyc('data/timecyc.dat');
         await this.loadHandling('data/handling.cfg');
-        // await this.loadWaterpro('data/waterpro.dat');
+        await this.loadWaterpro('data/waterpro.dat');
         // await this.loadWeaponDAT('data/weapon.dat');
         // await this.loadPedStats('data/pedstats.dat');
         // await this.loadPedRelations('data/ped.dat');
@@ -154,6 +156,11 @@ export class RwsStructPool {
         await handlingIndex.load();
 
         this.handlingIndex = handlingIndex;
+    }
+
+    async loadWaterpro(path: string): Promise<void> {
+        const parser = new Corrode().ext.waterpro('data').map.push('data');
+        this.waterpro = await this.fileIndex.get(path).parse(parser);
     }
 
     async loadColfile(path: string, zone: number): Promise<void> {

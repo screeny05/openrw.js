@@ -135,6 +135,9 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         if(type === PathNodeType.FileWav || type === PathNodeType.FileMp3 || type === PathNodeType.FileRawEntry){
             availableViewers.push(['file-audio-player', 'Audio Player']);
         }
+        if(type === PathNodeType.FileWaterpro){
+            availableViewers.push(['file-waterpro-viewer', 'waterpro.dat Viewer']);
+        }
         if(node.data.img){
             availableViewers.push(['file-img-extract', 'Extract from IMG']);
         }

@@ -5,13 +5,13 @@ const ENTRY_SIZE = 32;
 
 Corrode.addExtension('dir', function(){
     this
-        .loop('entries', function(end, discard, i){
+        .loop('entries', function(){
             this
                 .uint32('offset')
                 .uint32('size')
                 .string('name', 24)
-                .map.trimNull('name')
                 .tap(function(){
+                    this.vars.name = this.vars.name.split('\x00')[0];
                     this.vars.offset *= SECTOR_SIZE;
                     this.vars.size *= SECTOR_SIZE;
                     this.emit('entry', this.vars);

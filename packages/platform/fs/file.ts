@@ -4,7 +4,7 @@ export interface IFile {
     path: string;
     name: string;
     size: number;
-    parse<T>(parser: TransformStream, start?: number, end?: number): Promise<T>;
+    parse<T = any>(parser: TransformStream, start?: number, end?: number): Promise<T>;
     stream(start?: number): ReadableStream;
     getData(start?: number, end?: number): Promise<ArrayBuffer>;
 }

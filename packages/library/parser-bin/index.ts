@@ -15,3 +15,4 @@ import './gxt';
 import './img';
 import './rws';
 import './sdt';
+import './waterpro';

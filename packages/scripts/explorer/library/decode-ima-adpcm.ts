@@ -47,6 +47,7 @@ const COUNT_VALUES_UINT16 = 65536;
 const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
 const clampInt16 = (val: number) => clamp(val, MIN_INT16, MAX_INT16);
 const signInt16 = (val: number) => val >= MAX_INT16 ? val - COUNT_VALUES_UINT16 : val;
+const uint8ToInt16 = (low: number, high: number) => signInt16(low | (high << 8));
 
 
 export const decodeImaAdpcm = (ctx: AudioContext, buffer: ArrayBuffer): AudioBuffer => {
@@ -65,21 +66,23 @@ export const decodeImaAdpcm = (ctx: AudioContext, buffer: ArrayBuffer): AudioBuf
     const imaBlocks = chunkArrayBufferView(data.samples, fmt.blockAlign);
 
     imaBlocks.forEach((block, i) => {
-        const blockOffset = i * fmt.blockAlign * 2 - (i * 7);
-        const decoded = decodeImaAdpcmBlock(block);
-        decoded.forEach((byte, i) => targetData[blockOffset + i] = byte / MAX_INT16);
+        const decoded = decodeImaAdpcmBlock(block, fmt.numChannels);
+        decoded.forEach((byte, byteIndex) => targetData[i * decoded.length + byteIndex] = byte / MAX_INT16);
     });
 
     return targetAudioBuffer;
 };
 
-export const decodeImaAdpcmBlock = (inbuf: Uint8Array): Int16Array => {
-    // TODO: investigate Magic number 7
-    const outbuf = new Int16Array(inbuf.length * 2 - 7);
+// TODO: pass outbuf
+export const decodeImaAdpcmBlock = (inbuf: Uint8Array, countChannels: number): Int16Array => {
+    // TODO: document
+    let samplesPerBlock = (inbuf.length - 4) * 2 + 1;
+
+    const outbuf = new Int16Array(samplesPerBlock);
     let inbufOffset = 0;
     let outbufOffset = 0;
 
-    let pcmData = signInt16(inbuf[0] | (inbuf[1] << 8));
+    let pcmData = uint8ToInt16(inbuf[0], inbuf[1]);
     outbuf[outbufOffset++] = pcmData;
 
     let index = inbuf[2];
@@ -88,7 +91,10 @@ export const decodeImaAdpcmBlock = (inbuf: Uint8Array): Int16Array => {
     }
     inbufOffset += 4;
 
+    // TODO: simplify
     let chunks = (inbuf.length - inbufOffset) / 4;
+
+    // for (let i = 4; i < inbuf.length - inbufOffset; i++) {
 
     while(chunks--){
         for (let i = 0; i < 4; i++) {

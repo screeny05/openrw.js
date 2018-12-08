@@ -61,6 +61,10 @@ export class FileInspector extends React.Component<FileInspectorProps, FileInspe
             data = await file.parse(parser);
             useTable = true;
         }
+        if(file && type === PathNodeType.FileWaterpro){
+            const parser = new Corrode().ext.waterpro('waterpro').map.push('waterpro');
+            data = await file.parse(parser);
+        }
 
         this.setState({
             isLoaded: true,

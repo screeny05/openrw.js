@@ -70,14 +70,6 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
             try {
                 data = decodeImaAdpcm(ctx, this.state.buffer);
             } catch(e){}
-            const wav = new WaveFile(new Uint8Array(this.state.buffer));
-            console.log(new Int16Array(wav.data.samples.buffer, wav.data.samples.offset, wav.data.samples.length / 2));
-            console.log(data ? data.getChannelData(0) : pcmToAudioBuffer(ctx, wav.data.samples.buffer, wav.fmt.sampleRate).getChannelData(0));
-            // only decode imaadpcm
-            if(wav.fmt.audioFormat === 17){
-                wav.fromIMAADPCM();
-                //data = pcmToAudioBuffer(ctx, wav.data.samples.buffer, wav.fmt.sampleRate);
-            }
         }
         if(sdt){
             data = pcmToAudioBuffer(ctx, this.state.buffer, sdt.samples);
@@ -88,8 +80,6 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
         src.buffer = data;
         src.connect(ctx.destination);
         src.start();
-        console.time('Track')
-        src.onended = () => console.timeEnd('Track');
     }
 }
 

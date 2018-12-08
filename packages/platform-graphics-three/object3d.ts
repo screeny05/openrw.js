@@ -63,6 +63,9 @@ export class ThreeObject3d implements IObject3d {
     }
 
     removeFromParent(): void {
+        if(this.src.parent){
+            this.src.parent.remove(this.src);
+        }
         this.src.parent = null;
     }
 

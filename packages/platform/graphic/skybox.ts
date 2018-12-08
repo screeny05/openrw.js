@@ -7,5 +7,5 @@ export interface ISkybox extends IMesh {
 }
 
 export interface ISkyboxConstructor {
-    new(state: GlobalState, timecyc: TimecycIndex): ISkybox;
+    new(state: GlobalState, timecyc: TimecycIndex, size: number): ISkybox;
 }
