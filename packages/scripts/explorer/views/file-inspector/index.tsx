@@ -46,6 +46,11 @@ export class FileInspector extends React.Component<FileInspectorProps, FileInspe
             const img: ImgIndex = this.props.node.data.img;
             data = await img.parseEntryAsRws(entry);
         }
+        if(entry && type === PathNodeType.FileIfp){
+            const img: ImgIndex = this.props.node.data.img;
+            const parser = new Corrode().ext.ifp('ifp').map.push('ifp');
+            data = await img.imgFile.parse(parser, entry.offset, entry.offset + entry.size);
+        }
         if(file && type === PathNodeType.FileDir){
             const parser = new Corrode().ext.dir('rws').map.push('rws');
             data = await file.parse(parser);
@@ -65,6 +70,11 @@ export class FileInspector extends React.Component<FileInspectorProps, FileInspe
             const parser = new Corrode().ext.waterpro('waterpro').map.push('waterpro');
             data = await file.parse(parser);
         }
+        if(file && type === PathNodeType.FileIfp){
+            const parser = new Corrode().ext.ifp('ifp').map.push('ifp');
+            data = await file.parse(parser);
+        }
+        console.log(data);
 
         this.setState({
             isLoaded: true,

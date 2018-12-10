@@ -16,3 +16,4 @@ import './img';
 import './rws';
 import './sdt';
 import './waterpro';
+import './ifp';

@@ -10,8 +10,8 @@ Corrode.addExtension('dir', function(){
                 .uint32('offset')
                 .uint32('size')
                 .string('name', 24)
+                .map.trimNull('name')
                 .tap(function(){
-                    this.vars.name = this.vars.name.split('\x00')[0];
                     this.vars.offset *= SECTOR_SIZE;
                     this.vars.size *= SECTOR_SIZE;
                     this.emit('entry', this.vars);

@@ -100,7 +100,6 @@ const DatabaseTextTypes = [
     PathNodeType.FileIni,
     PathNodeType.FileIde,
     PathNodeType.FileIpl,
-    PathNodeType.FileIfp,
     PathNodeType.FileZon,
     PathNodeType.FileTxt,
     PathNodeType.FileWater,
@@ -125,7 +124,8 @@ const DatabaseInspectableTypes = [
     PathNodeType.FileDff,
     PathNodeType.FileDir,
     PathNodeType.FileGxt,
-    PathNodeType.FileWaterpro
+    PathNodeType.FileWaterpro,
+    PathNodeType.FileIfp
 ];
 
 const DatabaseFolders: TypeDatabase = [];

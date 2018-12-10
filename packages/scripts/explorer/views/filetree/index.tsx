@@ -138,10 +138,12 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         if(type === PathNodeType.FileWaterpro){
             availableViewers.push(['file-waterpro-viewer', 'waterpro.dat Viewer']);
         }
+        if(type === PathNodeType.FileIfp){
+            availableViewers.push(['file-animation-viewer', 'Animation Viewer']);
+        }
         if(node.data.img){
             availableViewers.push(['file-img-extract', 'Extract from IMG']);
         }
-
         if(node.data.sdtEntry){
             availableViewers.push(['file-raw-extract', 'Extract from RAW']);
         }
