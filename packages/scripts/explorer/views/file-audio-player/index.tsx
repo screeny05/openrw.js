@@ -3,7 +3,7 @@ import { treeviewnodeToBuffer } from '../../library/treeviewnode-to-buffer';
 import { TreeviewNodeProps } from '../../components/molecule/treenode';
 import { SdtEntry } from '@rws/library/type/sdt-entry';
 import { decodeImaAdpcm } from '../../library/decode-ima-adpcm';
-import WaveFile from 'wavefile/dist/wavefile.umd.js';
+import { OrganismAudioPlayer } from '../../components/organism/audio-player';
 
 interface FileAudioPlayerProps {
     node: TreeviewNodeProps;
@@ -12,7 +12,107 @@ interface FileAudioPlayerProps {
 
 interface FileAudioPlayerState {
     isLoaded: boolean;
-    buffer?: ArrayBuffer;
+    player?: AudioPlayer;
+}
+
+export class AudioPlayer {
+    isImaAdpcm: boolean = false;
+    ctx: AudioContext;
+    src?: AudioBufferSourceNode;
+    audioBuffer: AudioBuffer;
+    startTime: number = 0;
+    isPlaying: boolean = false;
+    hasEnded: boolean = true;
+    isPaused: boolean = false;
+    elapsedAtPause: number = 0;
+
+    onProgressCb?: (elapsed: number) => void;
+    onEndedCb?: () => void;
+
+    private progressIntervalId?: NodeJS.Timer;
+
+    constructor(){
+        this.ctx = new AudioContext();
+    }
+
+    async decode(buffer: ArrayBuffer, isWav: boolean, sdt?: SdtEntry){
+        this.src = this.ctx.createBufferSource();
+
+        if(sdt){
+            this.audioBuffer = pcmToAudioBuffer(this.ctx, buffer, sdt.samples);
+        } else if(isWav){
+            try {
+                this.audioBuffer = decodeImaAdpcm(this.ctx, buffer);
+                this.isImaAdpcm = true;
+            } catch(e){}
+        }
+        if(!this.audioBuffer) {
+            this.audioBuffer = await this.ctx.decodeAudioData(buffer);
+        }
+    }
+
+    get duration(): number {
+        return this.audioBuffer.duration;
+    }
+
+    get currentElapsed(): number {
+        return this.isPlaying ? this.ctx.currentTime - this.startTime : this.elapsedAtPause;
+    }
+
+    play(){
+        this.src = this.ctx.createBufferSource();
+        this.src.buffer = this.audioBuffer;
+        this.src.connect(this.ctx.destination);
+
+        if(this.hasEnded){
+            this.src.start();
+            this.startTime = this.ctx.currentTime;
+        } else {
+            this.src.start(0, this.currentElapsed);
+            this.startTime = this.ctx.currentTime - this.currentElapsed;
+        }
+        this.hasEnded = false;
+        this.isPaused = false;
+
+        this.playbackStarting();
+        this.src.addEventListener('ended', () => {
+            this.playbackStopping();
+            if(!this.isPaused){
+                this.hasEnded = true;
+            }
+        });
+    }
+
+    pause(){
+        if(!this.src){
+            return;
+        }
+        this.elapsedAtPause = this.currentElapsed;
+        this.isPaused = true;
+
+        this.src.stop();
+        this.playbackStopping();
+    }
+
+    private playbackStarting(){
+        this.isPlaying = true;
+        this.progressIntervalId = setInterval(() => {
+            if(typeof this.onProgressCb !== 'function'){
+                return;
+            }
+            this.onProgressCb(this.currentElapsed);
+        }, 100);
+    }
+
+    private playbackStopping(){
+        this.isPlaying = false;
+        if(this.progressIntervalId){
+            clearInterval(this.progressIntervalId);
+        }
+        if(typeof this.onEndedCb === 'function'){
+            this.onEndedCb();
+        }
+    }
 }
 
 export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileAudioPlayerState> {
@@ -28,58 +128,33 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
     }
 
     async init(){
-        this.setState({
-            isLoaded: true,
-            buffer: await treeviewnodeToBuffer(this.props.node)
-        });
+        const buffer = await treeviewnodeToBuffer(this.props.node);
+        this.setState({ isLoaded: true });
+        if(!buffer){
+            return;
+        }
+        const player = new AudioPlayer();
+        await player.decode(buffer, this.props.node.name.toLowerCase().endsWith('.wav'), this.props.node.data.sdt);
+        this.setState({ player });
     }
 
     render(){
         if(!this.state.isLoaded){
-            return <div>loading</div>;
+            return <div>loading buffer</div>;
         }
-        if(!this.state.buffer){
-            return <div>unable to load</div>;
+        if(!this.state.player){
+            return <div>decoding buffer</div>;
         }
 
         return (
             <div>
-                <h1>rwexplorer</h1>
+                <OrganismAudioPlayer player={this.state.player} autoplay/>
+                {this.state.player.isImaAdpcm ? 'IMA-APDCM' : this.props.node.data.sdt ? 'SDT' : 'Regular File'}
+                {this.state.player.audioBuffer.numberOfChannels}
+                Channel{this.state.player.audioBuffer.numberOfChannels > 1 ? 's' : ''}
+                {this.props.node.name}
             </div>
         );
-    }
-
-    componentDidUpdate(){
-        if(!this.playing){
-            this.play();
-        }
-    }
-
-    async play(){
-        if(!this.state.buffer){
-            return;
-        }
-
-        this.playing = true;
-
-        const sdt: SdtEntry | null = this.props.node.data.sdtEntry;
-        const ctx = new AudioContext();
-        let data: AudioBuffer | null = null;
-
-        if(this.props.node.name.toLowerCase().endsWith('.wav')){
-            try {
-                data = decodeImaAdpcm(ctx, this.state.buffer);
-            } catch(e){}
-        }
-        if(sdt){
-            data = pcmToAudioBuffer(ctx, this.state.buffer, sdt.samples);
-        } else if(!data) {
-            data = await ctx.decodeAudioData(this.state.buffer);
-        }
-        const src = ctx.createBufferSource();
-        src.buffer = data;
-        src.connect(ctx.destination);
-        src.start();
     }
 }
 

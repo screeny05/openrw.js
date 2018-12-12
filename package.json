@@ -2,7 +2,7 @@
   "name": "openrwjs-web",
   "version": "1.0.0",
   "author": "Sebastian Langer <sl@scn.cx>",
-  "browserslist": "last 2 chrome versions, last 2 firefox versions, last 1 edge version, last 1 safari version",
+  "browserslist": "last 2 chrome versions, last 2 firefox versions",
   "license": "GPL-3.0",
   "devDependencies": {
     "@types/gl-matrix": "^2.4.0",
