@@ -48,6 +48,7 @@ const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, 
 const clampInt16 = (val: number) => clamp(val, MIN_INT16, MAX_INT16);
 const signInt16 = (val: number) => val >= MAX_INT16 ? val - COUNT_VALUES_UINT16 : val;
 const uint8ToInt16 = (low: number, high: number) => signInt16(low | (high << 8));
+const int16ToFloat = (int16: number): number => int16 / MAX_INT16;
 
 
 export const decodeImaAdpcm = (ctx: AudioContext, buffer: ArrayBuffer): AudioBuffer => {
@@ -61,94 +62,108 @@ export const decodeImaAdpcm = (ctx: AudioContext, buffer: ArrayBuffer): AudioBuf
     }
 
     // ima = 2sample/byte
-    const targetAudioBuffer = ctx.createBuffer(1, data.samples.length * 2, fmt.sampleRate);
-    const targetData = targetAudioBuffer.getChannelData(0);
+    const targetAudioBuffer = ctx.createBuffer(fmt.numChannels, data.samples.length * 2 / fmt.numChannels, fmt.sampleRate);
+    const targetData = audioBufferToBuffers(targetAudioBuffer);
     const imaBlocks = chunkArrayBufferView(data.samples, fmt.blockAlign);
 
+    let outbufOffset = 0;
+    let samplesPerBlock = (fmt.blockAlign - fmt.numChannels * 4) * (fmt.numChannels ^ 3) + 1;
+
     imaBlocks.forEach((block, i) => {
-        const decoded = decodeImaAdpcmBlock(block, fmt.numChannels);
-        decoded.forEach((byte, byteIndex) => targetData[i * decoded.length + byteIndex] = byte / MAX_INT16);
+        outbufOffset = decodeImaAdpcmBlock(block, targetData, outbufOffset);
     });
 
     return targetAudioBuffer;
 };
 
-// TODO: pass outbuf
-export const decodeImaAdpcmBlock = (inbuf: Uint8Array, countChannels: number): Int16Array => {
-    // TODO: document
-    let samplesPerBlock = (inbuf.length - 4) * 2 + 1;
-
-    const outbuf = new Int16Array(samplesPerBlock);
-    let inbufOffset = 0;
-    let outbufOffset = 0;
-
-    let pcmData = uint8ToInt16(inbuf[0], inbuf[1]);
-    outbuf[outbufOffset++] = pcmData;
-
-    let index = inbuf[2];
-    if(index < 0 || index > 88 || inbuf[3]){
-        throw new Error('Something is wrong with your wav');
+const audioBufferToBuffers = (buffer: AudioBuffer): Float32Array[] => {
+    const buffers: Float32Array[] = [];
+    for (let i = 0; i < buffer.numberOfChannels; i++) {
+        buffers.push(buffer.getChannelData(i));
     }
-    inbufOffset += 4;
+    return buffers;
+};
 
-    // TODO: simplify
-    let chunks = (inbuf.length - inbufOffset) / 4;
+// TODO: add documentation
+// based on adpcm-xq
+// https://github.com/dbry/adpcm-xq/blob/37359e6f612fef2e82a7904119415edaed2407e0/adpcm-lib.c#L334
+export const decodeImaAdpcmBlock = (inbuf: Uint8Array, outbufs: Float32Array[], outbufOffset: number): number => {
+    const channels = outbufs.length;
 
-    // for (let i = 4; i < inbuf.length - inbufOffset; i++) {
+    let inbufOffset = 0;
+    let pcmData: number[] = new Array(channels).fill(0);
+    let index: number[] = new Array(channels).fill(0);
+
+    outbufs.forEach((_, i) => {
+        pcmData[i] = uint8ToInt16(inbuf[inbufOffset], inbuf[inbufOffset + 1]);
+        outbufs[i][outbufOffset] = int16ToFloat(pcmData[i]);
+        index[i] = inbuf[inbufOffset + 2];
+
+        if(index[i] < 0 || index[i] > 88 || inbuf[inbufOffset + 3]){
+            throw new Error('Something is wrong with your wav');
+        }
+
+        inbufOffset += 4;
+    });
+    outbufOffset++;
+
+    let chunks = (inbuf.length - inbufOffset) / (channels * 4);
 
     while(chunks--){
-        for (let i = 0; i < 4; i++) {
-            let step = StepTable[index];
-            let delta = step >> 3;
+        for (let ch = 0; ch < channels; ch++) {
+            for (let i = 0; i < 4; i++) {
+                let step = StepTable[index[ch]];
+                let delta = step >> 3;
 
-            let data = inbuf[inbufOffset];
-            if(data & 1){
-                delta += (step >> 2);
-            }
-            if(data & 2){
-                delta += (step >> 1);
-            }
-            if(data & 4){
-                delta += step;
-            }
-            if(data & 8){
-                delta = -delta;
-            }
-            pcmData += delta;
-            index += IndexTable[data & 0x7];
-            index = clamp(index, 0, 88);
-            pcmData = clampInt16(pcmData);
-            outbuf[outbufOffset + (i * 2)] = pcmData;
+                let data = inbuf[inbufOffset];
+                if(data & 1){
+                    delta += (step >> 2);
+                }
+                if(data & 2){
+                    delta += (step >> 1);
+                }
+                if(data & 4){
+                    delta += step;
+                }
+                if(data & 8){
+                    delta = -delta;
+                }
+                pcmData[ch] += delta;
+                index[ch] += IndexTable[data & 0x7];
+                index[ch] = clamp(index[ch], 0, 88);
+                pcmData[ch] = clampInt16(pcmData[ch]);
+                outbufs[ch][outbufOffset + (i * 2)] = int16ToFloat(pcmData[ch]);
 
-            // Sample 2
-            step = StepTable[index];
-            delta = step >> 3;
+                // Sample 2
+                step = StepTable[index[ch]];
+                delta = step >> 3;
 
-            if(data & 0x10){
-                delta += (step >> 2);
-            }
-            if(data & 0x20){
-                delta += (step >> 1);
-            }
-            if(data & 0x40){
-                delta += step;
-            }
-            if(data & 0x80){
-                delta = -delta;
-            }
+                if(data & 0x10){
+                    delta += (step >> 2);
+                }
+                if(data & 0x20){
+                    delta += (step >> 1);
+                }
+                if(data & 0x40){
+                    delta += step;
+                }
+                if(data & 0x80){
+                    delta = -delta;
+                }
 
-            pcmData += delta;
-            index += IndexTable[(data >> 4) & 0x7];
-            index = clamp(index, 0, 88);
-            pcmData = clampInt16(pcmData);
-            outbuf[outbufOffset + (i * 2 + 1)] = pcmData;
+                pcmData[ch] += delta;
+                index[ch] += IndexTable[(data >> 4) & 0x7];
+                index[ch] = clamp(index[ch], 0, 88);
+                pcmData[ch] = clampInt16(pcmData[ch]);
+                outbufs[ch][outbufOffset + (i * 2 + 1)] = int16ToFloat(pcmData[ch]);
 
-            inbufOffset++;
+                inbufOffset++;
+            }
         }
 
         outbufOffset += 8;
     }
-    return outbuf;
+    return outbufOffset;
 };
 
 const chunkArrayBufferView = (data: Uint8Array, chunkSize: number): Uint8Array[] => {
