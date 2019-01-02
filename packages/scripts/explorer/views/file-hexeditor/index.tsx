@@ -5,6 +5,7 @@ import { BrowserFile } from '@rws/platform-fs-browser/file';
 import { DirEntry } from '@rws/library/type/dir-entry';
 import { ImgIndex } from '@rws/library/index/img';
 import { treeviewnodeToBuffer } from '../../library/treeviewnode-to-buffer';
+import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
 
 interface FileHexeditorProps {
     node: TreeviewNodeProps;
@@ -43,7 +44,7 @@ export class FileHexeditor extends React.Component<FileHexeditorProps, FileHexed
 
     render(){
         if(!this.state.isLoaded){
-            return <div>loading</div>;
+            return <MoleculeLoadingScreen/>
         }
         if(!this.state.buffer){
             return <div>unable to load</div>;

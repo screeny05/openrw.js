@@ -15,6 +15,26 @@ import { ITexturePool, IMeshPool, IMeshPoolConstructor, ITexturePoolConstructor 
 import { DefinitionPool } from "./definition-pool";
 import { Waterpro } from "./type/waterpro";
 
+interface LoadLevelFileEnabledCommands {
+    img?: boolean;
+    ide?: boolean;
+    colfile?: boolean;
+    ipl?: boolean;
+    txd?: boolean;
+    dff?: boolean;
+    splash?: boolean;
+}
+
+const LoadLevelFileEnabledCommandsAll: LoadLevelFileEnabledCommands = {
+    img: true,
+    ide: true,
+    colfile: true,
+    ipl: true,
+    txd: true,
+    dff: true,
+    splash: true
+}
+
 export class RwsStructPool {
     fileIndex: IFileIndex;
     language: string;
@@ -45,7 +65,8 @@ export class RwsStructPool {
     }
 
     async loadDefault(): Promise<void> {
-        await this.loadGxt(`text/${this.language}.gxt`);
+        const gxtPath = `text/${this.language}.gxt`;
+        await this.loadGxt(gxtPath);
 
         await this.loadImg('models/gta3.img');
         await this.loadImg('anim/cuts.img');
@@ -54,8 +75,6 @@ export class RwsStructPool {
         await this.texturePool.loadFromFile('models/particle.txd');
         await this.texturePool.loadFromFile('models/hud.txd');
         await this.texturePool.loadFromFile('models/fonts.txd');
-        await this.texturePool.loadFromFile('models/generic.txd');
-        await this.texturePool.loadFromFile('models/misc.txd');
         await this.texturePool.loadFromFile('models/frontend.txd');
 
         await this.loadCarcols('data/carcols.dat');
@@ -65,7 +84,7 @@ export class RwsStructPool {
         // await this.loadWeaponDAT('data/weapon.dat');
         // await this.loadPedStats('data/pedstats.dat');
         // await this.loadPedRelations('data/ped.dat');
-        // await this.loadIFP('ped.ifp');
+        await this.loadIFP('ped.ifp');
 
         await this.loadLevelFile('data/default.dat');
         await this.loadLevelFile('data/gta3.dat');
@@ -75,7 +94,7 @@ export class RwsStructPool {
         this.isLoaded = true;
     }
 
-    async loadLevelFile(path: string): Promise<void> {
+    async loadLevelFile(path: string, enabledCommands: LoadLevelFileEnabledCommands = LoadLevelFileEnabledCommandsAll): Promise<void> {
         const commandStream = streamTextDat(this.fileIndex.get(path), { lowercase: true });
 
         const tasks: Promise<void>[] = [];
@@ -86,19 +105,33 @@ export class RwsStructPool {
             // TODO: load splashes into different index?
             // TODO: load mapzone into different index?
             if(command === 'img' || command === 'cdimage'){
-                tasks.push(this.loadImg(args[0]));
+                if(enabledCommands.img){
+                    tasks.push(this.loadImg(args[0]));
+                }
             } else if(command === 'ide'){
-                tasks.push(this.definitionPool.loadIdeFile(args[0]));
+                if(enabledCommands.ide){
+                    tasks.push(this.definitionPool.loadIdeFile(args[0]));
+                }
             } else if(command === 'colfile'){
-                tasks.push(this.loadColfile(args[1], Number.parseInt(args[0])));
+                if(enabledCommands.colfile){
+                    tasks.push(this.loadColfile(args[1], Number.parseInt(args[0])));
+                }
             } else if(command === 'ipl' || command === 'mapzone'){
-                tasks.push(this.loadIpl(args[0]));
+                if(enabledCommands.ipl){
+                    tasks.push(this.loadIpl(args[0]));
+                }
             } else if(command === 'texdiction'){
-                tasks.push(this.texturePool.loadFromFile(args[0]));
+                if(enabledCommands.txd){
+                    tasks.push(this.texturePool.loadFromFile(args[0]));
+                }
             } else if(command === 'modelfile'){
-                tasks.push(this.meshPool.loadFromFile(args[0]));
+                if(enabledCommands.dff){
+                    tasks.push(this.meshPool.loadFromFile(args[0]));
+                }
             } else if(command === 'splash'){
-                tasks.push(this.texturePool.loadFromFile('txd/' + args[0] + '.txd'));
+                if(enabledCommands.splash){
+                    tasks.push(this.texturePool.loadFromFile('txd/' + args[0] + '.txd'));
+                }
             } else {
                 console.warn(`LoadLevelFile '${command}' loading not implemented.`);
             }
@@ -168,6 +201,10 @@ export class RwsStructPool {
         await colIndex.load();
 
         this.colIndices.set(this.fileIndex.normalizePath(path), colIndex);
+    }
+
+    async loadIFP(path: string): Promise<void> {
+        // @TODO
     }
 
     async parseRwsFromFile(path: string, expectedSectionType: number): Promise<RwsRootSection> {

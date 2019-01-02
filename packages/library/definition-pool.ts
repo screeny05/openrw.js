@@ -1,6 +1,7 @@
 import { RwsStructPool } from "@rws/library/rws-struct-pool";
 import { IdeIndex, IdeEntryObj, IdeEntryTobj, IdeEntryHier, IdeEntryCar, IdeEntryPed, IdeEntryPath, IdeEntry2dfxAny } from "./index/ide";
 import { IMesh } from "@rws/platform/graphic";
+import { ITexture } from "@rws/platform/graphic/texture";
 
 export class DefinitionPool {
     rwsPool: RwsStructPool;
@@ -42,7 +43,7 @@ export class DefinitionPool {
 
     async loadMesh(dff: string, txd: string): Promise<IMesh> {
         // generic is already loaded
-        // maybe we've already loaded the a texture with the name of the txd
+        // maybe we've already loaded the texture with the name of the txd
         if(txd !== 'generic' && !this.rwsPool.texturePool.has(txd)){
             await this.rwsPool.texturePool.loadFromImg('models/gta3.img', txd + '.txd');
         }
@@ -80,5 +81,23 @@ export class DefinitionPool {
         const mesh = await this.loadMesh(obj.modelName, obj.txdName);
 
         return mesh;
+    }
+
+    async loadTextureByDffName(name: string): Promise<boolean> {
+        const entry = this.getEntryByModelName(name, this.defObj) || this.getEntryByModelName(name, this.defCar) || this.getEntryByModelName(name, this.defPed);
+        if(!entry){
+            console.warn(`DefinitionPool: Cannot find entry for given model ${name}.`);
+            return false;
+        }
+        if(entry.txdName === 'generic'){
+            // should already be loaded
+            return true;
+        }
+        await this.rwsPool.texturePool.loadFromImg('models/gta3.img', `${entry.txdName}.txd`);
+        return true;
+    }
+
+    getEntryByModelName<T>(name: string, definitionMap: Map<number, T>): T|undefined {
+        return Array.from(definitionMap).map(([_, entry]) => entry).find(entry => (entry as any).modelName === name);
     }
 }

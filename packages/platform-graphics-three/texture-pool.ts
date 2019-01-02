@@ -43,7 +43,7 @@ export class ThreeTexturePool implements ITexturePool {
             0, 255, 0, 255, 0, 0,
         ]);
         this.fallbackTexture = new THREE.DataTexture(fallbackData, 2, 2, THREE.RGBFormat, THREE.UnsignedByteType);
-        this.fallbackTexture.name = 'fallback';
+        this.fallbackTexture.name = 'fallback_texture';
     }
 
     cloneFallbackTexture(name: string): ThreeTexture {
@@ -98,6 +98,12 @@ export class ThreeTexturePool implements ITexturePool {
         }
         this.populateFromDictionary(dictionary);
         this.loadedFiles.push(combinedPath);
+    }
+
+    isTxdLoaded(fileName: string): boolean;
+    isTxdLoaded(imgName: string, fileName?: string): boolean {
+        fileName = fileName ? `${imgName}/${fileName}` : imgName;
+        return this.loadedFiles.includes(fileName);
     }
 
     populateFromDictionary(dictionary: RwsTextureDictionary): void {

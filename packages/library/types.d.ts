@@ -1,3 +1,5 @@
+/// <reference types="node"/>
+
 type CorrodeReadPrimitive = (name: string) => CorrodeInterface;
 type CorrodeExtensionCollection = {
     [name: string]: (...params: any[]) => CorrodeInterface
@@ -9,7 +11,7 @@ interface CorrodeConstructor {
     MAPPERS: any;
 }
 
-interface CorrodeInterface {
+interface CorrodeInterface /*extends stream.Transform, events.EventEmitter */ {
     uint8: CorrodeReadPrimitive;
     int8: CorrodeReadPrimitive;
     uint16: CorrodeReadPrimitive;

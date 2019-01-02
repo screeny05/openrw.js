@@ -50,6 +50,7 @@ import { RawIndex } from '@rws/library/index/raw';
 import { SdtEntry } from '@rws/library/type/sdt-entry';
 import { BufferBuilder } from './library/buffer-builder';
 import { FileWaterproViewer } from './views/file-waterpro-viewer';
+import { FileAnimationViewer } from './views/file-animation-viewer';
 
 
 const $toolbar = document.querySelector('.js--toolbar');
@@ -156,6 +157,9 @@ const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer
     if(!preferViewer && fileType === PathNodeType.FileWaterpro){
         component = 'file-waterpro-viewer';
     }
+    if(!preferViewer && fileType === PathNodeType.FileIfp){
+        component = 'file-animation-viewer';
+    }
 
     if(component === 'file-dff-viewer'){
         isReact = false;
@@ -249,6 +253,7 @@ content.registerComponent('file-audio-player', FileAudioPlayer);
 content.registerComponent('file-texteditor', FileTexteditor);
 content.registerComponent('file-inspector', FileInspector);
 content.registerComponent('file-waterpro-viewer', FileWaterproViewer);
+content.registerComponent('file-animation-viewer', FileAnimationViewer);
 content.registerComponent('console', Console);
 content.registerComponent('welcome-screen', WelcomeScreen);
 content.registerComponent('working-stack-background', (container: GoldenLayoutType.Container) => {

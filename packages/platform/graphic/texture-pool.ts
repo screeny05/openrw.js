@@ -7,6 +7,8 @@ export interface ITexturePool {
     getLoadedEntries(): ITexture[];
     loadFromFile(fileName: string): Promise<void>;
     loadFromImg(imgName: string, fileName: string): Promise<void>;
+    isTxdLoaded(fileName: string): boolean;
+    isTxdLoaded(imgName: string, fileName: string): boolean;
 }
 
 export interface ITexturePoolConstructor {

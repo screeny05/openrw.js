@@ -4,6 +4,7 @@ import './anim';
 import './header';
 import './info';
 import './string';
+import './struct';
 import { IfpInfo } from './info';
 import { IfpTAnimation } from './anim';
 

@@ -4,16 +4,17 @@ import { RwsStructPool } from '@rws/library/rws-struct-pool';
 import { FileComponentProps } from '../..';
 import { ThreeTexturePool } from '@rws/platform-graphics-three/texture-pool';
 import { ThreeMeshPool } from '@rws/platform-graphics-three/mesh-pool';
-import { WebGLRenderer, Scene, GridHelper, AmbientLight, Color } from '@rws/platform-graphics-three/node_modules/three';
+import { WebGLRenderer, Scene, GridHelper, AmbientLight, Color, PointLight } from '@rws/platform-graphics-three/node_modules/three';
 import { ThreeMesh } from '@rws/platform-graphics-three/mesh';
-import { BrowserLoop } from '@rws/platform-loop-browser';
-import { BrowserFile } from '@rws/platform-fs-browser/';
+import { BrowserLoop } from '@rws/platform-loop-browser/index';
+import { BrowserFile } from '@rws/platform-fs-browser/index';
 import { DirEntry } from '@rws/library/type/dir-entry';
 import { ImgIndex } from '@rws/library/index/img';
 import { CameraControlFree } from '@rws/game/camera-controls-free';
 import { ThreeCamera } from '@rws/platform-graphics-three/camera';
-import { BrowserInput } from '@rws/platform-control-browser';
+import { BrowserInput } from '@rws/platform-control-browser/index';
 import { InputControlMapper, defaultMap } from '@rws/platform/control';
+import { MeshBasicMaterial, Mesh } from 'three';
 
 export async function FileDffViewer(container: GoldenLayoutType.Container, props: FileComponentProps): Promise<void> {
     const $canvas = $('<canvas>');
@@ -21,6 +22,11 @@ export async function FileDffViewer(container: GoldenLayoutType.Container, props
     $canvas.get(0).tabIndex = 0;
 
     const pool = new RwsStructPool(props.index, ThreeTexturePool, ThreeMeshPool, 'american');
+    await pool.loadImg('models/gta3.img');
+    await pool.loadLevelFile('data/default.dat', { ide: true, txd: true });
+    await pool.loadLevelFile('data/gta3.dat', { ide: true, txd: true });
+    const isTextureLoaded = await pool.definitionPool.loadTextureByDffName(props.node.name.toLowerCase().replace('.dff', ''));
+
     const mesh = await getMeshFromTreenode(pool, props);
     const scene = new Scene();
     const renderer = new WebGLRenderer({
@@ -48,8 +54,14 @@ export async function FileDffViewer(container: GoldenLayoutType.Container, props
     };
 
     container.on('destroy', () => loop.stop());
+    container.on('hide', () => loop.stop());
+    container.on('show', () => loop.start());
     container.on('resize', setSize);
     setSize();
+
+    if(!isTextureLoaded){
+        removeTextureFromMeshMaterials(mesh.src as any);
+    }
 
     scene.add(mesh.src);
     scene.add(ambient);
@@ -88,4 +100,16 @@ async function getMeshFromTreenode(pool: RwsStructPool, props: FileComponentProp
     }
 
     throw new Error('Cannot load mesh from treenode');
+}
+
+function removeTextureFromMeshMaterials(mesh: Mesh): void {
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    const materials: MeshBasicMaterial[] = Array.isArray(mesh.material) ? mesh.material as any : [mesh.material];
+    materials.forEach(material => {
+        material.map = null as any;
+        material.needsUpdate = true;
+    });
+
+    mesh.children.forEach(child => removeTextureFromMeshMaterials(child as Mesh));
 }

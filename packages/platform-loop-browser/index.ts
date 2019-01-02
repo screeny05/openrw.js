@@ -10,6 +10,9 @@ export class BrowserLoop implements ILoop {
         if(typeof this.callback !== 'function'){
             throw new Error('Loop callback has to be set before running.');
         }
+        if(this.isRunning){
+            return;
+        }
 
         this.lastTime = 0;
         this.isRunning = true;

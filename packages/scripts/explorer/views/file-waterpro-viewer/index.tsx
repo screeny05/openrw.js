@@ -4,6 +4,7 @@ import { TreeviewNodeProps } from '../../components/molecule/treenode';
 import Corrode from '@rws/library/node_modules/corrode';
 import { BrowserFile } from '@rws/platform-fs-browser/';
 import { Waterpro } from '@rws/library/type/waterpro';
+import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
 
 interface FileWaterproViewerProps {
     node: TreeviewNodeProps;
@@ -44,7 +45,7 @@ export class FileWaterproViewer extends React.Component<FileWaterproViewerProps,
 
     render(){
         if(!this.state.isLoaded){
-            return <div>loading</div>;
+            return <MoleculeLoadingScreen title="Parsing waterpro.dat"/>
         }
         if(!this.state.data){
             return <div>unable to load</div>;

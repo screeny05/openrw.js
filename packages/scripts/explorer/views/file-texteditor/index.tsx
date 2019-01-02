@@ -2,6 +2,7 @@ import * as React from 'react';
 import { TreeviewNodeProps } from '../../components/molecule/treenode';
 import { treeviewnodeToBuffer } from '../../library/treeviewnode-to-buffer';
 import { Texteditor } from '../../components/organism/texteditor';
+import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
 
 interface FileTexteditorProps {
     node: TreeviewNodeProps;
@@ -31,7 +32,7 @@ export class FileTexteditor extends React.Component<FileTexteditorProps> {
 
     render(){
         if(!this.state.isLoaded){
-            return <div>loading...</div>;
+            return <MoleculeLoadingScreen/>
         }
         if(!this.state.buffer){
             return <div>file could not be loaded</div>;

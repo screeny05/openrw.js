@@ -27,6 +27,7 @@ export class ThreeMeshPool implements IMeshPool {
     }
 
     get(name: string): ThreeMesh {
+        name = name.toLowerCase();
         if(!this.has(name)){
             throw new Error(`MeshPool: ${name} is not yet loaded.`);
         }
@@ -34,10 +35,13 @@ export class ThreeMeshPool implements IMeshPool {
     }
 
     has(name: string): boolean {
+        name = name.toLowerCase();
         return this.meshCache.has(name);
     }
 
     findMeshChild(name: string): ThreeMesh | null {
+        name = name.toLowerCase();
+
         // first try to retrieve from stored
         if(this.has(name)){
             return this.get(name);
@@ -113,6 +117,7 @@ export class ThreeMeshPool implements IMeshPool {
     }
 
     async populateFromClump(clump: RwsClump, name: string): Promise<void> {
+        name = name.toLowerCase();
         const mesh = await this.clumpToThreeMesh(clump, name);
         this.meshCache.set(name, mesh);
     }
@@ -261,13 +266,14 @@ export class ThreeMeshPool implements IMeshPool {
             if(iTex.hasAlpha){
                 threeMaterial.transparent = true;
             }
-            /*if(material.texture.maskName){
-                const iTexMask = texturePool.get(material.texture.maskName);
+            if(material.texture.maskName){
+                console.log('mask', material.texture.maskName, texturePool.has(material.texture.maskName));
+                /*const iTexMask = texturePool.get(material.texture.maskName);
                 if(iTexMask !== texturePool.fallbackTexture){
                     threeMaterial.alphaMap = iTexMask.src;
                     console.log('MASK!', material.texture.maskName, iTexMask);
-                }
-            }*/
+                }*/
+            }
         }
 
         // disable backface-culling

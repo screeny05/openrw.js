@@ -16,6 +16,7 @@ import { ThreeHud } from '@rws/platform-graphics-three/hud';
 
 import './index.scss';
 import { RwsTextureNativePlatformIds, RwsTextureNativeRasterFormat, RwsTextureNativeCompression } from '@rws/library/type/rws';
+import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
 
 interface FileTxdViewerProps {
     node: TreeviewNodeProps;
@@ -77,7 +78,7 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
 
     render(){
         if(!this.state.isLoaded){
-            return <div>loading...</div>;
+            return <MoleculeLoadingScreen title="Parsing TXD..."/>
         }
 
         const entries = this.state.pool.texturePool.getLoadedEntries();

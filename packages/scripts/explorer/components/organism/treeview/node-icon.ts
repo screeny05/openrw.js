@@ -125,7 +125,8 @@ const DatabaseInspectableTypes = [
     PathNodeType.FileDir,
     PathNodeType.FileGxt,
     PathNodeType.FileWaterpro,
-    PathNodeType.FileIfp
+    PathNodeType.FileIfp,
+    PathNodeType.FileCol
 ];
 
 const DatabaseFolders: TypeDatabase = [];

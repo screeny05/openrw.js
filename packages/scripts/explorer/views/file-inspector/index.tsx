@@ -7,6 +7,8 @@ import './index.scss';
 import { BrowserFile } from '@rws/platform-fs-browser/file';
 import { DirEntry } from '@rws/library/type/dir-entry';
 import { ImgIndex } from '@rws/library/index/img';
+import { ColIndex } from '@rws/library/index/col';
+import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
 
 interface FileInspectorState {
     isLoaded: boolean;
@@ -46,11 +48,6 @@ export class FileInspector extends React.Component<FileInspectorProps, FileInspe
             const img: ImgIndex = this.props.node.data.img;
             data = await img.parseEntryAsRws(entry);
         }
-        if(entry && type === PathNodeType.FileIfp){
-            const img: ImgIndex = this.props.node.data.img;
-            const parser = new Corrode().ext.ifp('ifp').map.push('ifp');
-            data = await img.imgFile.parse(parser, entry.offset, entry.offset + entry.size);
-        }
         if(file && type === PathNodeType.FileDir){
             const parser = new Corrode().ext.dir('rws').map.push('rws');
             data = await file.parse(parser);
@@ -74,6 +71,16 @@ export class FileInspector extends React.Component<FileInspectorProps, FileInspe
             const parser = new Corrode().ext.ifp('ifp').map.push('ifp');
             data = await file.parse(parser);
         }
+        if(entry && type === PathNodeType.FileIfp){
+            const img: ImgIndex = this.props.node.data.img;
+            const parser = new Corrode().ext.ifp('ifp').map.push('ifp');
+            data = await img.imgFile.parse(parser, entry.offset, entry.offset + entry.size);
+        }
+        if(file && type === PathNodeType.FileCol){
+            const index = new ColIndex(file, 1);
+            await index.load();
+            data = Array.from(index.colIndex);
+        }
         console.log(data);
 
         this.setState({
@@ -85,7 +92,7 @@ export class FileInspector extends React.Component<FileInspectorProps, FileInspe
 
     render(){
         if(!this.state.isLoaded){
-            return <div>loading...</div>;
+            return <MoleculeLoadingScreen title="Parsing File..."/>
         }
         if(!this.state.data){
             return <div>unsupported type <code>{PathNodeType[guessFileNodeType(this.props.node.name)]}</code></div>;

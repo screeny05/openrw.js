@@ -8,6 +8,7 @@ import { parse as parseGxtValue, Expression, ExpressionType, buildAst, AstNode }
 
 import './index.scss';
 import './gxt-value.scss';
+import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
 
 interface FileGxtViewerProps {
     node: TreeviewNodeProps;
@@ -95,7 +96,7 @@ export class FileGxtViewer extends React.Component<FileGxtViewerProps, FileGxtVi
 
     render(){
         if(!this.state.isLoaded){
-            return <div>loading...</div>;
+            return <MoleculeLoadingScreen title="Parsing GXT..."/>
         }
         if(this.state.entries.length === 0){
             return <div>unable to load gxt</div>;

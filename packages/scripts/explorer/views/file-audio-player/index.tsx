@@ -4,6 +4,7 @@ import { TreeviewNodeProps } from '../../components/molecule/treenode';
 import { SdtEntry } from '@rws/library/type/sdt-entry';
 import { decodeImaAdpcm } from '../../library/decode-ima-adpcm';
 import { OrganismAudioPlayer } from '../../components/organism/audio-player';
+import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
 
 interface FileAudioPlayerProps {
     node: TreeviewNodeProps;
@@ -140,19 +141,31 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
 
     render(){
         if(!this.state.isLoaded){
-            return <div>loading buffer</div>;
+            return <MoleculeLoadingScreen title="Loading Buffer..."/>
         }
         if(!this.state.player){
-            return <div>decoding buffer</div>;
+            return <MoleculeLoadingScreen title="Decoding Buffer..."/>
+        }
+
+        const fileExtensionMatch = this.props.node.name.match(/\.(.*)$/);
+        let audioFormat = 'Unknown';
+
+        if(fileExtensionMatch){
+            audioFormat = fileExtensionMatch[1].toUpperCase();
+        }
+        if(this.state.player.isImaAdpcm){
+            audioFormat = 'IMA-ADPCM';
+        }
+        if(this.props.node.data.sdt){
+            audioFormat = 'PCM (from SDT)';
         }
 
         return (
             <div>
                 <OrganismAudioPlayer player={this.state.player} autoplay/>
-                {this.state.player.isImaAdpcm ? 'IMA-APDCM' : this.props.node.data.sdt ? 'SDT' : 'Regular File'}
-                {this.state.player.audioBuffer.numberOfChannels}
+                {audioFormat}
+                {', ' + this.state.player.audioBuffer.numberOfChannels + ' '}
                 Channel{this.state.player.audioBuffer.numberOfChannels > 1 ? 's' : ''}
-                {this.props.node.name}
             </div>
         );
     }
