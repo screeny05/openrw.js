@@ -1,5 +1,5 @@
 import * as GoldenLayoutType from 'golden-layout';
-import $ from 'jQuery';
+import $ from 'jquery';
 import { RwsStructPool } from '@rws/library/rws-struct-pool';
 import { FileComponentProps } from '../..';
 import { ThreeTexturePool } from '@rws/platform-graphics-three/texture-pool';

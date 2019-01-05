@@ -1,7 +1,6 @@
 import { ICamera } from "@rws/platform/graphic";
 import { ThreeObject3d } from "./object3d";
-import { PerspectiveCamera, Quaternion, Vector3 } from "three";
-import { ThreeQuat } from "@rws/platform-graphics-three/quat";
+import { PerspectiveCamera } from "three";
 
 export class ThreeCamera extends ThreeObject3d implements ICamera {
     src: PerspectiveCamera;

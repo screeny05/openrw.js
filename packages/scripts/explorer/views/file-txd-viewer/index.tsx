@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { TreeviewNodeProps } from '../../components/molecule/treenode';
 import { BrowserFileIndex } from '@rws/platform-fs-browser/file-index';
-import { BrowserFile } from '@rws/platform-fs-browser/';
+import { BrowserFile } from '@rws/platform-fs-browser';
 import { DirEntry } from '@rws/library/type/dir-entry';
 import { ImgIndex } from '@rws/library/index/img';
 import { RwsStructPool } from '@rws/library/rws-struct-pool';
 import { ThreeTexturePool } from '@rws/platform-graphics-three/texture-pool';
 import { ThreeMeshPool } from '@rws/platform-graphics-three/mesh-pool';
 import bind from 'bind-decorator';
-import { BrowserLoop } from '@rws/platform-loop-browser/';
+import { BrowserLoop } from '@rws/platform-loop-browser';
 import { ThreeHudElement } from '@rws/platform-graphics-three/hud-element';
 import { ThreeTexture } from '@rws/platform-graphics-three/texture';
 import { WebGLRenderer } from '@rws/platform-graphics-three/node_modules/three';

@@ -13,27 +13,31 @@ export interface IfpAnim {
     countFrames: number;
     next: number;
     prev: number;
-    data: (IfpKR00|IfpKRT0|IfpKRTS)[];
+    data: (IfpKR00|IfpKRT0|IfpKRTS);
 }
 
-export interface IfpKeyframeRotation {
+export interface IfpKeyframeBase {
+    time: number;
+}
+
+export interface IfpKeyframeRotation extends IfpKeyframeBase {
     rotation: vec4;
     time: number;
 }
 export type IfpKR00 = IfpKFRM<'R00', IfpKeyframeRotation>;
 
-export interface IfpKeyframeRotationTranslation {
+export interface IfpKeyframeRotationTranslation extends IfpKeyframeBase {
     rotation: vec4;
     translation: vec3;
 }
 export type IfpKRT0 = IfpKFRM<'RT0', IfpKeyframeRotationTranslation>;
 
-export interface IfpKeyframeRotationTranslationScale {
+export interface IfpKeyframeRotationTranslationScale extends IfpKeyframeBase {
     rotation: vec4;
     translation: vec3;
     scale: vec3;
 }
-export type IfpKRTS = IfpKFRM<'RTS', IfpKeyframeRotationTranslation>;
+export type IfpKRTS = IfpKFRM<'RTS', IfpKeyframeRotationTranslationScale>;
 
 export interface IfpKFRM<K = string, T = any> {
     type: K;

@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { FixedSizeList as List } from 'react-window';
+import bind from 'bind-decorator';
 import { AtomGlContainerConsumer } from '../../atom/gl-container-consumer';
+import './index.scss';
 
 interface Selectable {
     name: string;
@@ -8,45 +10,77 @@ interface Selectable {
 
 interface Props {
     glContainer: any;
-    width: string|number;
+    width?: string|number;
     heightAdd?: number;
     items: Selectable[];
+    selected?: Selectable;
     onSelect: (item: Selectable) => void;
 }
 
-interface State {
+interface InnerProps {
+    width: string|number;
+    height: number;
+    heightAdd: number;
+    items: Selectable[];
     selected?: Selectable;
+    onItemClick: (item: Selectable) => void;
 }
 
-export class MoleculeSelectList extends React.Component<Props, State> {
-    state: State = {};
-
+export class MoleculeSelectListInner extends React.PureComponent<InnerProps> {
     render(){
         return (
-            <ul style={{
-            }} className="menu vertical">
-                <AtomGlContainerConsumer glContainer={this.props.glContainer}>
-                    {({ height }) => (
-                        <List width={this.props.width} height={height + (this.props.heightAdd || 0)} itemCount={this.props.items.length} itemSize={39}>
-                            {({ index, style }) => {
-                                const item = this.props.items[index];
-                                return (
-                                    <li style={style} className={this.state.selected === item ? 'is-active' : ''}>
-                                        <a href="#" onClick={this.onItemClick.bind(this, item)}>{item.name}</a>
-                                    </li>
-                                );
-                            }}
-                        </List>
-                    )}
-                </AtomGlContainerConsumer>
+            <List
+                width={this.props.width}
+                height={this.props.height + this.props.heightAdd}
+                itemCount={this.props.items.length}
+                itemSize={25}
+            >
+                {({ index, style }) => {
+                    /* may be turned into purecomponent, so we don't re-render all items on scroll */
+                    const item = this.props.items[index];
+                    return (
+                        <li style={style} className={item === this.props.selected ? 'is-active' : ''}>
+                            <a href="#" className="select-list__link" onClick={this.onItemClick.bind(this, item, index)}>{item.name}</a>
+                        </li>
+                    );
+                }}
+            </List>
+        );
+    }
 
+    onItemClick(item: Selectable, activeIndex: number, e: React.MouseEvent){
+        e.preventDefault();
+        this.setState({ activeIndex });
+        this.props.onItemClick(item);
+    }
+}
+
+export class MoleculeSelectList extends React.PureComponent<Props> {
+    render(){
+        return (
+            <ul className="menu vertical">
+                <AtomGlContainerConsumer glContainer={this.props.glContainer}>
+                    {this.getSelectInner}
+                </AtomGlContainerConsumer>
             </ul>
         );
     }
 
-    onItemClick(item: Selectable, e: React.MouseEvent): void {
-        e.preventDefault();
+    @bind
+    onItemClick(item: Selectable): void {
         this.props.onSelect(item);
-        this.setState({ selected: item });
+    }
+
+    @bind
+    /** Gets passed to GlConsumer as bound function to prevent recreation of ListInner on render */
+    getSelectInner({ height }){
+        return <MoleculeSelectListInner
+            width={this.props.width || '100%'}
+            height={height}
+            heightAdd={this.props.heightAdd || 0}
+            items={this.props.items}
+            onItemClick={this.onItemClick}
+            selected={this.props.selected}
+        />;
     }
 }

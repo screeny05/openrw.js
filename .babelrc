@@ -1,25 +1,14 @@
 {
+    "presets": [
+        ["@babel/preset-env", {
+            "targets": "last 2 chrome versions, last 2 firefox versions"
+        }]
+    ],
     "plugins": [
         ["module-resolver", {
             "root": ["."],
             "alias": {
-                "@rws/game": "./packages/game",
-                "@rws/library": "./packages/library",
-                "@rws/platform": "./packages/platform",
-                "@rws/resources": "./packages/resources",
-                "@rws/logger": "./packages/logger",
-                "@rws/game-browser": "./packages/game-browser",
-                "@rws/game-native": "./packages/game-native",
-                "@rws/platform-config-browser": "./packages/platform-config-browser",
-                "@rws/platform-config-node": "./packages/platform-config-node",
-                "@rws/platform-control-browser": "./packages/platform-control-browser",
-                "@rws/platform-control-glfw": "./packages/platform-control-glfw",
-                "@rws/platform-fs-browser": "./packages/platform-fs-browser",
-                "@rws/platform-fs-node": "./packages/platform-fs-node",
-                "@rws/platform-graphics-gles2": "./packages/platform-graphics-gles2",
-                "@rws/platform-graphics-three": "./packages/platform-graphics-three",
-                "@rws/platform-loop-browser": "./packages/platform-loop-browser",
-                "@rws/platform-loop-lwngl": "./packages/platform-loop-lwngl"
+                "^@rws/(.+)": "./packages/\\1"
             }
         }]
     ]

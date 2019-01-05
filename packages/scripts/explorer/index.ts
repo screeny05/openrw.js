@@ -15,11 +15,9 @@ window.ReactDOM = ReactDOM;
 import * as React from 'react';
 window.React = React;
 
-import _GoldenLayout from 'golden-layout';
+import GoldenLayout from 'golden-layout';
 import 'golden-layout/src/css/goldenlayout-base.css';
 import 'golden-layout/src/css/goldenlayout-dark-theme.css';
-import * as GoldenLayoutType from 'golden-layout';
-const GoldenLayout: typeof GoldenLayoutType = _GoldenLayout;
 
 import 'setimmediate';
 import 'regenerator-runtime/runtime';
@@ -61,7 +59,7 @@ export interface FileComponentProps {
     index: BrowserFileIndex;
 }
 
-const getComponentConfig = (component: string, title: string, props: FileComponentProps, isReact: boolean): GoldenLayoutType.ReactComponentConfig|GoldenLayoutType.ComponentConfig => {
+const getComponentConfig = (component: string, title: string, props: FileComponentProps, isReact: boolean): GoldenLayout.ReactComponentConfig|GoldenLayout.ComponentConfig => {
     if(isReact){
         return {
             type: 'react-component',
@@ -180,7 +178,7 @@ const initializeOnFiles = async (files: File[]) => {
     const index = new BrowserFileIndex(files);
     await index.load();
 
-    const workingStackDefault: GoldenLayoutType.ContentItem = <any>content.createContentItem({
+    const workingStackDefault: GoldenLayout.ContentItem = <any>content.createContentItem({
         type: 'component',
         componentName: 'working-stack-background',
         id: 'working-stack-default',
@@ -191,7 +189,7 @@ const initializeOnFiles = async (files: File[]) => {
     content.root.getItemsById('initial-file-picker')[0].remove();
 
     const oldWorkspace = content.root.getItemsById('workspace')[0];
-    const newWorkspace: GoldenLayoutType.ContentItem = <any>content.createContentItem({
+    const newWorkspace: GoldenLayout.ContentItem = <any>content.createContentItem({
         type: 'row',
         id: 'workspace'
     });
@@ -240,7 +238,7 @@ const content = new GoldenLayout({
     settings: {
         showPopoutIcon: false,
     },
-}, $content);
+}, $content!);
 
 content.registerComponent('treeview', Treeview);
 content.registerComponent('filetree', Filetree);
@@ -256,13 +254,14 @@ content.registerComponent('file-waterpro-viewer', FileWaterproViewer);
 content.registerComponent('file-animation-viewer', FileAnimationViewer);
 content.registerComponent('console', Console);
 content.registerComponent('welcome-screen', WelcomeScreen);
-content.registerComponent('working-stack-background', (container: GoldenLayoutType.Container) => {
+content.registerComponent('working-stack-background', (container: GoldenLayout.Container) => {
     container.on('tab', () => container.tab.element.hide());
 });
 content.init();
 
 ReactDOM.render(React.createElement(Toolbar), $toolbar);
 
-module.hot.dispose(function(){
-    content.destroy();
-});
+if(module.hot){
+    /* hmr is sadly restricted to reloading the content due to GL */
+    module.hot.dispose(() => content.destroy());
+}
