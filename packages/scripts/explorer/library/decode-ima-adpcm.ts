@@ -1,4 +1,5 @@
 import WaveFileType from 'wavefile';
+import { uint8ToInt16, int16ToFloat, clamp, clampInt16 } from './math';
 const WaveFile: typeof WaveFileType = require('wavefile/dist/wavefile.umd.js');
 
 const WAV_FORMAT_IMA = 17;
@@ -39,17 +40,6 @@ const IndexTable: number[] = [
     -1, -1, -1, -1, 2, 4, 6, 8,
     -1, -1, -1, -1, 2, 4, 6, 8,
 ];
-
-const MAX_INT16 = 32767;
-const MIN_INT16 = -32768;
-const COUNT_VALUES_UINT16 = 65536;
-
-const clamp = (val: number, min: number, max: number) => Math.min(Math.max(val, min), max);
-const clampInt16 = (val: number) => clamp(val, MIN_INT16, MAX_INT16);
-const signInt16 = (val: number) => val >= MAX_INT16 ? val - COUNT_VALUES_UINT16 : val;
-const uint8ToInt16 = (low: number, high: number) => signInt16(low | (high << 8));
-const int16ToFloat = (int16: number): number => int16 / MAX_INT16;
-
 
 export const decodeImaAdpcm = (ctx: AudioContext, buffer: ArrayBuffer): AudioBuffer => {
     const wav = new WaveFile(new Uint8Array(buffer));

@@ -1,9 +1,10 @@
 import * as React from 'react';
-import { AudioPlayer } from 'packages/scripts/explorer/views/file-audio-player';
+import { AudioControls } from 'packages/scripts/explorer/views/file-audio-player';
 import { bind } from 'bind-decorator';
+import { MoleculePlayerControls } from '../../molecule/player-controls';
 
 interface Props {
-    player: AudioPlayer;
+    controls: AudioControls;
     autoplay?: boolean;
 }
 
@@ -19,43 +20,45 @@ export class OrganismAudioPlayer extends React.Component<Props, State> {
     }
 
     componentDidMount(){
-        this.props.player.onProgressCb = elapsed => this.setState({ elapsed });
+        this.props.controls.onProgress = elapsed => this.setState({ elapsed });
 
         // replace with statechange event
-        this.props.player.onEndedCb = () => this.setState({ isPlaying: false });
+        this.props.controls.onStopped = () => this.setState({ isPlaying: false });
         if(this.props.autoplay){
-            this.props.player.play();
+            this.props.controls.play();
             this.setState({ isPlaying: true });
         }
     }
 
     componentWillUnmount(){
-        this.props.player.onProgressCb = undefined;
-        this.props.player.onEndedCb = undefined;
+        this.props.controls.stop();
+        this.props.controls.onProgress = undefined;
+        this.props.controls.onStopped = undefined;
     }
 
     render(){
         return (
-            <div className="player">
-                <div className="player__elapsed">{this.formatDuration(this.state.elapsed)}</div>
-                <div className="player__runtime">{this.formatDuration(this.props.player.duration)}</div>
-                <progress className="player__progress" value={this.state.elapsed} max={this.props.player.duration}/>
-                <button className="player__play-pause" onClick={this.onClickPlayPause}>{this.state.isPlaying ? '||' : '>'}</button>
-            </div>
+            <MoleculePlayerControls
+                elapsed={this.state.elapsed}
+                duration={this.props.controls.player.duration}
+                isPlaying={this.state.isPlaying}
+                onClickPlayPause={this.onClickPlayPause}
+                onScrobble={this.onControlsScrobble}/>
         );
     }
 
-    formatDuration(seconds: number): string {
-        return Math.floor(seconds / 60) + ':' + Math.floor(seconds % 60).toString().padStart(2, '0');
+    @bind
+    onClickPlayPause(): void {
+        if(this.state.isPlaying){
+            this.props.controls.pause();
+        } else {
+            this.props.controls.play();
+        }
+        this.setState({ isPlaying: !this.state.isPlaying });
     }
 
     @bind
-    onClickPlayPause(){
-        if(this.state.isPlaying){
-            this.props.player.pause();
-        } else {
-            this.props.player.play();
-        }
-        this.setState({ isPlaying: !this.state.isPlaying });
+    onControlsScrobble(value: number): void {
+        this.props.controls.scrobble(value);
     }
 }

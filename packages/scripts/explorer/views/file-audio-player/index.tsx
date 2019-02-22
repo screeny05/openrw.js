@@ -5,6 +5,8 @@ import { SdtEntry } from '@rws/library/type/sdt-entry';
 import { decodeImaAdpcm } from '../../library/decode-ima-adpcm';
 import { OrganismAudioPlayer } from '../../components/organism/audio-player';
 import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
+import { clamp } from '../../library/math';
+import bind from 'bind-decorator';
 
 interface FileAudioPlayerProps {
     node: TreeviewNodeProps;
@@ -13,38 +15,47 @@ interface FileAudioPlayerProps {
 
 interface FileAudioPlayerState {
     isLoaded: boolean;
-    player?: AudioPlayer;
+    player?: BrowserAudioPlayer;
+    controls?: AudioControls;
 }
 
-export class AudioPlayer {
-    isImaAdpcm: boolean = false;
-    ctx: AudioContext;
+interface IAudioPlayer {
+    duration: number;
+    currentPosition: number;
+    isPlaying: boolean;
+    start(at?: number): void;
+    stop(): void;
+    sendCurrentPosition(): void;
+    onProgress?: (currentPosition: number) => void;
+    onStopped?: () => void;
+}
+
+class BrowserAudioPlayer implements IAudioPlayer {
+    meta = { isImaAdpcm: false };
+    ctx: AudioContext = new AudioContext();
     src?: AudioBufferSourceNode;
     audioBuffer: AudioBuffer;
     startTime: number = 0;
     isPlaying: boolean = false;
-    hasEnded: boolean = true;
-    isPaused: boolean = false;
-    elapsedAtPause: number = 0;
+    sendProgressIntervalId = setInterval(this.sendCurrentPosition, 100);
+    onProgress?: (currentPosition: number) => void;
+    onStopped?: () => void;
 
-    onProgressCb?: (elapsed: number) => void;
-    onEndedCb?: () => void;
+    get duration(): number {
+        return this.audioBuffer.duration;
+    }
 
-    private progressIntervalId?: NodeJS.Timer;
-
-    constructor(){
-        this.ctx = new AudioContext();
+    get currentPosition(): number {
+        return clamp(this.ctx.currentTime - this.startTime, 0, this.duration);
     }
 
     async decode(buffer: ArrayBuffer, isWav: boolean, sdt?: SdtEntry){
-        this.src = this.ctx.createBufferSource();
-
         if(sdt){
             this.audioBuffer = pcmToAudioBuffer(this.ctx, buffer, sdt.samples);
         } else if(isWav){
             try {
                 this.audioBuffer = decodeImaAdpcm(this.ctx, buffer);
-                this.isImaAdpcm = true;
+                this.meta.isImaAdpcm = true;
             } catch(e){}
         }
         if(!this.audioBuffer) {
@@ -52,66 +63,102 @@ export class AudioPlayer {
         }
     }
 
-    get duration(): number {
-        return this.audioBuffer.duration;
-    }
+    start(at: number = 0): void {
+        // if another src is currently playing, stop it without sending events
+        // as we did not _stop_ the playback, we just moved the position
+        if(this.src){
+            this.src.removeEventListener('ended', this.handleEndedEvent);
+            this.src.stop();
+        }
 
-    get currentElapsed(): number {
-        return this.isPlaying ? this.ctx.currentTime - this.startTime : this.elapsedAtPause;
-    }
-
-    play(){
+        // setup new src
         this.src = this.ctx.createBufferSource();
         this.src.buffer = this.audioBuffer;
         this.src.connect(this.ctx.destination);
-
-        if(this.hasEnded){
-            this.src.start();
-            this.startTime = this.ctx.currentTime;
-        } else {
-            this.src.start(0, this.currentElapsed);
-            this.startTime = this.ctx.currentTime - this.currentElapsed;
-        }
-        this.hasEnded = false;
-        this.isPaused = false;
-
-        this.playbackStarting();
-        this.src.addEventListener('ended', () => {
-            this.playbackStopping();
-            if(!this.isPaused){
-                this.hasEnded = true;
-            }
-        });
+        this.src.start(0, at);
+        this.src.addEventListener('ended', this.handleEndedEvent);
+        this.startTime = this.ctx.currentTime - at;
+        this.isPlaying = true;
     }
 
-    pause(){
+    stop(): void {
         if(!this.src){
             return;
         }
-        this.elapsedAtPause = this.currentElapsed;
-        this.isPaused = true;
-
         this.src.stop();
-        this.playbackStopping();
+        this.src = undefined;
     }
 
-    private playbackStarting(){
-        this.isPlaying = true;
-        this.progressIntervalId = setInterval(() => {
-            if(typeof this.onProgressCb !== 'function'){
-                return;
-            }
-            this.onProgressCb(this.currentElapsed);
-        }, 100);
-    }
-
-    private playbackStopping(){
-        this.isPlaying = false;
-        if(this.progressIntervalId){
-            clearInterval(this.progressIntervalId);
+    @bind
+    sendCurrentPosition(){
+        if(this.isPlaying && typeof this.onProgress === 'function'){
+            this.onProgress(this.currentPosition);
         }
-        if(typeof this.onEndedCb === 'function'){
-            this.onEndedCb();
+    }
+
+    @bind
+    private handleEndedEvent(){
+        this.isPlaying = false;
+        if(typeof this.onStopped === 'function'){
+            this.onStopped();
+        }
+    }
+}
+
+export class AudioControls {
+    player: IAudioPlayer;
+    resumeAt: number = 0;
+    onProgress?: (currentPosition: number) => void;
+    onStopped?: () => void;
+
+    constructor(player: IAudioPlayer){
+        this.player = player;
+        this.player.onStopped = this.handlePlayerStoppedEvent;
+        this.player.onProgress = this.triggerProgressEvent;
+    }
+
+    play(){
+        this.player.start(this.resumeAt);
+    }
+
+    pause(){
+        this.resumeAt = this.player.currentPosition;
+        this.player.stop();
+    }
+
+    stop(){
+        this.resumeAt = 0;
+        this.player.stop();
+    }
+
+    scrobble(position: number){
+        if(this.player.isPlaying){
+            this.player.start(position);
+        } else {
+            this.resumeAt = position;
+        }
+        this.triggerProgressEvent(position);
+    }
+
+    @bind
+    handlePlayerStoppedEvent(){
+        // reset if the audio really ended
+        if(this.player.currentPosition >= this.player.duration){
+            this.resumeAt = 0;
+        }
+        this.triggerStoppedEvent();
+    }
+
+    triggerStoppedEvent(){
+        if(this.onStopped){
+            this.onStopped();
+        }
+    }
+
+    @bind
+    triggerProgressEvent(position: number){
+        if(this.onProgress){
+            this.onProgress(position);
         }
     }
 }
@@ -134,16 +181,17 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
         if(!buffer){
             return;
         }
-        const player = new AudioPlayer();
+        const player = new BrowserAudioPlayer();
+        const controls = new AudioControls(player);
         await player.decode(buffer, this.props.node.name.toLowerCase().endsWith('.wav'), this.props.node.data.sdt);
-        this.setState({ player });
+        this.setState({ player, controls });
     }
 
     render(){
         if(!this.state.isLoaded){
             return <MoleculeLoadingScreen title="Loading Buffer..."/>
         }
-        if(!this.state.player){
+        if(!this.state.controls || !this.state.player){
             return <MoleculeLoadingScreen title="Decoding Buffer..."/>
         }
 
@@ -153,7 +201,7 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
         if(fileExtensionMatch){
             audioFormat = fileExtensionMatch[1].toUpperCase();
         }
-        if(this.state.player.isImaAdpcm){
+        if(this.state.player.meta.isImaAdpcm){
             audioFormat = 'IMA-ADPCM';
         }
         if(this.props.node.data.sdt){
@@ -162,10 +210,12 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
 
         return (
             <div>
-                <OrganismAudioPlayer player={this.state.player} autoplay/>
                 {audioFormat}
                 {', ' + this.state.player.audioBuffer.numberOfChannels + ' '}
                 Channel{this.state.player.audioBuffer.numberOfChannels > 1 ? 's' : ''}
+                <div style={{ position: 'absolute', bottom: 0, width: '100%' }}>
+                    <OrganismAudioPlayer controls={this.state.controls} autoplay/>
+                </div>
             </div>
         );
     }

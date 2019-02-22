@@ -1,0 +1,65 @@
+@import '../../../library/variables';
+
+$progress-bar-size: 4px;
+$progress-bar-knob-size: 16px;
+
+.progress-bar {
+    cursor: pointer;
+    user-select: none;
+}
+
+.progress-bar--horizontal { padding: 0 $progress-bar-knob-size / 2; }
+.progress-bar--vertical {
+    padding: $progress-bar-knob-size / 2 0;
+    height: 100%;
+}
+
+.progress-bar__inner {
+    position: relative;
+
+    .progress-bar--horizontal & { padding: $progress-bar-knob-size / 2 0; }
+    .progress-bar--vertical & {
+        padding: 0 $progress-bar-knob-size / 2;
+        height: 100%;
+    }
+}
+
+.progress-bar__bar,
+.progress-bar__fill {
+    border-radius: $progress-bar-size;
+    .progress-bar--horizontal & { height: $progress-bar-size; }
+    .progress-bar--vertical & { width: $progress-bar-size; }
+}
+
+.progress-bar__bar {
+    background: $color-panel-background;
+    .progress-bar--horizontal & { width: 100%; }
+    .progress-bar--vertical & { height: 100%; }
+}
+
+.progress-bar__fill {
+    position: relative;
+    background: $color-primary;
+    .progress-bar--horizontal & { margin-top: -$progress-bar-size; }
+    .progress-bar--vertical & {
+        position: absolute;
+        bottom: 0;
+    }
+}
+
+.progress-bar__knob {
+    position: absolute;
+    width: $progress-bar-knob-size;
+    height: $progress-bar-knob-size;
+    background: $color-primary;
+    border-radius: $progress-bar-knob-size;
+
+    .progress-bar--horizontal & {
+        right: $progress-bar-knob-size / -2;
+        top: $progress-bar-size / 2 - $progress-bar-knob-size / 2;
+    }
+    .progress-bar--vertical & {
+        right: $progress-bar-size / 2 - $progress-bar-knob-size / 2;
+        top: $progress-bar-knob-size / -2;
+    }
+}

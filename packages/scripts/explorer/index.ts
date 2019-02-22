@@ -50,7 +50,6 @@ import { BufferBuilder } from './library/buffer-builder';
 import { FileWaterproViewer } from './views/file-waterpro-viewer';
 import { FileAnimationViewer } from './views/file-animation-viewer';
 
-
 const $toolbar = document.querySelector('.js--toolbar');
 const $content = document.querySelector('.js--content');
 

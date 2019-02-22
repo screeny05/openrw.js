@@ -1,6 +1,8 @@
+@import '../../../library/variables';
+
 .contextmenu {
     position: absolute;
-    background: #222222;
+    background: $color-panel-background;
     border: 1px solid #000;
     box-shadow: 0px 5px 8px -2px #00000082;
     z-index: 1;
@@ -18,6 +20,6 @@
 .contextmenu__item:not(.contextmenu__item--disabled) {
     cursor: pointer;
     &:hover {
-        background: #1779ba;
+        background: $color-primary;
     }
 }

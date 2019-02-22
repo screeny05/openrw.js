@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "author": "Sebastian Langer <sl@scn.cx>",
   "license": "GPL-3.0",
+  "scripts": {
+    "explorer": "parcel packages/scripts/explorer/index.html"
+  },
   "devDependencies": {
     "@types/gl-matrix": "^2.4.0",
     "@types/lodash": "^4.14.116",
@@ -14,13 +17,15 @@
     "@types/throttle-debounce": "^1.0.0",
     "babel-core": "^6.26.3",
     "babel-plugin-module-resolver": "^3.1.1",
-    "typescript": "^2.8.3"
+    "typescript": "^2.8.3",
+    "parcel": "^1.11.0"
   },
   "dependencies": {
     "corrode": "^1.0.4",
     "deep-eql": "^3.0.1",
     "filereader-stream": "^1.0.0",
     "lodash": "^4.17.10",
+    "material-design-icons": "^3.0.1",
     "p-queue": "^2.4.2",
     "packages": "0.0.8",
     "readable-stream": "^2.3.3",

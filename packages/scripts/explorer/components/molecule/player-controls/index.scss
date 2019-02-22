@@ -1,0 +1,23 @@
+@import '../../../library/variables';
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    background: #131212;
+    padding: 10px;
+}
+
+.player-controls__progress {
+    flex: 1;
+    padding: 0 10px;
+}
+
+.player-controls__speed-bar {
+    height: 200px;
+    position: absolute;
+    bottom: 100%;
+    background: #131212;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    padding: 5px;
+}
