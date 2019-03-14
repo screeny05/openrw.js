@@ -253,7 +253,7 @@ content.registerComponent('file-waterpro-viewer', FileWaterproViewer);
 content.registerComponent('file-animation-viewer', FileAnimationViewer);
 content.registerComponent('console', Console);
 content.registerComponent('welcome-screen', WelcomeScreen);
-content.registerComponent('working-stack-background', (container: GoldenLayout.Container) => {
+content.registerComponent('working-stack-background', function(container: GoldenLayout.Container){
     container.on('tab', () => container.tab.element.hide());
 });
 content.init();

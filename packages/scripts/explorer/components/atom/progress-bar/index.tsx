@@ -11,8 +11,8 @@ export enum ProgressBarDirection {
 interface Props {
     min?: number;
     max: number;
+    steps?: number[];
     value: number;
-    className?: string;
     onMoveKnob?: (value: number) => void;
     direction?: ProgressBarDirection;
 }
@@ -42,7 +42,7 @@ export class AtomProgressBar extends React.PureComponent<Props, State> {
         const { rangePercentage } = this.getComputedProps();
 
         return (
-            <div className={`progress-bar ${this.props.className} progress-bar--${this.isHorizontal ? 'horizontal' : 'vertical'}`}>
+            <div className={`progress-bar progress-bar--${this.isHorizontal ? 'horizontal' : 'vertical'}`}>
                 <div className="progress-bar__inner" onMouseDown={this.onMouseDown} ref={this.progressBarRef}>
                     <div className="progress-bar__bar"></div>
                     <div className="progress-bar__fill" style={{ [this.isHorizontal ? 'width' : 'height']: `${rangePercentage}%` }}>
@@ -58,10 +58,11 @@ export class AtomProgressBar extends React.PureComponent<Props, State> {
         const min = propMin <= this.props.max ? propMin : this.props.max;
         const max = this.props.max >= propMin ? this.props.max : propMin;
         const range = max - min;
-        const rangeValue = this.props.value - min;
-        const rangePercentage = rangeValue / range * 100;
+        const clampedValue = clamp(this.props.value, min, max);
+        const valueInRange = clampedValue - min;
+        const rangePercentage = valueInRange / range * 100;
 
-        return { min, max, range, rangeValue, rangePercentage };
+        return { min, max, range, rangeValue: valueInRange, rangePercentage };
     }
 
     get isHorizontal(): boolean {
@@ -74,7 +75,8 @@ export class AtomProgressBar extends React.PureComponent<Props, State> {
             return;
         }
         const value = this.getValueByAbsolutePosition(e.clientX, e.clientY);
-        this.sendKnobMove(value);
+        const closestValue = this.getClosestStepValue(value);
+        this.sendKnobMove(closestValue);
         this.setState({ isMouseDown: true });
     }
 
@@ -92,19 +94,38 @@ export class AtomProgressBar extends React.PureComponent<Props, State> {
             return;
         }
         const value = this.getValueByAbsolutePosition(e.clientX, e.clientY);
-        this.sendKnobMove(value);
+        const closestValue = this.getClosestStepValue(value);
+
+        this.sendKnobMove(closestValue);
+    }
+
+    getClosestStepValue(value: number): number {
+        if(!this.props.steps){
+            return value;
+        }
+        return this.props.steps.sort((a, b) => Math.abs(value - a) - Math.abs(value - b))[0];
     }
 
     getValueByAbsolutePosition(x: number, y: number): number {
-        const { min, max, range } = this.getComputedProps();
-        const { top, left, width, height } = this.getProgressBarBounds();
+        const { top, left, height } = this.getProgressBarBounds();
         x = x - left;
         y = y - top;
+        return this.relativePositionToValue(this.isHorizontal ? x : height - y);
+    }
 
-        const position = this.isHorizontal ? x : height - y;
+    relativePositionToValue(position: number): number {
+        const { min, max, range } = this.getComputedProps();
+        const { width, height } = this.getProgressBarBounds();
         const positionPercentage = position / (this.isHorizontal ? width : height);
         const value = min + range * positionPercentage;
         return clamp(value, min, max);
+    }
+
+    valueToRelativePosition(value: number): number {
+        const { min, range } = this.getComputedProps();
+        const { width, height } = this.getProgressBarBounds();
+        const valuePercentage = (value - min) / range;
+        return this.isHorizontal ? width * valuePercentage : height * valuePercentage;
     }
 
     getProgressBarBounds(): ClientRect {

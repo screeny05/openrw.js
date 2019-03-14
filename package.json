@@ -7,6 +7,7 @@
     "explorer": "parcel packages/scripts/explorer/index.html"
   },
   "devDependencies": {
+    "@svgr/parcel-plugin-svgr": "^4.1.0",
     "@types/gl-matrix": "^2.4.0",
     "@types/lodash": "^4.14.116",
     "@types/lodash.chunk": "^4.2.4",
@@ -17,8 +18,9 @@
     "@types/throttle-debounce": "^1.0.0",
     "babel-core": "^6.26.3",
     "babel-plugin-module-resolver": "^3.1.1",
-    "typescript": "^2.8.3",
-    "parcel": "^1.11.0"
+    "parcel": "^1.11.0",
+    "parcel-bundler": "^1.11.0",
+    "typescript": "^2.8.3"
   },
   "dependencies": {
     "corrode": "^1.0.4",

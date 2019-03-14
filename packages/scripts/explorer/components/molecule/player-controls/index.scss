@@ -5,11 +5,29 @@
     align-items: center;
     background: #131212;
     padding: 10px;
+
+    > :first-child {
+        margin-left: 0;
+    }
+
+    > :last-child {
+        margin-right: 0;
+    }
 }
 
 .player-controls__progress {
     flex: 1;
-    padding: 0 10px;
+}
+
+.player-controls__button {
+    color: #fff;
+    margin: 0 5px;
+
+    > * { vertical-align: middle; }
+}
+
+.player-controls__label {
+    margin: 0 10px;
 }
 
 .player-controls__speed-bar {
@@ -19,5 +37,5 @@
     background: #131212;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
-    padding: 5px;
+    padding: 6px;
 }

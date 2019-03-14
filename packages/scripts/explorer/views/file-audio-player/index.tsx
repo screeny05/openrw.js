@@ -209,11 +209,11 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
         }
 
         return (
-            <div>
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
                 {audioFormat}
                 {', ' + this.state.player.audioBuffer.numberOfChannels + ' '}
                 Channel{this.state.player.audioBuffer.numberOfChannels > 1 ? 's' : ''}
-                <div style={{ position: 'absolute', bottom: 0, width: '100%' }}>
+                <div style={{ marginTop: 'auto' }}>
                     <OrganismAudioPlayer controls={this.state.controls} autoplay/>
                 </div>
             </div>

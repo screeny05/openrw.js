@@ -1,7 +1,7 @@
 import Corrode from 'corrode';
 import { IfpHeader } from './header';
 import { IfpInfo } from './info';
-import { vec3, vec4 } from 'gl-matrix';
+import { vec3, vec4, quat } from 'gl-matrix';
 
 export interface IfpTAnimation {
     name: string;
@@ -21,19 +21,19 @@ export interface IfpKeyframeBase {
 }
 
 export interface IfpKeyframeRotation extends IfpKeyframeBase {
-    rotation: vec4;
+    rotation: quat;
     time: number;
 }
 export type IfpKR00 = IfpKFRM<'R00', IfpKeyframeRotation>;
 
 export interface IfpKeyframeRotationTranslation extends IfpKeyframeBase {
-    rotation: vec4;
+    rotation: quat;
     translation: vec3;
 }
 export type IfpKRT0 = IfpKFRM<'RT0', IfpKeyframeRotationTranslation>;
 
 export interface IfpKeyframeRotationTranslationScale extends IfpKeyframeBase {
-    rotation: vec4;
+    rotation: quat;
     translation: vec3;
     scale: vec3;
 }
