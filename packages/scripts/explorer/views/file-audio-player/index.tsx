@@ -98,6 +98,7 @@ class BrowserAudioPlayer implements IAudioPlayer {
 
     @bind
     private handleEndedEvent(){
+        this.sendCurrentPosition();
         this.isPlaying = false;
         if(typeof this.onStopped === 'function'){
             this.onStopped();
@@ -183,7 +184,7 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
         }
         const player = new BrowserAudioPlayer();
         const controls = new AudioControls(player);
-        await player.decode(buffer, this.props.node.name.toLowerCase().endsWith('.wav'), this.props.node.data.sdt);
+        await player.decode(buffer, this.props.node.name.toLowerCase().endsWith('.wav'), this.props.node.data.sdtEntry);
         this.setState({ player, controls });
     }
 
@@ -204,7 +205,7 @@ export class FileAudioPlayer extends React.Component<FileAudioPlayerProps, FileA
         if(this.state.player.meta.isImaAdpcm){
             audioFormat = 'IMA-ADPCM';
         }
-        if(this.props.node.data.sdt){
+        if(this.props.node.data.sdtEntry){
             audioFormat = 'PCM (from SDT)';
         }
 
