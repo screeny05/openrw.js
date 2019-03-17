@@ -16,7 +16,12 @@ import { BrowserInput } from '@rws/platform-control-browser/index';
 import { InputControlMapper, defaultMap } from '@rws/platform/control';
 import { MeshBasicMaterial, Mesh } from 'three';
 
-export async function FileDffViewer(container: GoldenLayoutType.Container, props: FileComponentProps): Promise<void> {
+/* Workaround, as async functions cannot be used as constructors (done by GL) */
+export function FileDffViewer(container: GoldenLayoutType.Container, props: FileComponentProps): void {
+    _FileDffViewer(container, props);
+}
+
+export async function _FileDffViewer(container: GoldenLayoutType.Container, props: FileComponentProps): Promise<void> {
     const $canvas = $('<canvas>');
     container.getElement().append($canvas);
     $canvas.get(0).tabIndex = 0;
