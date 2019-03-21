@@ -5,6 +5,8 @@ import Corrode from '@rws/library/node_modules/corrode';
 import { BrowserFile } from '@rws/platform-fs-browser/';
 import { Waterpro } from '@rws/library/type/waterpro';
 import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
+import { Rect, Stage } from 'react-konva';
+import { MoleculeMoveableStage } from '../../components/molecule/moveable-stage';
 
 interface FileWaterproViewerProps {
     node: TreeviewNodeProps;
@@ -50,6 +52,8 @@ export class FileWaterproViewer extends React.Component<FileWaterproViewerProps,
         if(!this.state.data){
             return <div>unable to load</div>;
         }
+
+        const bitmapSize = 128;
 
         return (
             <div>

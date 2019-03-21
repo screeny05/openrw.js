@@ -11,6 +11,8 @@ interface Props {
     glContainer: any;
     enableInput?: boolean;
     camera?: 'perspective' | 'orthographic';
+    near?: number;
+    far?: number;
 }
 
 export class AtomThreeCanvas extends React.PureComponent<Props> {
@@ -57,7 +59,7 @@ export class AtomThreeCanvas extends React.PureComponent<Props> {
             this.input = new BrowserInput(this.canvasRef.current);
         }
         if(this.props.camera === 'perspective'){
-            this.camera = new PerspectiveCamera(75, 1, 0.1, 1000);
+            this.camera = new PerspectiveCamera(75, 1, this.props.near ? this.props.near : 0.1, this.props.far ? this.props.far : 1000);
             this.camera.up.set(0, 0, 1);
             this.camera.position.y = 3;
             this.camera.lookAt(0, 0, 0);

@@ -49,6 +49,8 @@ import { SdtEntry } from '@rws/library/type/sdt-entry';
 import { BufferBuilder } from './library/buffer-builder';
 import { FileWaterproViewer } from './views/file-waterpro-viewer';
 import { FileAnimationViewer } from './views/file-animation-viewer';
+import { FileZoneViewer } from './views/file-zone-viewer';
+import { downloadBuffer } from './library/download-buffer';
 
 const $toolbar = document.querySelector('.js--toolbar');
 const $content = document.querySelector('.js--content');
@@ -75,15 +77,6 @@ const getComponentConfig = (component: string, title: string, props: FileCompone
     };
 };
 
-const downloadBuffer = (name: string, buffer: ArrayBuffer): void => {
-    const blob = new Blob([buffer]);
-    const blobUrl = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = blobUrl;
-    link.download = name;
-    link.click();
-}
-
 const downloadNodeImg = async (node: TreeviewNodeProps): Promise<void> => {
     if(!node.data.img){
         return;
@@ -106,22 +99,22 @@ const downloadNodeRaw = async (node: TreeviewNodeProps): Promise<void> => {
     const bb = new BufferBuilder(entry.size + 44);
 
     bb
-        .writeString('RIFF')
-        .writeUInt32(entry.size + 36)
-        .writeString('WAVE')
-        .writeString('fmt ')
-        .writeUInt32(16)
-        .writeUInt16(1)
-        .writeUInt16(1)
-        .writeUInt32(entry.samples)
-        .writeUInt32(entry.samples * 2)
-        .writeUInt16(2)
-        .writeUInt16(16)
-        .writeString('data')
-        .writeUInt32(entry.size)
-        .writeBuffer(data);
+        .string('RIFF')
+        .uint32(entry.size + 36)
+        .string('WAVE')
+        .string('fmt ')
+        .uint32(16)
+        .uint16(1)
+        .uint16(1)
+        .uint32(entry.samples)
+        .uint32(entry.samples * 2)
+        .uint16(2)
+        .uint16(16)
+        .string('data')
+        .uint32(entry.size)
+        .buffer(data);
 
-    downloadBuffer(node.name + '.wav', bb.buffer.buffer as ArrayBuffer);
+    downloadBuffer(node.name + '.wav', bb.target.buffer as ArrayBuffer);
 };
 
 const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer?: string) => {
@@ -156,6 +149,9 @@ const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer
     }
     if(!preferViewer && fileType === PathNodeType.FileIfp){
         component = 'file-animation-viewer';
+    }
+    if(!preferViewer && fileType === PathNodeType.FileZon){
+        component = 'file-zone-viewer';
     }
 
     if(component === 'file-dff-viewer'){
@@ -200,6 +196,7 @@ const initializeOnFiles = async (files: File[]) => {
         content: [{
             type: 'react-component',
             component: 'filetree',
+            title: 'Files',
             isClosable: false,
             props: { files, index, openFile }
         }]
@@ -251,6 +248,7 @@ content.registerComponent('file-texteditor', FileTexteditor);
 content.registerComponent('file-inspector', FileInspector);
 content.registerComponent('file-waterpro-viewer', FileWaterproViewer);
 content.registerComponent('file-animation-viewer', FileAnimationViewer);
+content.registerComponent('file-zone-viewer', FileZoneViewer);
 content.registerComponent('console', Console);
 content.registerComponent('welcome-screen', WelcomeScreen);
 content.registerComponent('working-stack-background', function(container: GoldenLayout.Container){
@@ -261,6 +259,6 @@ content.init();
 ReactDOM.render(React.createElement(Toolbar), $toolbar);
 
 if(module.hot){
-    /* hmr is sadly restricted to reloading the content due to GL */
+    /* hmr is sadly restricted to reloading the content, due to GL */
     module.hot.dispose(() => content.destroy());
 }

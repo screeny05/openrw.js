@@ -141,6 +141,9 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         if(type === PathNodeType.FileIfp){
             availableViewers.push(['file-animation-viewer', 'Animation Viewer']);
         }
+        if(type === PathNodeType.FileZon){
+            availableViewers.push(['file-zone-viewer', 'Zone Viewer']);
+        }
         if(node.data.img){
             availableViewers.push(['file-img-extract', 'Extract from IMG']);
         }
