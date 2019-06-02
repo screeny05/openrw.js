@@ -1,5 +1,5 @@
 import { IHud } from "@rws/platform/graphic";
-import { Scene, OrthographicCamera, Color } from "three";
+import { Scene, OrthographicCamera } from "three";
 import { ThreeHudElement } from "./hud-element";
 
 export class ThreeHud implements IHud {

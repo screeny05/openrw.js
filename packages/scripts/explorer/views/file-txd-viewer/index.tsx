@@ -11,12 +11,14 @@ import bind from 'bind-decorator';
 import { BrowserLoop } from '@rws/platform-loop-browser';
 import { ThreeHudElement } from '@rws/platform-graphics-three/hud-element';
 import { ThreeTexture } from '@rws/platform-graphics-three/texture';
-import { WebGLRenderer } from '@rws/platform-graphics-three/node_modules/three';
 import { ThreeHud } from '@rws/platform-graphics-three/hud';
 
 import './index.scss';
 import { RwsTextureNativePlatformIds, RwsTextureNativeRasterFormat, RwsTextureNativeCompression } from '@rws/library/type/rws';
 import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen';
+import { AtomThreeCanvas } from '../../components/atom/three-canvas';
+import { BrowserInput } from '@rws/platform-control-browser';
+import { OrthographicCamera, WebGLRenderer, Scene } from 'three';
 
 interface FileTxdViewerProps {
     node: TreeviewNodeProps;
@@ -32,15 +34,10 @@ interface FileTxdViewerState {
 }
 
 export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdViewerState> {
-    canvasRef: React.RefObject<HTMLCanvasElement>;
-    currentRenderer: WebGLRenderer | null = null;
-    rafId: number | null = null;
     hud: ThreeHud;
 
     constructor(props){
         super(props);
-
-        this.canvasRef = React.createRef();
 
         this.state = {
             isLoaded: false,
@@ -89,15 +86,7 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
 
         return (
             <div>
-                <canvas ref={this.canvasRef} className="js--hud" style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                }}
-                {...{
-                    width: this.props.glContainer.width,
-                    height: this.props.glContainer.height
-                }}/>
+                <AtomThreeCanvas glContainer={this.props.glContainer} camera='orthographic' tickCallback={this.onTick}/>
                 {entries.length > 1 ?
                     <ul className="file-txd-viewer__list">
                         {entries.map(texture =>
@@ -110,6 +99,38 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
                 {this.renderTxdInfo()}
             </div>
         );
+    }
+
+    @bind
+    onTick(delta: number, renderer: WebGLRenderer, input?: BrowserInput, camera?: OrthographicCamera): void {
+        if(!camera || !this.state.selectedTexture){
+            return;
+        }
+
+        const hud = new Scene();
+        renderer.setClearColor(0x212121);
+        renderer.render(hud, camera);
+        return;
+
+        const el = new ThreeHudElement(this.state.selectedTexture);
+        if(!this.currentRenderer){
+            this.hud = new ThreeHud();
+            this.hud.$el = this.canvasRef.current;
+            this.hud.setCameraFrustum();
+
+            this.currentRenderer = new WebGLRenderer({
+                antialias: true,
+                canvas: this.canvasRef.current,
+                alpha: true
+            });
+            const render = () => {
+                this.currentRenderer!.render(this.hud.src, this.hud.camera);
+                this.rafId = requestAnimationFrame(render);
+            };
+            render();
+        }
+        this.hud.src.children.splice(0);
+        this.hud.add(el);
     }
 
     renderTxdInfo(): React.ReactFragment {
@@ -164,7 +185,7 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
         );
     }
 
-    componentDidUpdate(){
+    /*componentDidUpdate(){
         if(!this.canvasRef.current || !this.state.selectedTexture){
             return;
         }
@@ -180,20 +201,14 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
                 alpha: true
             });
             const render = () => {
-                this.currentRenderer.render(this.hud.src, this.hud.camera);
+                this.currentRenderer!.render(this.hud.src, this.hud.camera);
                 this.rafId = requestAnimationFrame(render);
             };
             render();
         }
         this.hud.src.children.splice(0);
         this.hud.add(el);
-    }
-
-    componentWillUnmount(){
-        if(this.rafId){
-            cancelAnimationFrame(this.rafId);
-        }
-    }
+    }*/
 
     @bind
     onSelectTexture(texture: ThreeTexture): void {

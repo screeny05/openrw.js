@@ -15,7 +15,7 @@ export class BrowserInput implements IInput {
     gamepad1StateContainer: InputStateContainer = new Map();
 
     gamepads: Gamepad[] = [];
-    gamepadPollInterval: number;
+    gamepadPollInterval: NodeJS.Timer;
 
     constructor($el: HTMLElement){
         this.$el = $el;

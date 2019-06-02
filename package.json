@@ -20,7 +20,7 @@
     "babel-plugin-module-resolver": "^3.1.1",
     "parcel": "^1.11.0",
     "parcel-bundler": "^1.11.0",
-    "typescript": "^2.8.3"
+    "typescript": "^3.5.1"
   },
   "dependencies": {
     "corrode": "^1.0.4",

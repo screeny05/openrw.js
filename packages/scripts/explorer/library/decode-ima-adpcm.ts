@@ -59,6 +59,8 @@ export const decodeImaAdpcm = (ctx: AudioContext, buffer: ArrayBuffer): AudioBuf
     let outbufOffset = 0;
     let samplesPerBlock = (fmt.blockAlign - fmt.numChannels * 4) * (fmt.numChannels ^ 3) + 1;
 
+    console.log(data.samples, fmt.numChannels, fmt.blockAlign)
+
     imaBlocks.forEach((block, i) => {
         outbufOffset = decodeImaAdpcmBlock(block, targetData, outbufOffset);
     });
@@ -159,8 +161,8 @@ export const decodeImaAdpcmBlock = (inbuf: Uint8Array, outbufs: Float32Array[], 
 const chunkArrayBufferView = (data: Uint8Array, chunkSize: number): Uint8Array[] => {
     const chunks: Uint8Array[] = [];
 
-    const chunksLength = Math.ceil(data.length / chunkSize);
-    for (let index = 0; index < chunksLength; index++) {
+    const chunksCount = Math.ceil(data.length / chunkSize);
+    for (let index = 0; index < chunksCount; index++) {
         chunks.push(data.slice(index * chunkSize, index * chunkSize + chunkSize));
     }
 

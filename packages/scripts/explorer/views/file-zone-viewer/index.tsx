@@ -106,7 +106,7 @@ export class FileZoneViewer extends React.Component<Props, State> {
                     left: 0,
                 }}>
                     <MoleculeMoveableStage>
-                        {zoom => this.state.zones!.map(zone => <ZoneRect zone={zone} zoom={zoom}/>)}
+                        {zoom => this.state.zones!.map(zone => <ZoneRect zone={zone} zoom={zoom} key={zone.name}/>)}
                     </MoleculeMoveableStage>
                 </Stage>
             </div>

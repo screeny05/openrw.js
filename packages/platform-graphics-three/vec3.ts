@@ -14,7 +14,7 @@ export class ThreeVec3 implements IVec3 {
     constructor(src: Vector3);
     constructor(x: number, y: number, z: number);
     constructor(x: number | Vector3, y?: number, z?: number){
-        if(x instanceof Vector3){
+        if(typeof x === 'object'){
             this.src = x;
         } else {
             this.src = new Vector3(x, y, z);

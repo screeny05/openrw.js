@@ -3,15 +3,11 @@ import { bind } from 'bind-decorator';
 import { Treeview } from '../../components/organism/treeview';
 import { TreeviewNodeProps, TreeviewNodeCollection } from '../../components/molecule/treenode';
 import memoizeOne from 'memoize-one';
-import { guessFolderNodeType, guessFileNodeType, getIconByNodeType, PathNodeType, isExpandableType, isTextFileType, isInspectableFileType } from '../../components/organism/treeview/node-icon';
+import { guessFileNodeType, PathNodeType, getFolderMeta, getFileMeta, Viewers } from '../../components/organism/treeview/node-icon';
 import { BrowserFile } from '@rws/platform-fs-browser/file';
-import { Icon } from '../../components/atom/icon';
 import { ImgIndex } from '@rws/library/index/img';
 import { BrowserFileIndex } from '@rws/platform-fs-browser/file-index';
 import { RawIndex } from '@rws/library/index/raw';
-import { RwsTextureDictionary } from '@rws/library/type/rws';
-import Corrode from '@rws/library/node_modules/corrode';
-import { DirEntry } from '@rws/library/type/dir-entry';
 
 interface FiletreeState {
     nodes: TreeviewNodeCollection;
@@ -57,13 +53,14 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
             // remove root & filename
             const path = fullPath.slice(0, -1);
 
-            let currentNode: TreeviewNodeProps = { children: root, name: '' };
+            let currentNode: TreeviewNodeProps = { children: root, name: '', meta: getFolderMeta('root') };
             path.forEach((part, i) => {
                 if(!currentNode.children[part]){
+                    const meta = getFolderMeta(part);
                     currentNode.children[part] = {
                         name: part,
                         children: {},
-                        icon: this.getFileIconByNodeType(guessFolderNodeType(part)),
+                        meta: meta,
                         isExpandable: true,
                         isLoaded: true,
                         data: {
@@ -75,15 +72,14 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
                 currentNode = currentNode.children[part];
             });
 
-            const fileType = guessFileNodeType(file.name);
-            const isLoadable = isExpandableType(fileType);
+            const meta = getFileMeta(file.name);
 
             currentNode.children[file.name] = {
                 name: file.name,
-                icon: this.getFileIconByNodeType(fileType),
+                meta: meta,
                 children: {},
-                isExpandable: isLoadable,
-                isLoaded: !isLoadable,
+                isExpandable: !!meta.isExpandable,
+                isLoaded: !meta.isExpandable,
                 data: {
                     file: new BrowserFile(file),
                     path: fullPath
@@ -111,44 +107,10 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
 
     @bind
     renderContextMenu(node: TreeviewNodeProps): any {
-        const type = guessFileNodeType(node.name);
-        const availableViewers: [string, string][] = [];
+        const availableViewers: [string, string][] = [...node.meta.viewer];
 
         if(!node.data.isFolder){
-            availableViewers.push(['file-hexeditor', 'Hex Editor']);
-        }
-        if(isTextFileType(type)){
-            availableViewers.push(['file-texteditor', 'Text Editor']);
-        }
-        if(isInspectableFileType(type)){
-            availableViewers.push(['file-inspector', 'Object Inspector']);
-        }
-        if(type === PathNodeType.FileTxd){
-            availableViewers.push(['file-txd-viewer', 'Texture Viewer']);
-        }
-        if(type === PathNodeType.FileDff){
-            availableViewers.push(['file-dff-viewer', 'Model Viewer']);
-        }
-        if(type === PathNodeType.FileGxt){
-            availableViewers.push(['file-gxt-viewer', 'GXT Viewer']);
-        }
-        if(type === PathNodeType.FileWav || type === PathNodeType.FileMp3 || type === PathNodeType.FileRawEntry){
-            availableViewers.push(['file-audio-player', 'Audio Player']);
-        }
-        if(type === PathNodeType.FileWaterpro){
-            availableViewers.push(['file-waterpro-viewer', 'waterpro.dat Viewer']);
-        }
-        if(type === PathNodeType.FileIfp){
-            availableViewers.push(['file-animation-viewer', 'Animation Viewer']);
-        }
-        if(type === PathNodeType.FileZon){
-            availableViewers.push(['file-zone-viewer', 'Zone Viewer']);
-        }
-        if(node.data.img){
-            availableViewers.push(['file-img-extract', 'Extract from IMG']);
-        }
-        if(node.data.sdtEntry){
-            availableViewers.push(['file-raw-extract', 'Extract from RAW']);
+            availableViewers.push(Viewers.HexEditor);
         }
 
         return (
@@ -173,9 +135,6 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         if(nodeType === PathNodeType.FileRaw){
             children = await this.requestContentRaw(node.data.file);
         }
-        if(nodeType === PathNodeType.FileTxd){
-            children = await this.requestContentTxdFile(node);
-        }
 
         if(!children){
             return;
@@ -191,14 +150,13 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         await index.load();
 
         return Array.from(index.imgIndex.values()).map(imgEntry => {
-            const type = guessFileNodeType(imgEntry.name);
-            const isLoadable = isExpandableType(type);
+            const meta = getFileMeta(imgEntry.name);
 
             return {
                 name: imgEntry.name,
-                icon: this.getFileIconByNodeType(type),
-                isExpandable: isLoadable,
-                isLoaded: !isLoadable,
+                meta: meta,
+                isExpandable: !!meta.isExpandable,
+                isLoaded: !meta.isExpandable,
                 children: {},
                 data: {
                     img: index,
@@ -212,42 +170,16 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
     async requestContentRaw(file: BrowserFile): Promise<TreeviewNodeProps[]> {
         const raw = new RawIndex(this.state.index, file.path);
         await raw.load();
+        const meta = getFileMeta('0.rawentry');
         return raw.sdtIndex.map((sdtEntry, i) => ({
             name: `${i}.rawentry`,
-            icon: this.getFileIconByNodeType(PathNodeType.FileRaw),
+            meta: meta,
             isLoaded: true,
             children: {},
             data: {
                 raw,
                 sdtEntry
             }
-        }));
-    }
-
-    async requestContentTxdFile(node: TreeviewNodeProps): Promise<TreeviewNodeProps[]> {
-        const file: BrowserFile|undefined = node.data.file;
-        const entry: DirEntry|undefined = node.data.entry;
-
-        let data: RwsTextureDictionary|null = null;
-        if(file){
-            const parser = new Corrode().ext.rwsSingle('rws').map.push('rws');
-            data = await file.parse<RwsTextureDictionary>(parser);
-        }
-        if(entry){
-            const img: ImgIndex = node.data.img;
-            data = await img.parseEntryAsRws(entry) as RwsTextureDictionary;
-        }
-
-        if(!data){
-            return [];
-        }
-
-        return data.textures.map(texture => ({
-            name: texture.name,
-            icon: this.getFileIconByNodeType(PathNodeType.FileTxd),
-            isLoaded: true,
-            children: {},
-            data: { texture }
         }));
     }
 
@@ -285,10 +217,5 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
         });
 
         return lastNode.children;
-    }
-
-    getFileIconByNodeType(type: PathNodeType): JSX.Element {
-        const icon = getIconByNodeType(type);
-        return <Icon font={icon[0]} name={icon[1]}/>
     }
 }

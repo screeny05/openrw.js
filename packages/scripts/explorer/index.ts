@@ -36,7 +36,7 @@ import { Filetree } from './views/filetree';
 import { TreeviewNodeProps } from './components/molecule/treenode';
 import { FileHexeditor } from './views/file-hexeditor';
 import { FileTexteditor } from './views/file-texteditor';
-import { guessFileNodeType, isTextFileType, PathNodeType, isInspectableFileType } from './components/organism/treeview/node-icon';
+import { guessFileNodeType, isTextFileType, PathNodeType, isInspectableFileType, Viewers } from './components/organism/treeview/node-icon';
 import { FileDffViewer } from './views/file-dff-viewer';
 import { FileInspector } from './views/file-inspector';
 import { FileTxdViewer } from './views/file-txd-viewer';
@@ -120,38 +120,13 @@ const downloadNodeRaw = async (node: TreeviewNodeProps): Promise<void> => {
 const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer?: string) => {
     let component = 'file-hexeditor';
     let isReact = true;
-    const fileType = guessFileNodeType(node.name);
 
     if(preferViewer){
         component = preferViewer;
-    }
-
-    if(!preferViewer && isInspectableFileType(fileType)){
-        component = 'file-inspector';
-    }
-    if(!preferViewer && isTextFileType(fileType)){
-        component = 'file-texteditor';
-    }
-    if(!preferViewer && fileType === PathNodeType.FileDff){
-        component = 'file-dff-viewer';
-    }
-    if(!preferViewer && fileType === PathNodeType.FileTxd){
-        component = 'file-txd-viewer';
-    }
-    if(!preferViewer && fileType === PathNodeType.FileGxt){
-        component = 'file-gxt-viewer';
-    }
-    if(!preferViewer && (fileType === PathNodeType.FileWav || fileType === PathNodeType.FileMp3 || fileType === PathNodeType.FileRawEntry)){
-        component = 'file-audio-player';
-    }
-    if(!preferViewer && fileType === PathNodeType.FileWaterpro){
-        component = 'file-waterpro-viewer';
-    }
-    if(!preferViewer && fileType === PathNodeType.FileIfp){
-        component = 'file-animation-viewer';
-    }
-    if(!preferViewer && fileType === PathNodeType.FileZon){
-        component = 'file-zone-viewer';
+    } else if(node.meta.viewer.length > 0) {
+        component = node.meta.viewer[0][0];
+    } else {
+        component = Viewers.HexEditor[0];
     }
 
     if(component === 'file-dff-viewer'){

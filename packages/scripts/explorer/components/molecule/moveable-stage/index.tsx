@@ -27,7 +27,7 @@ export class MoleculeMoveableStage extends React.Component<Props, State> {
     isScrolling: boolean = false;
 
     componentWillMount(){
-        window.addEventListener('mousewheel', this.onWheel);
+        window.addEventListener('mousewheel', this.onWheel, { passive: false });
     }
 
     componentWillUnmount(){

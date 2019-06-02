@@ -5,6 +5,9 @@ export class CameraControlFree {
     camera: IObject3d;
     control: InputControlMapper;
 
+    movementSpeed: number = 0.03;
+    movementSpeedFast: number = 0.1;
+
     rotX: number = 0;
     rotY: number = 0;
 
@@ -14,7 +17,7 @@ export class CameraControlFree {
     }
 
     update(delta: number): void {
-        const moveMultiplier = this.control.getState(ControlId.Sprint) ? 0.1 : 0.03;
+        const moveMultiplier = this.control.getState(ControlId.Sprint) ? this.movementSpeedFast : this.movementSpeed;
         const forward = this.control.getState(ControlId.MoveForwardOnFoot) * delta * moveMultiplier;
         const backward = this.control.getState(ControlId.MoveBackwardOnFoot) * delta * moveMultiplier;
         const left = this.control.getState(ControlId.MoveLeft) * delta * moveMultiplier;

@@ -6,6 +6,7 @@ import { Spinner } from '../spinner';
 import './index.scss';
 import { Contextmenu } from '../../organism/contextmenu';
 import { ContextmenuProvider } from '../../organism/contextmenu-provider';
+import { FileMeta } from '../../organism/treeview/node-icon';
 
 export type TreeviewNodeCollection = {
     [key: string]: TreeviewNodeProps;
@@ -13,9 +14,9 @@ export type TreeviewNodeCollection = {
 
 export interface TreeviewNodeProps {
     name: string;
-    icon?: JSX.Element;
     children: TreeviewNodeCollection;
     data?: any;
+    meta: FileMeta;
     level?: number;
     startExpanded?: boolean;
     isExpandable?: boolean;
@@ -70,11 +71,7 @@ export class TreeviewNode extends React.PureComponent<TreeviewNodeProps> {
                         </div>
                     : ''}
 
-                    {this.props.icon ?
-                        <div className="treenode__icon">
-                            {this.props.icon}
-                        </div>
-                    : ''}
+                    {this.renderIcon()}
 
                     <div className="treenode__title">
                         {this.props.name}
@@ -108,6 +105,15 @@ export class TreeviewNode extends React.PureComponent<TreeviewNodeProps> {
                         onRequestContent={this.props.onRequestContent}
                         renderContextMenu={this.props.renderContextMenu}/>
                 )}
+            </div>
+        );
+    }
+
+    renderIcon(){
+        const icon = this.props.meta.icon.length === 2 ? this.props.meta.icon[this.state.isExpanded ? 1 : 0] : this.props.meta.icon;
+        return (
+            <div className="treenode__icon">
+                <Icon font={icon[0]} name={icon[1]}/>
             </div>
         );
     }
