@@ -115,13 +115,10 @@ const DatabaseTextTypes = [
     PathNodeType.FileFlight,
 ];
 
-const DatabaseInspectableTypes = [
-];
-
-type Viewer = [string, string];
+type Viewer = string[];
 
 export interface FileMetaSparse {
-    file: RegExp;
+    file?: RegExp;
     viewer: Viewer[];
     icon: NodeIcon;
     isExpandable?: boolean;
@@ -135,11 +132,7 @@ type FileMetaDatabase = {
     [P in PathNodeType]?: FileMetaSparse;
 }
 
-type ViewerDatabase = {
-    [key: string]: Viewer;
-}
-
-export const Viewers: ViewerDatabase = {
+export const Viewers = {
     HexEditor: ['file-hexeditor', 'Hex Editor'],
     TextEditor: ['file-texteditor', 'Text Editor'],
     ObjectInspector: ['file-inspector', 'Object Inspector'],
@@ -151,19 +144,18 @@ export const Viewers: ViewerDatabase = {
     AnimationViewer: ['file-animation-viewer', 'Animation Viewer'],
     ZoneViewer: ['file-zone-viewer', 'Zone Viewer'],
     ImgExtract: ['file-img-extract', 'Extract from IMG'],
-    RawExtract: ['file-raw-extract', 'Extract from RAW'],
-    ImageViewer: ['file-image-viewer', 'Image Viewer']
+    RawExtract: ['file-raw-extract', 'Extract as WAV'],
+    ImageViewer: ['file-image-viewer', 'Image Viewer'],
+    FontViewer: ['file-font-viewer', 'Font Texture Viewer']
 }
 
 const DatabaseFolders: TypeDatabase = [];
 
 const NodeIcons: NodeIconDatabase = {
-    [PathNodeType.Folder]: [['fa', 'folder', '#fe7600'], ['fa', 'folder-open', '#fe7600']],
     [PathNodeType.FileFont]: ['fi', 'font-bitmap', '#fe7600'],
     [PathNodeType.FilePE]: ['fi', 'manpage', '#fe7600'],
     [PathNodeType.FileDLL]: ['fas', 'cogs', '#fe7600'],
     [PathNodeType.FileImg]: ['fas', 'archive', '#fe7600'],
-    [PathNodeType.FileDir]: ['fas', 'list-ul', '#fe7600'],
     [PathNodeType.FileIni]: ['fas', 'wrench', '#fe7600'],
     [PathNodeType.FileTxt]: ['fas', 'file-alt', '#fe7600'],
     [PathNodeType.FileWater]: ['fas', 'tint', '#fe7600'],
@@ -193,9 +185,12 @@ const NodeIcons: NodeIconDatabase = {
 
 const FileMetaIndex: FileMetaDatabase = {
     [PathNodeType.File]: {
-        file: /^$/,
         viewer: [],
         icon: ['fi', 'default', '#fe7600']
+    },
+    [PathNodeType.Folder]: {
+        viewer: [],
+        icon: [['fa', 'folder', '#fe7600'], ['fa', 'folder-open', '#fe7600']]
     },
     [PathNodeType.FileImg]: {
         file: /\.img$/i,
@@ -284,11 +279,6 @@ const FileMetaIndex: FileMetaDatabase = {
         viewer: [Viewers.ImageViewer],
         icon: ['fi', 'image', '#fe7600']
     },
-    [PathNodeType.Folder]: {
-        file: /^$/i,
-        viewer: [],
-        icon: [['fa', 'folder', '#fe7600'], ['fa', 'folder-open', '#fe7600']]
-    }
 };
 
 const guessByNameDatabase = (name: string, database: TypeDatabase): PathNodeType | undefined => {
@@ -316,7 +306,7 @@ export const guessFileNodeType = (name: string): PathNodeType => {
 export const getFileMeta = (name: string): FileMeta => {
     let type = Object.keys(FileMetaIndex).find(key => {
         const meta: FileMetaSparse = FileMetaIndex[key];
-        return meta.file.test(name);
+        return !!meta.file && meta.file.test(name);
     });
     if(!type){
         type = PathNodeType.File as any as string;
@@ -325,7 +315,7 @@ export const getFileMeta = (name: string): FileMeta => {
     return {
         ...meta,
         type: type as any as PathNodeType
-    }
+    };
 };
 
 export const getFolderMeta = (name: string): FileMeta => {
@@ -340,10 +330,6 @@ export const isTextFileType = (type: PathNodeType): boolean => {
     return DatabaseTextTypes.includes(type);
 }
 
-export const isInspectableFileType = (type: PathNodeType): boolean => {
-    return DatabaseInspectableTypes.includes(type);
-}
-
 export const guessFolderNodeType = (name: string): PathNodeType => {
     const dbGuess = guessByNameDatabase(name, DatabaseFolders);
     if(dbGuess){
@@ -351,12 +337,4 @@ export const guessFolderNodeType = (name: string): PathNodeType => {
     }
 
     return PathNodeType.Folder;
-}
-
-export const getIconByNodeType = (type: PathNodeType, isOpen: boolean = false): NodeIconSingle => {
-    const icon = NodeIcons[type];
-    if(icon.length === 2){
-        return icon[isOpen ? 1 : 0];
-    }
-    return icon;
 }

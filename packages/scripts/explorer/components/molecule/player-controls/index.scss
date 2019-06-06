@@ -1,9 +1,12 @@
 @import '../../../library/variables';
+@import '../../../theme';
+
+$player-controls-background: $color-night-3;
 
 .player-controls {
     display: flex;
     align-items: center;
-    background: #131212;
+    background: $player-controls-background;
     padding: 10px;
 
     > :first-child {
@@ -20,10 +23,21 @@
 }
 
 .player-controls__button {
-    color: #fff;
+    background: none;
+    border: none;
+    color: $color-text-base;
+    padding: 0;
     margin: 0 5px;
 
     > * { vertical-align: middle; }
+}
+
+.player-controls__icon {
+    fill: $color-text-base;
+}
+
+.player-controls__icon--active {
+    fill: $color-primary;
 }
 
 .player-controls__label {
@@ -34,7 +48,7 @@
     height: 200px;
     position: absolute;
     bottom: 100%;
-    background: #131212;
+    background: $player-controls-background;
     border-top-left-radius: 3px;
     border-top-right-radius: 3px;
     padding: 6px;

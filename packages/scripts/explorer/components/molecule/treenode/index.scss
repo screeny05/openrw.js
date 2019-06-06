@@ -1,3 +1,5 @@
+@import '../../../theme';
+
 $treenode-icon-width: 22px;
 
 .treenode__expander,
@@ -18,7 +20,7 @@ $treenode-icon-width: 22px;
 }
 
 .treenode__header:hover {
-    background: #333;
+    background: $color-night-3;
     cursor: pointer;
 }
 

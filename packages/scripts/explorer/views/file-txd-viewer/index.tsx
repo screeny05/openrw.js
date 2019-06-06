@@ -19,6 +19,7 @@ import { MoleculeLoadingScreen } from '../../components/molecule/loading-screen'
 import { AtomThreeCanvas } from '../../components/atom/three-canvas';
 import { BrowserInput } from '@rws/platform-control-browser';
 import { OrthographicCamera, WebGLRenderer, Scene } from 'three';
+import { MoleculeSelectList } from '../../components/molecule/select-list';
 
 interface FileTxdViewerProps {
     node: TreeviewNodeProps;
@@ -34,7 +35,7 @@ interface FileTxdViewerState {
 }
 
 export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdViewerState> {
-    hud: ThreeHud;
+    hud: Scene;
 
     constructor(props){
         super(props);
@@ -85,16 +86,12 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
         }
 
         return (
-            <div>
-                <AtomThreeCanvas glContainer={this.props.glContainer} camera='orthographic' tickCallback={this.onTick}/>
+            <div className='checkered-background'>
+                <AtomThreeCanvas glContainer={this.props.glContainer} camera='orthographic' tickCallback={this.onTick} className='js--hud' alpha/>
                 {entries.length > 1 ?
-                    <ul className="file-txd-viewer__list">
-                        {entries.map(texture =>
-                            <li key={texture.name} onClick={this.onSelectTexture.bind(this, texture)}>
-                                {texture.name}
-                            </li>
-                        )}
-                    </ul>
+                    <div style={{ position: 'relative', zIndex: 1, width: 200 }}>
+                        <MoleculeSelectList heightAdd={-44} glContainer={this.props.glContainer} items={entries} onSelect={this.onSelectTexture}/>
+                    </div>
                 : ''}
                 {this.renderTxdInfo()}
             </div>
@@ -107,30 +104,12 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
             return;
         }
 
-        const hud = new Scene();
-        renderer.setClearColor(0x212121);
-        renderer.render(hud, camera);
-        return;
-
-        const el = new ThreeHudElement(this.state.selectedTexture);
-        if(!this.currentRenderer){
-            this.hud = new ThreeHud();
-            this.hud.$el = this.canvasRef.current;
-            this.hud.setCameraFrustum();
-
-            this.currentRenderer = new WebGLRenderer({
-                antialias: true,
-                canvas: this.canvasRef.current,
-                alpha: true
-            });
-            const render = () => {
-                this.currentRenderer!.render(this.hud.src, this.hud.camera);
-                this.rafId = requestAnimationFrame(render);
-            };
-            render();
+        if(!this.hud){
+            this.hud = new Scene();
         }
-        this.hud.src.children.splice(0);
-        this.hud.add(el);
+
+        renderer.setClearColor(0, 0);
+        renderer.render(this.hud, camera);
     }
 
     renderTxdInfo(): React.ReactFragment {
@@ -185,33 +164,12 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
         );
     }
 
-    /*componentDidUpdate(){
-        if(!this.canvasRef.current || !this.state.selectedTexture){
-            return;
-        }
-        const el = new ThreeHudElement(this.state.selectedTexture);
-        if(!this.currentRenderer){
-            this.hud = new ThreeHud();
-            this.hud.$el = this.canvasRef.current;
-            this.hud.setCameraFrustum();
-
-            this.currentRenderer = new WebGLRenderer({
-                antialias: true,
-                canvas: this.canvasRef.current,
-                alpha: true
-            });
-            const render = () => {
-                this.currentRenderer!.render(this.hud.src, this.hud.camera);
-                this.rafId = requestAnimationFrame(render);
-            };
-            render();
-        }
-        this.hud.src.children.splice(0);
-        this.hud.add(el);
-    }*/
-
     @bind
     onSelectTexture(texture: ThreeTexture): void {
+        this.hud.children.splice(0);
+        const element = new ThreeHudElement(texture);
+        this.hud.add(element.src as any);
         this.setState({ selectedTexture: texture });
+        console.log(this);
     }
 }

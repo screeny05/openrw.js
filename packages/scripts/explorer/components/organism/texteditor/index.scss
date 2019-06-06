@@ -1,5 +1,8 @@
+@import '../../../theme';
+
 .texteditor .CodeMirror {
     height: 100%;
+    border-top: 1px solid $color-night-2;
 }
 
 .CodeMirror-dialog {

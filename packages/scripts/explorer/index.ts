@@ -29,21 +29,18 @@ import './index.scss';
 
 import { Treeview } from './components/organism/treeview';
 import { Console } from './components/organism/console';
-import { Toolbar } from './components/organism/toolbar';
 import { FilePicker } from './components/organism/file-picker';
 import { WelcomeScreen } from './components/organism/welcome-screen';
 import { Filetree } from './views/filetree';
 import { TreeviewNodeProps } from './components/molecule/treenode';
 import { FileHexeditor } from './views/file-hexeditor';
 import { FileTexteditor } from './views/file-texteditor';
-import { guessFileNodeType, isTextFileType, PathNodeType, isInspectableFileType, Viewers } from './components/organism/treeview/node-icon';
+import { Viewers } from './components/organism/treeview/node-icon';
 import { FileDffViewer } from './views/file-dff-viewer';
 import { FileInspector } from './views/file-inspector';
 import { FileTxdViewer } from './views/file-txd-viewer';
 import { FileGxtViewer } from './views/file-gxt-viewer';
 import { FileAudioPlayer } from './views/file-audio-player';
-import { ImgIndex } from '@rws/library/index/img';
-import { DirEntry } from '@rws/library/type/dir-entry';
 import { RawIndex } from '@rws/library/index/raw';
 import { SdtEntry } from '@rws/library/type/sdt-entry';
 import { BufferBuilder } from './library/buffer-builder';
@@ -51,8 +48,9 @@ import { FileWaterproViewer } from './views/file-waterpro-viewer';
 import { FileAnimationViewer } from './views/file-animation-viewer';
 import { FileZoneViewer } from './views/file-zone-viewer';
 import { downloadBuffer } from './library/download-buffer';
+import { treeviewnodeToBuffer } from './library/treeviewnode-to-buffer';
+import { FileImageViewer } from './views/file-image-viewer';
 
-const $toolbar = document.querySelector('.js--toolbar');
 const $content = document.querySelector('.js--content');
 
 export interface FileComponentProps {
@@ -82,10 +80,10 @@ const downloadNodeImg = async (node: TreeviewNodeProps): Promise<void> => {
         return;
     }
 
-    const img: ImgIndex = node.data.img;
-    const entry: DirEntry = node.data.entry;
-    const buffer = await img.imgFile.getData(entry.offset, entry.offset + entry.size);
-    downloadBuffer(node.name, buffer);
+    const buffer = await treeviewnodeToBuffer(node);
+    if(buffer){
+        downloadBuffer(node.name, buffer);
+    }
 };
 
 const downloadNodeRaw = async (node: TreeviewNodeProps): Promise<void> => {
@@ -118,7 +116,7 @@ const downloadNodeRaw = async (node: TreeviewNodeProps): Promise<void> => {
 };
 
 const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer?: string) => {
-    let component = 'file-hexeditor';
+    let component = Viewers.HexEditor[0];
     let isReact = true;
 
     if(preferViewer){
@@ -129,15 +127,15 @@ const openFile = (node: TreeviewNodeProps, index: BrowserFileIndex, preferViewer
         component = Viewers.HexEditor[0];
     }
 
-    if(component === 'file-dff-viewer'){
+    if(component === Viewers.DffViewer[0]){
         isReact = false;
     }
 
-    if(component === 'file-img-extract'){
+    if(component === Viewers.ImgExtract[0]){
         return downloadNodeImg(node);
     }
 
-    if(component === 'file-raw-extract'){
+    if(component === Viewers.RawExtract[0]){
         return downloadNodeRaw(node);
     }
 
@@ -197,18 +195,16 @@ const content = new GoldenLayout({
                     isClosable: false,
                     title: 'Select file/folder'
                 }]
-            }, {
-                type: 'react-component',
-                component: 'console',
-                title: 'Console',
-                height: 20,
-                isClosable: false
             }]
         }]
     }],
     settings: {
         showPopoutIcon: false,
     },
+    dimensions: {
+        borderWidth: 1,
+        headerHeight: 30
+    }
 }, $content!);
 
 content.registerComponent('treeview', Treeview);
@@ -224,14 +220,13 @@ content.registerComponent('file-inspector', FileInspector);
 content.registerComponent('file-waterpro-viewer', FileWaterproViewer);
 content.registerComponent('file-animation-viewer', FileAnimationViewer);
 content.registerComponent('file-zone-viewer', FileZoneViewer);
+content.registerComponent('file-image-viewer', FileImageViewer);
 content.registerComponent('console', Console);
 content.registerComponent('welcome-screen', WelcomeScreen);
 content.registerComponent('working-stack-background', function(container: GoldenLayout.Container){
     container.on('tab', () => container.tab.element.hide());
 });
 content.init();
-
-ReactDOM.render(React.createElement(Toolbar), $toolbar);
 
 if(module.hot){
     /* hmr is sadly restricted to reloading the content, due to GL */

@@ -268,7 +268,7 @@ export class FileAnimationViewer extends React.Component<Props, State> {
                         showMorePrecision>
 
                         <button className="player-controls__button player-constrols__button--scale" title="Interpolate" onClick={this.onClickInterpolate}>
-                            <IconLinearScale fill={this.state.isInterpolating ? '#1779ba' : '#fff'}/>
+                            <IconLinearScale class={'player-controls__icon ' + (this.state.isInterpolating ? 'player-controls__icon--active' : '')}/>
                         </button>
                     </MoleculePlayerControls>
                 </div>

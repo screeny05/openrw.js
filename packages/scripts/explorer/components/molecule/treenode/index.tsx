@@ -60,7 +60,7 @@ export class TreeviewNode extends React.PureComponent<TreeviewNodeProps> {
     }
 
     renderHeader(){
-        const paddingLeft = this.getLevel() * TREENODE_INDENT;
+        const paddingLeft = (this.getLevel() + 1) * TREENODE_INDENT;
 
         return (
             <OptionalContextProvider renderContextMenu={this.props.renderContextMenu} node={this.props}>

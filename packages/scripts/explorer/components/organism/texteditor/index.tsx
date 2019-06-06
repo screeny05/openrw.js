@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Controlled as CodeMirror } from 'react-codemirror2'
 import 'codemirror/lib/codemirror.css';
-import 'codemirror/theme/material.css';
+import 'codemirror/theme/nord.css';
 import 'codemirror/theme/neat.css';
 import '../../../library/codemirror-modes';
 import './index.scss';
@@ -21,7 +21,7 @@ export class Texteditor extends React.Component<TexteditorProps> {
                 <CodeMirror
                     value={this.props.value}
                     options={{
-                        theme: 'material',
+                        theme: 'nord',
                         lineNumbers: true,
                         readOnly: true,
                         dragDrop: false,

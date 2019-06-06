@@ -1,3 +1,5 @@
+@import '../../../theme';
+
 .hexeditor {
     font-family: 'Courier New', Courier, monospace;
     white-space: nowrap;
@@ -9,7 +11,7 @@
 
 .hexeditor__address {
     padding: 0 1ch;
-    background: #313131;
+    background: $color-night-3;
 }
 
 .hexeditor__hex {
@@ -18,7 +20,7 @@
 
     &:before {
         content: '';
-        border-left: 1px solid #313131;
+        border-left: 1px solid $color-night-3;
         position: absolute;
         height: 100%;
         left: 23.5ch;

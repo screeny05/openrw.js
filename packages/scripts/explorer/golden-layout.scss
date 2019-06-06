@@ -1,0 +1,36 @@
+.lm_goldenlayout {
+    background: $color-background-dark;
+}
+
+.lm_content {
+    overflow: auto;
+    background: $color-night-2;
+}
+
+.lm_header .lm_tab {
+    height: 25px;
+    line-height: 25px;
+    box-shadow: none;
+    background: $color-night-2;
+    margin: 1px 1px 0 0;
+
+    &.lm_active {
+        height: 24px;
+        background: $color-night-4;
+        box-shadow: inset 0px -2px 0 #88C0D0;
+    }
+
+    .lm_close_tab {
+        top: 8px;
+    }
+}
+
+.lm_controls .lm_maximise {
+    display: none;
+}
+
+.lm_splitter,
+.lm_splitter:hover,
+.lm_splitter.lm_dragging {
+    background: $color-background-dark;
+}

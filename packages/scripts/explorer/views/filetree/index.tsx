@@ -107,8 +107,14 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
 
     @bind
     renderContextMenu(node: TreeviewNodeProps): any {
-        const availableViewers: [string, string][] = [...node.meta.viewer];
+        const availableViewers: string[][] = [...node.meta.viewer];
 
+        if(node.data.raw){
+            availableViewers.push(Viewers.RawExtract);
+        }
+        if(node.data.img){
+            availableViewers.push(Viewers.ImgExtract);
+        }
         if(!node.data.isFolder){
             availableViewers.push(Viewers.HexEditor);
         }

@@ -39,9 +39,9 @@ export class MoleculeSelectListInner extends React.PureComponent<InnerProps> {
                     /* may be turned into purecomponent, so we don't re-render all items on scroll */
                     const item = this.props.items[index];
                     return (
-                        <li style={style} className={item === this.props.selected ? 'is-active' : ''}>
-                            <a href="#" className="select-list__link" onClick={this.onItemClick.bind(this, item, index)}>{item.name}</a>
-                        </li>
+                        <div style={style} className={'select-list__item ' + (item === this.props.selected ? 'select-list__item--active' : '')} onClick={this.onItemClick.bind(this, item, index)}>
+                            {item.name}
+                        </div>
                     );
                 }}
             </List>
@@ -58,11 +58,11 @@ export class MoleculeSelectListInner extends React.PureComponent<InnerProps> {
 export class MoleculeSelectList extends React.PureComponent<Props> {
     render(){
         return (
-            <ul className="menu vertical">
+            <div className="select-list">
                 <AtomGlContainerConsumer glContainer={this.props.glContainer}>
                     {this.getSelectInner}
                 </AtomGlContainerConsumer>
-            </ul>
+            </div>
         );
     }
 

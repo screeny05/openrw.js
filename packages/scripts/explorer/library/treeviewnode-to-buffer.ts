@@ -11,7 +11,7 @@ export async function treeviewnodeToBuffer(node: TreeviewNodeProps): Promise<Arr
     const sdtEntry: SdtEntry|undefined = node.data.sdtEntry;
 
     if(file){
-        return await file.getData()
+        return await file.getData();
     }
 
     if(entry){

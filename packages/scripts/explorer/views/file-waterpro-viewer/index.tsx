@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { treeviewnodeToBuffer } from '../../library/treeviewnode-to-buffer';
 import { TreeviewNodeProps } from '../../components/molecule/treenode';
 import Corrode from '@rws/library/node_modules/corrode';
 import { BrowserFile } from '@rws/platform-fs-browser/';

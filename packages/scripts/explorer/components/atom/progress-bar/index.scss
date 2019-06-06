@@ -1,4 +1,4 @@
-@import '../../../library/variables';
+@import '../../../theme';
 
 $progress-bar-size: 4px;
 $progress-bar-knob-size: 16px;
@@ -32,7 +32,7 @@ $progress-bar-knob-size: 16px;
 }
 
 .progress-bar__bar {
-    background: $color-panel-background;
+    background: $color-night-1;
     .progress-bar--horizontal & { width: 100%; }
     .progress-bar--vertical & { height: 100%; }
 }

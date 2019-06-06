@@ -1,5 +1,17 @@
-.select-list__link.select-list__link {
+@import '../../../theme';
+
+.select-list {
+    background: rgba($color-background-dark, 0.1);
+}
+
+.select-list__item {
     padding: 0 5px;
     line-height: 25px;
     font-family: 'Courier New', Courier, monospace;
+    color: $color-night-1;
+    cursor: pointer;
+}
+
+.select-list__item--active {
+    background: rgba($color-primary, 0.5);
 }

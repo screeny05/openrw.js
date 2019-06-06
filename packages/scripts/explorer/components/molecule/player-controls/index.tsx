@@ -35,11 +35,11 @@ export class MoleculePlayerControls extends React.PureComponent<Props, State> {
         return (
             <div className="player-controls">
                 <button className="player-controls__button player-controls__button--play-pause" onClick={this.onClickPlayPause} title="Play/Pause">
-                    {this.props.isPlaying ? <IconPause fill="#fff"/> : <IconPlay fill="#fff"/>}
+                    {this.props.isPlaying ? <IconPause class="player-controls__icon"/> : <IconPlay class="player-controls__icon"/>}
                 </button>
                 {this.props.showRepeat ?
                     <button className="player-controls__button player-controls__button--repeat" onClick={this.onClickRepeat} title="Repeat">
-                        <IconRepeat fill={this.props.isRepeating ? '#1779ba' : '#fff'}></IconRepeat>
+                        <IconRepeat class={'player-controls__icon ' + (this.props.isRepeating ? 'player-controls__icon--active' : '')}></IconRepeat>
                     </button>
                 : ''}
                 <div className="player-controls__label">
@@ -54,7 +54,7 @@ export class MoleculePlayerControls extends React.PureComponent<Props, State> {
                 {this.props.showSpeedControl ?
                     <div className="player-controls__speed">
                         <button className="player-controls__button" onClick={this.onClickSpeedControlButton} title="Playback Speed">
-                            <IconSlowMotion fill={this.state.isSpeedControlUnfolded ? '#1779ba' : '#fff'}/>
+                            <IconSlowMotion class={'player-controls__icon ' + (this.state.isSpeedControlUnfolded ? 'player-controls__icon--active' : '')}/>
                             x{this.props.speed ? this.props.speed : 1}
                         </button>
                         {this.state.isSpeedControlUnfolded ?

@@ -15,7 +15,7 @@ export class MoleculeLoadingScreen extends React.Component<Props> {
                 justifyContent: 'center',
                 height: '100%'
             }}>
-                <ScaleLoader color="#1779ba"/>
+                <ScaleLoader color="#8FBCBB"/>
                 {this.props.title ?
                     <div style={{ fontSize: 22, marginTop: 10 }}>
                         {this.props.title}

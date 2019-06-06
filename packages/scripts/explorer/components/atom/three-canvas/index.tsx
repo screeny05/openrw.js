@@ -13,6 +13,7 @@ interface Props {
     camera?: 'perspective' | 'orthographic';
     near?: number;
     far?: number;
+    alpha?: boolean;
 }
 
 export class AtomThreeCanvas extends React.PureComponent<Props> {
@@ -52,7 +53,8 @@ export class AtomThreeCanvas extends React.PureComponent<Props> {
 
         this.renderer = new WebGLRenderer({
             antialias: true,
-            canvas: this.canvasRef.current
+            canvas: this.canvasRef.current,
+            alpha: this.props.alpha
         });
 
         if(this.props.enableInput !== false){
