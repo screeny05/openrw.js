@@ -21,7 +21,15 @@
     }
 
     .lm_close_tab {
-        top: 8px;
+        top: 6px;
+        border-radius: 50%;
+        padding: 2px;
+        top: 6px;
+        transition: background .1s ease;
+    }
+
+    .lm_close_tab:hover {
+        background-color: #646e82;
     }
 }
 

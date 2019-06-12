@@ -23,8 +23,8 @@ const FilterMap = {
     [RwsTextureFilterMode.LINEAR_MIP_LINEAR]: THREE.LinearFilter,
 };
 
-const SWIZZLE_RGBA_BGRA = [2, 1, 0, 3];
-const SWIZZLE_RGBA_BGRX = [2, 1, 0, -1];
+const SWIZZLE_RGBA_BGRA = 'RGBA_BGRA';
+const SWIZZLE_RGBA_BGRX = 'RGBA_BGRX';
 const SWIZZLE_5551_1555 = '1555';
 
 export class ThreeTexturePool implements ITexturePool {
@@ -125,7 +125,7 @@ export class ThreeTexturePool implements ITexturePool {
             return this.cloneFallbackTexture(textureNative.name);
         }
 
-        let swizzle: null | number[] | string = null;
+        let swizzle: null | string = null;
         let format: THREE.PixelFormat = THREE.RGBAFormat;
         let type: THREE.TextureDataType = THREE.UnsignedByteType;
         let isCompressed = false;
@@ -156,14 +156,14 @@ export class ThreeTexturePool implements ITexturePool {
         const miplevels = textureNative.mipLevels.map((level, i) => {
             let data: null | Uint16Array | Uint8Array = null;
 
-            if(typeof swizzle === 'string'){
-                if(swizzle === SWIZZLE_5551_1555){
-                    data = this.swizzle5551To1555(new Uint16Array(level.buffer, level.byteOffset, level.length / 2));
-                } else {
-                    throw new Error(`Unsupported texture swizzle '${swizzle}'`);
-                }
-            } else if(swizzle) {
-                data = this.swizzle(level, swizzle);
+            if(swizzle === SWIZZLE_5551_1555){
+                data = this.unswizzle5551To1555(new Uint16Array(level.buffer, level.byteOffset, level.length / 2));
+            } else if (swizzle === SWIZZLE_RGBA_BGRA) {
+                data = this.unswizzleRGBAToBGRA(level, false);
+            } else if (swizzle === SWIZZLE_RGBA_BGRX) {
+                data = this.unswizzleRGBAToBGRA(level, true);
+            } else if(typeof swizzle === 'string') {
+                throw new Error(`Unsupported texture swizzle '${swizzle}'`);
             } else {
                 data = new Uint8Array(level);
             }
@@ -235,20 +235,23 @@ export class ThreeTexturePool implements ITexturePool {
         return val;
     }
 
-    swizzle(data: Uint8Array, order: number[]): Uint8Array {
-        for (let i = 0; i < data.length / order.length; i++) {
-            const org = data.subarray(i * order.length, i * order.length + order.length);
-            const swizzled: number[] = [];
-            order.forEach((newPos, oldPos) => {
-                // -1 = throw channel away
-                swizzled[newPos] = newPos === -1 ? 0 : org[oldPos];
-            });
-            data.set(swizzled, i * order.length);
+    unswizzleRGBAToBGRA(data: Uint8Array, ignoreAlpha: boolean = false): Uint8Array {
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const a = data[i + 3];
+            data[i] = b;
+            data[i + 1] = g;
+            data[i + 2] = r;
+            data[i + 3] = ignoreAlpha ? 255 : a;
         }
+
         return data;
     }
 
-    swizzle5551To1555(data: Uint16Array): Uint16Array {
+    unswizzle5551To1555(data: Uint16Array): Uint16Array {
+        console.warn('unswizzling 5551');
         const maskA = 0b1000000000000000;
         const maskB = 0b0111110000000000;
         const maskG = 0b0000001111100000;
@@ -260,7 +263,8 @@ export class ThreeTexturePool implements ITexturePool {
             const g = (data[i] & maskG) >> 5;
             const r = data[i] & maskR;
 
-            data[i] = 1 | (b << 1) | (g << 6) | (r << 11);
+            data[i] = a | (b << 1) | (g << 6) | (r << 11);
+            //data[i] = 1 | (b << 1) | (g << 6) | (r << 11);
         }
         return data;
     }

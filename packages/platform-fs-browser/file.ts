@@ -1,7 +1,7 @@
-import { ReadableStream } from 'readable-stream';
+import { Readable } from 'readable-stream';
 import { IFile } from '@rws/platform/fs';
 
-import fileReadStream from 'filereader-stream';
+import { FileStream } from './filereader-stream';
 
 // file size needs to be over this limit for the file to get buffered
 const BUFFER_SIZE_LIMIT = 5 * 1024 * 1024;
@@ -72,7 +72,7 @@ export class BrowserFile implements IFile {
         });
     }
 
-    stream(start?: number): ReadableStream {
-        return fileReadStream(this.file, { offset: start });
+    stream(start?: number): Readable {
+        return new FileStream(this.file, start);
     }
 }
