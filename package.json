@@ -36,7 +36,7 @@
     "regenerator-runtime": "^0.11.1",
     "setimmediate": "^1.0.5",
     "split2": "^2.2.0",
-    "three": "^0.90.0",
+    "three": "^0.125.0",
     "throttle-debounce": "^1.0.1",
     "ts-keycode-enum": "^1.0.4"
   }
