@@ -1,0 +1,55 @@
+<html>
+<title>🦄 webgl2</title>
+<body>
+    <canvas class="js--canvas on--running canvas" tabindex="1"></canvas>
+    <label class="file-select on--stop">
+        <input type="file" class="js--folder-select file-select__input on--stop" webkitdirectory/>
+        Select files
+    </label>
+
+    <script src="./index.ts"></script>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        }
+        .canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        .file-select {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            background: #2E3440;
+            color: #ECEFF4;
+            font-size: 24px;
+        }
+        .file-select__input {
+            opacity: 0;
+            pointer-events: none;
+            width: 0;
+            height: 0;
+        }
+        .on--running {
+            display: none;
+        }
+        .is--running .on--running {
+            display: block;
+        }
+        .is--running .on--stop {
+            display: none;
+        }
+    </style>
+</body>
+</html>

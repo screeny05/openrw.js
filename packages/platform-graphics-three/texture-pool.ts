@@ -157,7 +157,7 @@ export class ThreeTexturePool implements ITexturePool {
             let data: null | Uint16Array | Uint8Array = null;
 
             if(swizzle === SWIZZLE_5551_1555){
-                data = this.unswizzle5551To1555(new Uint16Array(level.buffer, level.byteOffset, level.length / 2));
+                data = this.unswizzle1555To5551(new Uint16Array(level.buffer, level.byteOffset, level.length / 2));
             } else if (swizzle === SWIZZLE_RGBA_BGRA) {
                 data = this.unswizzleRGBAToBGRA(level, false);
             } else if (swizzle === SWIZZLE_RGBA_BGRX) {
@@ -250,7 +250,7 @@ export class ThreeTexturePool implements ITexturePool {
         return data;
     }
 
-    unswizzle5551To1555(data: Uint16Array): Uint16Array {
+    unswizzle1555To5551(data: Uint16Array): Uint16Array {
         console.warn('unswizzling 5551');
         const maskA = 0b1000000000000000;
         const maskB = 0b0111110000000000;
@@ -263,8 +263,8 @@ export class ThreeTexturePool implements ITexturePool {
             const g = (data[i] & maskG) >> 5;
             const r = data[i] & maskR;
 
-            data[i] = a | (b << 1) | (g << 6) | (r << 11);
-            //data[i] = 1 | (b << 1) | (g << 6) | (r << 11);
+            //data[i] = a | (b << 1) | (g << 6) | (r << 11);
+            data[i] = 1 | (b << 1) | (g << 6) | (r << 11);
         }
         return data;
     }

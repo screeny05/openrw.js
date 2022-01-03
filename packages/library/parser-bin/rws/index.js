@@ -36,8 +36,8 @@ Corrode.addExtension('rws', function(expectedSectionType, expectedSectionCount){
 });
 
 Corrode.addExtension('rwsSingle', function(expectedSectionType){
-    this.ext
-        .rws('rws', expectedSectionType, 1)
+    this.
+        ext.rws('rws', expectedSectionType, 1)
         .tap(function(){
             this.vars.rws = this.vars.rws[0];
         })

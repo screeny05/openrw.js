@@ -35,7 +35,7 @@ interface FileTxdViewerState {
 }
 
 export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdViewerState> {
-    hud: Scene;
+    hud: ThreeHud;
 
     constructor(props){
         super(props);
@@ -69,9 +69,14 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
         const entries = this.state.pool.texturePool.getLoadedEntries() as ThreeTexture[];
 
         this.setState({
-            isLoaded: true,
-            selectedTexture: entries[0]
+            isLoaded: true
         });
+
+        if(!this.hud){
+            this.hud = new ThreeHud();
+        }
+
+        this.onSelectTexture(entries[0]);
     }
 
     render(){
@@ -104,12 +109,7 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
             return;
         }
 
-        if(!this.hud){
-            this.hud = new Scene();
-        }
-
-        renderer.setClearColor(0, 0);
-        renderer.render(this.hud, camera);
+        renderer.render(this.hud.src as any, camera);
     }
 
     renderTxdInfo(): React.ReactFragment {
@@ -166,9 +166,9 @@ export class FileTxdViewer extends React.Component<FileTxdViewerProps, FileTxdVi
 
     @bind
     onSelectTexture(texture: ThreeTexture): void {
-        this.hud.children.splice(0);
+        this.hud.src.children.splice(0);
         const element = new ThreeHudElement(texture);
-        this.hud.add(element.src as any);
+        this.hud.add(element);
         this.setState({ selectedTexture: texture });
         console.log(this);
     }

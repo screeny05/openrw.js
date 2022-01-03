@@ -7,5 +7,6 @@ export * from './vec3';
 export * from './scene';
 export * from './constructor';
 export * from './texture-pool';
+export * from './texture';
 export * from './renderer';
 export * from './hud';

@@ -24,7 +24,7 @@ interface WavDataSubchunk {
     samples: Uint8Array;
 }
 
-const StepTable: number[] = [
+const STEP_TABLE: number[] = [
     7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
     19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
     50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
@@ -36,7 +36,7 @@ const StepTable: number[] = [
     15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
 ];
 
-const IndexTable: number[] = [
+const INDEX_TABLE: number[] = [
     -1, -1, -1, -1, 2, 4, 6, 8,
     -1, -1, -1, -1, 2, 4, 6, 8,
 ];
@@ -44,8 +44,8 @@ const IndexTable: number[] = [
 export const decodeImaAdpcm = (ctx: AudioContext, buffer: ArrayBuffer): AudioBuffer => {
     const wav = new WaveFile(new Uint8Array(buffer));
 
-    const fmt: WavFmtSubchunk = wav.fmt as any;
-    const data: WavDataSubchunk = wav.data as any;
+    const fmt = wav.fmt as WavFmtSubchunk;
+    const data = wav.data as WavDataSubchunk;
 
     if(fmt.audioFormat !== WAV_FORMAT_IMA){
         throw new TypeError('Given wav buffer is not of format IMA ADPCM');
@@ -53,22 +53,20 @@ export const decodeImaAdpcm = (ctx: AudioContext, buffer: ArrayBuffer): AudioBuf
 
     // ima = 2sample/byte
     const targetAudioBuffer = ctx.createBuffer(fmt.numChannels, data.samples.length * 2 / fmt.numChannels, fmt.sampleRate);
-    const targetData = audioBufferToBuffers(targetAudioBuffer);
+    const targetData = getChannelBuffers(targetAudioBuffer);
     const imaBlocks = chunkArrayBufferView(data.samples, fmt.blockAlign);
 
     let outbufOffset = 0;
     let samplesPerBlock = (fmt.blockAlign - fmt.numChannels * 4) * (fmt.numChannels ^ 3) + 1;
 
-    console.log(data.samples, fmt.numChannels, fmt.blockAlign)
-
-    imaBlocks.forEach((block, i) => {
+    imaBlocks.forEach(block => {
         outbufOffset = decodeImaAdpcmBlock(block, targetData, outbufOffset);
     });
 
     return targetAudioBuffer;
 };
 
-const audioBufferToBuffers = (buffer: AudioBuffer): Float32Array[] => {
+const getChannelBuffers = (buffer: AudioBuffer): Float32Array[] => {
     const buffers: Float32Array[] = [];
     for (let i = 0; i < buffer.numberOfChannels; i++) {
         buffers.push(buffer.getChannelData(i));
@@ -86,12 +84,12 @@ export const decodeImaAdpcmBlock = (inbuf: Uint8Array, outbufs: Float32Array[], 
     let pcmData: number[] = new Array(channels).fill(0);
     let index: number[] = new Array(channels).fill(0);
 
-    outbufs.forEach((_, i) => {
-        pcmData[i] = uint8ToInt16(inbuf[inbufOffset], inbuf[inbufOffset + 1]);
-        outbufs[i][outbufOffset] = int16ToFloat(pcmData[i]);
-        index[i] = inbuf[inbufOffset + 2];
+    outbufs.forEach((_, ch) => {
+        pcmData[ch] = uint8ToInt16(inbuf[inbufOffset], inbuf[inbufOffset + 1]);
+        outbufs[ch][outbufOffset] = int16ToFloat(pcmData[ch]);
+        index[ch] = inbuf[inbufOffset + 2];
 
-        if(index[i] < 0 || index[i] > 88 || inbuf[inbufOffset + 3]){
+        if(index[ch] < 0 || index[ch] > 88 || inbuf[inbufOffset + 3]){
             throw new Error('Something is wrong with your wav');
         }
 
@@ -104,7 +102,7 @@ export const decodeImaAdpcmBlock = (inbuf: Uint8Array, outbufs: Float32Array[], 
     while(chunks--){
         for (let ch = 0; ch < channels; ch++) {
             for (let i = 0; i < 4; i++) {
-                let step = StepTable[index[ch]];
+                let step = STEP_TABLE[index[ch]];
                 let delta = step >> 3;
 
                 let data = inbuf[inbufOffset];
@@ -121,13 +119,13 @@ export const decodeImaAdpcmBlock = (inbuf: Uint8Array, outbufs: Float32Array[], 
                     delta = -delta;
                 }
                 pcmData[ch] += delta;
-                index[ch] += IndexTable[data & 0x7];
+                index[ch] += INDEX_TABLE[data & 0x7];
                 index[ch] = clamp(index[ch], 0, 88);
                 pcmData[ch] = clampInt16(pcmData[ch]);
                 outbufs[ch][outbufOffset + (i * 2)] = int16ToFloat(pcmData[ch]);
 
                 // Sample 2
-                step = StepTable[index[ch]];
+                step = STEP_TABLE[index[ch]];
                 delta = step >> 3;
 
                 if(data & 0x10){
@@ -144,7 +142,7 @@ export const decodeImaAdpcmBlock = (inbuf: Uint8Array, outbufs: Float32Array[], 
                 }
 
                 pcmData[ch] += delta;
-                index[ch] += IndexTable[(data >> 4) & 0x7];
+                index[ch] += INDEX_TABLE[(data >> 4) & 0x7];
                 index[ch] = clamp(index[ch], 0, 88);
                 pcmData[ch] = clampInt16(pcmData[ch]);
                 outbufs[ch][outbufOffset + (i * 2 + 1)] = int16ToFloat(pcmData[ch]);

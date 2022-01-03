@@ -32,6 +32,7 @@ export class Filetree extends React.Component<FiletreeProps, FiletreeState> {
             isLoaded: false
         };
         this.init();
+        console.log(this.state.index);
     }
 
     async init(): Promise<void> {

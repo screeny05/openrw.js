@@ -9,6 +9,8 @@ export interface IObject3d {
     readonly up: IVec3;
     readonly rotation: IQuat;
 
+    lookAt(target: IVec3): void;
+
     getWorldPosition(): IVec3;
     getWorldScale(): IVec3;
     getWorldRotation(): IQuat;

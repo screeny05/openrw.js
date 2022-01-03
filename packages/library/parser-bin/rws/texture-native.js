@@ -126,7 +126,7 @@ Corrode.addExtension('rwsTextureNative', function(){
 
                 .buffer('data', 'size')
 
-                .tap(function(){
+                .tap(function paletteToImage(){
                     const { flags } = this.varStack.peek();
 
                     if(flags.isPal8 || flags.isPal4){
@@ -137,8 +137,13 @@ Corrode.addExtension('rwsTextureNative', function(){
                         const rgbaBuffer = Buffer.allocUnsafe(currentWidth * currentHeight * 4);
 
                         for(var i = 0; i < this.vars.size; i++){
-                            const index = indices[i];
-                            palette.copy(rgbaBuffer, i * 4, index * 4, index * 4 + 4);
+                            const index = indices[i] * 4;
+                            rgbaBuffer[i * 4] = palette[index];
+                            rgbaBuffer[i * 4 + 1] = palette[index + 1];
+                            rgbaBuffer[i * 4 + 2] = palette[index + 2];
+                            rgbaBuffer[i * 4 + 3] = palette[index + 3];
+                            //rgbaBuffer.set(palette.subarray(index * 4, index * 4 + 4), i * 4);
+                            //palette.copy(rgbaBuffer, i * 4, index * 4, index * 4 + 4);
                         }
                         this.vars.data = rgbaBuffer;
                     }

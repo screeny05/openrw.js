@@ -27,3 +27,15 @@ Corrode.addExtension('dir', function(){
 
         .map.push('entries');
 });
+
+const dirParser = async $ => {
+    const entries = await $.loop(async () => ({
+        offset: await $.uint32() * SECTOR_SIZE,
+        size: await $.uint32() * SECTOR_SIZE,
+        name: await $.string(24) |> $.map.trimNull,
+    }));
+
+    if($.streamOffset / ENTRY_SIZE !== entries.length){
+        throw new TypeError(`DIR filesize does not match entry-count. Found ${entries.length} entries, should be ${$.streamOffset / 32}`);
+    }
+}
